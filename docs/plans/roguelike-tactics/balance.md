@@ -4597,6 +4597,93 @@ Steppe's 44.8% to 25.9% of about 27): within the noise, to watch.
   took for it, and Boulder then read its space. Fixed: it pushes from
   where it threw.
 
+### Each hero in its role, every duration in slots (2026-10-29)
+
+Asked for: balance again on the current rules (every duration in slots,
+Grapple off the track, the Cataphract Armoured with the slam's Delay 6),
+judged by how each hero does in its role, not region against region.
+`experiments/roles-twelve.mjs`: each hero in its role's seat of the three
+other regions' mirrors (the role seats of `roster-twelve.mjs`, no party
+against party), `modWinPct`, 400 fights each (about ±2.5 points a cell),
+seeds from 1000, production AI, on `88df092`. In brackets, "All twelve
+heroes, after the owner's changes" (2026-10-28) for all but the
+Cataphract's rows and seat, which are from "The slam's Delay 6 with
+Armoured back" (its seat's three rows only as a range there, 43–52%,
+so left out). Unfinished fights 0–3.8%, 5.8% with the Ranger in
+Byzantium's party.
+
+| Tank seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Grappler | | 60.9% (57.4%) | 43.8% (42.9%) | 56.4% |
+| Vanguard | 48.5% (49%) | | 53% (53%) | 43.3% |
+| Juggernaut | **66.5%** (62.8%) | 47.8% (51.8%) | | 47.3% |
+| Cataphract | 56.8% (57%) | **64.3%** (71.8%) | **60%** (60%) | |
+
+| Damage seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Outrider | | 54% (49.8%) | 45.2% (45.2%) | 44.4% (41.8%) |
+| Duelist | 52.5% (53%) | | 41.6% (41.6%) | 52% (40.8%) |
+| Ranger | 53.6% (50.5%) | 45.3% (44.3%) | | 53.8% (36.3%) |
+| Barbarian | 50.8% (50%) | 50.5% (49.1%) | **35.9%** (35.9%) | |
+
+| Support seat of | Steppe | China | Persia | Byzantium |
+|---|---:|---:|---:|---:|
+| Storm Caller | | 44.3% (42.5%) | 42.3% (43.2%) | 50.1% (46.3%) |
+| Alchemist | 53.8% (60%) | | 48.7% (52.4%) | 46% (46.6%) |
+| Magus | 50.3% (50.8%) | **37.3%** (40.5%) | | 52.6% (49.5%) |
+| Priest | 42.7% (50.3%) | 40.3% (42.3%) | 50.9% (50.9%) | |
+
+Each hero's mean in the three other seats of its role, and its side's
+wins when each of the three others of its role takes its seat (100% less
+their mean); the two together as one score:
+
+| | In others' seats | Kept in its own | Score |
+|---|---:|---:|---:|
+| Grappler | 53.7% | 42.7% | 48.2% |
+| Vanguard | 48.3% | 42.3% | **45.3%** |
+| Juggernaut | 53.9% | 47.7% | 50.8% |
+| Cataphract | 60.4% | 51% | **55.7%** |
+| Outrider | 47.9% | 47.7% | 47.8% |
+| Duelist | 48.7% | 50.1% | 49.4% |
+| Ranger | 50.9% | 59.1% | **55%** |
+| Barbarian | 45.7% | 49.9% | 47.8% |
+| Storm Caller | 45.6% | 51.1% | 48.3% |
+| Alchemist | 49.5% | 59.4% | **54.5%** |
+| Magus | 46.7% | 52.7% | 49.7% |
+| Priest | 44.6% | 50.4% | **47.5%** |
+
+- **Damage is the most even role** (scores 47.8–55%): the Duelist and the
+  Barbarian even, the Outrider a little under. The Ranger is strong only
+  at home: any other damage hero in Persia's seat wins 36–45%, the
+  Barbarian least (35.9%, outranged), while the Ranger elsewhere is 45–54%.
+  The Byzantine seat's 36–42% of 2026-10-28 is gone (44–54%): that was the
+  Cataphract's weakness, not the Barbarian's strength.
+- **Tanks spread widest** (45.3–55.7%). **The Cataphract is the strongest
+  tank**, 57–64% in every other tank seat; China's seat came down from
+  71.8% to 64.3% with the slot rules but is still its best. **The Vanguard
+  is the weakest**, 43–53% elsewhere, and its own seat in China is lost to
+  the Grappler (60.9%) and the Cataphract (64.3%). The Juggernaut beats
+  the Grappler in the Steppe's seat (66.5%), the largest single gap: the
+  Grappler is a weak tank at home (42.7%) but fine abroad (53.7%).
+- **Support: the Alchemist strong at home, the Priest and the Storm
+  Caller a little weak abroad.** Any other support in China's seat wins
+  37–44%, the Magus least (37.3%); elsewhere the Alchemist is even.
+  The Priest fell 8 points in the Steppe's seat (50.3% to 42.7%) and the
+  Alchemist 6 there, the Storm Caller now harder to replace (its own seat
+  46% to 51%; a guess, hail lasting 16 slots, not traced); the Priest is 40–51%.
+- **What moved since 2026-10-28** is the Steppe's and Byzantium's seats;
+  every Persia-seat row came out exactly as before (the slot rules don't
+  touch its kits).
+
+Within each role every hero is within about 5 points of 50% but the
+Cataphract (+5.7), the Ranger (+5), the Alchemist (+4.5) and the
+Vanguard (−4.7); the Ranger's and the Alchemist's surplus is in their own
+party only. Not changed: the numbers are the owner's. Likeliest to help,
+in order: the Cataphract's China surplus (Armoured only against hits from
+in front, or the slam's Delay 4); the Vanguard (a point of power, or
+Cleave's Delay 8 back); what the Alchemist's Elixir gives China's
+Vanguard and Duelist that no other support does.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
