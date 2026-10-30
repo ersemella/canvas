@@ -420,16 +420,22 @@ export function scoreOutcome(
 }
 
 /**
- * `AI.spearheadShare` (2026-10-30): what `unit` standing next to its allies
- * with Spearhead is worth, each one's hit Hastening it `SPEARHEAD.haste`.
+ * `AI.spearheadShare` (2026-10-30): what `unit` standing within
+ * `SPEARHEAD.range` of its allies with Spearhead is worth, each one's hit Hastening it `SPEARHEAD.haste`.
  */
 function spearheadPoints(state: FightState, unit: Unit): number {
   if (!AI.spearheadShare || !unit.alive || !unit.hex) return 0;
   let n = 0;
-  for (const h of hexNeighbors(unit.hex)) {
-    const a = unitAt(state, h);
-    if (a && a.side === unit.side && a.passives?.includes('spearhead')) n++;
-  }
+  for (const a of state.units)
+    if (
+      a !== unit &&
+      a.alive &&
+      a.hex &&
+      a.side === unit.side &&
+      a.passives?.includes('spearhead') &&
+      hexDistance(a.hex, unit.hex) <= SPEARHEAD.range
+    )
+      n++;
   return n * AI.spearheadShare * (SPEARHEAD.haste / cardCost(unit)) * turnValue(unit);
 }
 

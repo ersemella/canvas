@@ -362,6 +362,26 @@ describe('the passives: position and allies', () => {
     ]);
   });
 
+  it('Spearhead at range 2: the ally 2 away Hastened too, not one 3 away', () => {
+    const spearhead = SPEARHEAD as {range: number};
+    spearhead.range = 2;
+    try {
+      const s = setup({
+        'p-bokh': centre,
+        'p-storm': out(0, 2),
+        'p-mangudai': out(3, 3),
+        'e-mangudai': out(4, 3),
+      });
+      const u = give(s, 'p-bokh', 'spearhead');
+      const [near, far] = [unit(s, 'p-storm'), unit(s, 'p-mangudai')];
+      const before = [near.slot!, far.slot!];
+      hit(ctxOf(s), unit(s, 'e-mangudai'), u, 'The arrow');
+      expect([near.slot, far.slot]).toEqual([before[0]! - SPEARHEAD.haste, before[1]]);
+    } finally {
+      spearhead.range = 1;
+    }
+  });
+
   it('Vengeance: when an ally falls, Hastened 3 and Empowered 1', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
     const u = give(s, 'p-bokh', 'vengeance');

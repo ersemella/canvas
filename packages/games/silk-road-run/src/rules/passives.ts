@@ -217,7 +217,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'spearhead',
     'Spearhead',
     'allies',
-    `Whenever it is hit, each ally next to it is Hastened ${SPEARHEAD.haste}.`
+    `Whenever it is hit, each ally ${SPEARHEAD.range === 1 ? 'next to it' : `within ${SPEARHEAD.range}`} is Hastened ${SPEARHEAD.haste}.`
   ),
   serpentKing: def(
     'serpentKing',

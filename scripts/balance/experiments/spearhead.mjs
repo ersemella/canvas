@@ -5,7 +5,8 @@
 // Vanguard carrying it (`patch`), to set beside "Each hero in its role,
 // every duration in slots" (2026-10-29). `modWinPct` throughout.
 // Variants (a suffix): `h5`, `h6` its Haste (`SPEARHEAD.haste`); `a1`, `a2`
-// the AI's allies seeking it (`AI.spearheadShare`), both sides' AIs.
+// the AI's allies seeking it (`AI.spearheadShare`), both sides' AIs; `r2`
+// allies within 2 (`SPEARHEAD.range`).
 const regions = {
   steppe: ['bokh', 'mangudai', 'storm'],
   china: ['modao', 'youxia', 'alchemist'],
@@ -20,11 +21,13 @@ const variants = {
   '-a1': {haste: 3, share: 1},
   '-a2': {haste: 3, share: 2},
   '-h6-a1': {haste: 6, share: 1},
+  '-r2': {haste: 3, share: 0, range: 2},
 };
 export const experiments = {};
-for (const [suffix, {haste, share}] of Object.entries(variants)) {
+for (const [suffix, {haste, share, range = 1}] of Object.entries(variants)) {
   const tune = ({SPEARHEAD, AI}) => {
     SPEARHEAD.haste = haste;
+    SPEARHEAD.range = range;
     AI.spearheadShare = share;
   };
   const patch = (config) => {
@@ -53,5 +56,5 @@ for (const [suffix, {haste, share}] of Object.entries(variants)) {
 // The six rows without it, on today's code (the Barbarian's Leap is newer
 // than the 2026-10-29 table).
 for (const [name, e] of Object.entries(experiments))
-  if (e.mod.party && !name.includes('-h') && !name.includes('-a'))
+  if (e.mod.party && !/-(h|a|r)\d/.test(name))
     experiments[`base-${name}`] = {party: e.party, mod: e.mod};

@@ -727,14 +727,14 @@ function devotion(ctx: Ctx, target: Unit): void {
 }
 
 /**
- * Spearhead (2026-10-30; `SPEARHEAD`): `target` is hit, so each ally next
- * to it is Hastened.
+ * Spearhead (2026-10-30; `SPEARHEAD`): `target` is hit, so each ally
+ * within `range` of it is Hastened.
  */
 function spearhead(ctx: Ctx, target: Unit): void {
   if (!hasPassive(target, 'spearhead') || !target.hex) return;
-  for (const h of hexNeighbors(target.hex)) {
-    const a = unitAt(ctx.state, h);
-    if (!a || a.side !== target.side) continue;
+  for (const a of ctx.state.units) {
+    if (a === target || !a.alive || !a.hex || a.side !== target.side) continue;
+    if (hexDistance(a.hex, target.hex) > SPEARHEAD.range) continue;
     log(ctx, `${unitName(target)} leads ${unitName(a)} on.`);
     haste(ctx, a, SPEARHEAD.haste);
   }

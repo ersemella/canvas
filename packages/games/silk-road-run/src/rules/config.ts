@@ -490,10 +490,10 @@ export const ARMOURED = {armour: 1 as number};
 /**
  * Spearhead (2026-10-30), for the Vanguard, built off: no hero starts with
  * it (balance.md, "Spearhead"). Whenever it is hit (any damage coming at
- * it, a Shield's or not, as Devoted), each ally next to it, Humphrey too,
- * is Hastened `haste`, Devoted's number.
+ * it, a Shield's or not, as Devoted), each ally within `range` of it (next
+ * to it as built), Humphrey too, is Hastened `haste`, Devoted's number.
  */
-export const SPEARHEAD = {haste: 3 as number};
+export const SPEARHEAD = {haste: 3 as number, range: 1 as number};
 
 /**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,
