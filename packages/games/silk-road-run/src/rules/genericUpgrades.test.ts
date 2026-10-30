@@ -284,7 +284,15 @@ describe('rarity (19.3b)', () => {
   it('gives every offered passive and upgrade a rarity, the strongest the rarest', () => {
     for (const def of Object.values(PASSIVES))
       if (
-        !['unstoppable', 'oneEye', 'devoted', 'armoured', 'serpentKing', 'regrow'].includes(def.id)
+        ![
+          'unstoppable',
+          'oneEye',
+          'devoted',
+          'armoured',
+          'serpentKing',
+          'regrow',
+          'spearhead',
+        ].includes(def.id)
       )
         expect(def.rarity, def.id).toBeDefined();
     expect(PASSIVES.concussive.rarity).toBe('legendary');

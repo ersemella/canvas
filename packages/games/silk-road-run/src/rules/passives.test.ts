@@ -3,7 +3,7 @@
 import {describe, expect, it} from 'vitest';
 import {hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {PARTY, RULES} from './config';
+import {PARTY, RULES, SPEARHEAD} from './config';
 import {reachableHexes, isStunned, invalidPath} from './board';
 import {advanceToDecision, applyTurn, cloneFight, createFight, makeUnit, mapOf} from './fight';
 import {STEPPE} from './map';
@@ -340,6 +340,26 @@ describe('the passives: position and allies', () => {
     rally.slot = 50;
     expect(advanceToDecision(s)?.id).toBe('p-storm');
     expect(ally.shield).toBeUndefined();
+  });
+
+  it('Spearhead: hit, the allies next to it are Hastened 3, no one else', () => {
+    const s = setup({
+      'p-bokh': centre,
+      'p-storm': out(0, 1),
+      'p-mangudai': out(3, 2),
+      'e-bokh': out(1, 1),
+      'e-mangudai': out(4, 3),
+    });
+    const u = give(s, 'p-bokh', 'spearhead');
+    const [near, far, foe] = [unit(s, 'p-storm'), unit(s, 'p-mangudai'), unit(s, 'e-bokh')];
+    const before = [near.slot!, far.slot!, foe.slot!, u.slot!];
+    hit(ctxOf(s), unit(s, 'e-mangudai'), u, 'The arrow');
+    expect([near.slot, far.slot, foe.slot, u.slot]).toEqual([
+      before[0]! - SPEARHEAD.haste,
+      before[1],
+      before[2],
+      before[3],
+    ]);
   });
 
   it('Vengeance: when an ally falls, Hastened 3 and Empowered 1', () => {

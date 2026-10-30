@@ -4833,6 +4833,46 @@ fights each (about ±2.5 points a cell, ±3.5 a span). Unfinished fights
   heal side; the split moved (more of the track healing); more power or
   defence for him.
 
+### Spearhead: allies next to the Vanguard Hastened when it's hit (2026-10-30)
+
+Asked for: a passive for the Vanguard that Hastens adjacent allies when it
+takes damage. Built as `spearhead` (`SPEARHEAD.haste`, 3, Devoted's),
+**off**: no hero starts with it and the caravanserai doesn't offer it.
+Any damage coming at it, a Shield's or not, Hastens each ally next to it
+3, Humphrey too, the hit that fells it as well (Devoted's reading).
+`experiments/spearhead.mjs`: one side's Vanguard with it in China's
+mirror, then the Vanguard's six rows of "Each hero in its role" with
+every Vanguard carrying it, beside the same rows without it on today's
+code (the Barbarian's Leap is newer than that table). 400 fights a row
+(about ±2.5 points), seeds from 1000, production AI, on `8894940`.
+
+One side's Vanguard with it, China's mirror: **53.3%**.
+
+| Row | Without | With Spearhead |
+|---|---:|---:|
+| Vanguard in the Steppe's tank seat | 48.5% | 50.3% |
+| Vanguard in Persia's | 53% | 52.2% |
+| Vanguard in Byzantium's | 45.5% | 47.4% |
+| Grappler in China's (the Vanguard's) | 60.9% | 57.5% |
+| Juggernaut in China's | 47.8% | 43.3% |
+| Cataphract in China's | 64.3% | 66% |
+| In others' seats (mean) | 49% | 50% |
+| Kept in its own (100% less the mean) | 42.3% | 44.4% |
+| **Score** | **45.7%** | **47.2%** |
+
+- **A small gain, at the edge of noise**: 3.3 points in the mirror, 1.5 on
+  the Vanguard's score, every row within about 2 points but the
+  Juggernaut's and the Grappler's in China's seat (3–4.5). It doesn't
+  bring the Vanguard to even; the Cataphract still takes its seat at 66%.
+- Without it, the rows match 2026-10-29's to the point but Byzantium's
+  (43.3% to 45.5%, the Leap or noise).
+- Why little, a guess not traced: the Vanguard is slow and takes few hits
+  before its allies act, Cleave's Delay is already its tempo, and the AI
+  doesn't seek to stand next to it (no term for it), so the Haste lands
+  where the fight puts allies.
+- Untried: Haste 5 or 6; the AI keeping allies next to it; Spearhead with
+  a point of power, or with Cleave's Delay 8 back.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

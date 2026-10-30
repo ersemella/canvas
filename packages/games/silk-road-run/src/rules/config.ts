@@ -488,6 +488,14 @@ export const ONE_EYE = {armour: 3 as number};
 export const ARMOURED = {armour: 1 as number};
 
 /**
+ * Spearhead (2026-10-30), for the Vanguard, built off: no hero starts with
+ * it (balance.md, "Spearhead"). Whenever it is hit (any damage coming at
+ * it, a Shield's or not, as Devoted), each ally next to it, Humphrey too,
+ * is Hastened `haste`, Devoted's number.
+ */
+export const SPEARHEAD = {haste: 3 as number};
+
+/**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,
  * 2026-10-29): the builder's first readings, marked TBD there. Each Delay,
  * Haste, Weaken, Empower, Armour and Shield is the keyword's own (17.3,

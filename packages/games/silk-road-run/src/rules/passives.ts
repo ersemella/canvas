@@ -9,7 +9,7 @@
  * caravanserai drafts them with the stat provisions (19.3): the party's
  * picks, and the rival's for the enemy (`fitRank`).
  */
-import {ARMOURED, DEVOTED, HEROES, ONE_EYE, RULES, UPGRADE} from './config';
+import {ARMOURED, DEVOTED, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 
@@ -213,6 +213,12 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'damage',
     `Armour ${ARMOURED.armour} against every hit, unless it Pierces.`
   ),
+  spearhead: def(
+    'spearhead',
+    'Spearhead',
+    'allies',
+    `Whenever it is hit, each ally next to it is Hastened ${SPEARHEAD.haste}.`
+  ),
   serpentKing: def(
     'serpentKing',
     'Serpent King',
@@ -374,8 +380,8 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
  * Unstoppable, the Juggernaut's (owner, 2026-10-27), One Eye, the
  * Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
  * 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), and the
- * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29), aren't
- * in 19.8's pool.
+ * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29), and
+ * Spearhead, measured for the Vanguard (2026-10-30), aren't in 19.8's pool.
  */
 export const NOT_OFFERED: readonly PassiveId[] = [
   'unstoppable',
@@ -384,6 +390,7 @@ export const NOT_OFFERED: readonly PassiveId[] = [
   'armoured',
   'serpentKing',
   'regrow',
+  'spearhead',
 ];
 
 /** Whether `unit` carries the passive `id`. */

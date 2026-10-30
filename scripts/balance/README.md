@@ -117,6 +117,7 @@ either core's side, and a Storm Caller that can't hurt keeping back
 
 `wait.mjs` (2026-10-30) measures Wait (`RULES.waitShare`): one side with it, as Patient 3 or 4 (`RULES.patientSlots`) on its every unit, at production's search and a deep one against the same search without; and both sides with it at 2/3 against the built rule, the four regions' mirrors and parties. `wait-china.mjs` gives it to one Chinese hero at a time, with Patient saving 0 as the control.
 `wait-leaf.mjs` (2026-10-30) measures the search's leaf counting the track (`AI.leafTrack`), one side's AI with it, and Wait for one side with both AIs using it.
+`spearhead.mjs` (2026-10-30) measures Spearhead (`SPEARHEAD`), the Vanguard's allies next to it Hastened when it's hit: one side's Vanguard with it in China's mirror, and the Vanguard's six role-seat rows of `roles-twelve.mjs` with and without it (`patch` giving it to every Vanguard).
 
 `elixir-swap.mjs` (2026-10-27) measures the Elixir swapping an ally's
 speed and health (`ABILITY.elixir.swap`, `.swapUntil`), the AI's first

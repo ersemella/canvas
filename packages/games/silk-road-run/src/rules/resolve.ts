@@ -10,7 +10,17 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, ARMOURED, CAMEL, DEVOTED, HEROES, ONE_EYE, RULES, UPGRADE} from './config';
+import {
+  ABILITY,
+  ARMOURED,
+  CAMEL,
+  DEVOTED,
+  HEROES,
+  ONE_EYE,
+  RULES,
+  SPEARHEAD,
+  UPGRADE,
+} from './config';
 import {
   addStatus,
   exitSealed,
@@ -634,7 +644,8 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
  * Then the passives that answer damage (19.8): Shake Loose, Last Stand,
  * Second Wind. `source`, the unit dealing it, if any, is credited with a
  * kill (Momentum). Any damage coming at a Devoted unit, whatever takes it,
- * Hastens its partner first (`devotion`).
+ * Hastens its partner first (`devotion`), and at a Spearhead its allies next
+ * to it (`spearhead`).
  */
 export function applyDamage(
   ctx: Ctx,
@@ -645,6 +656,7 @@ export function applyDamage(
 ): void {
   if (!target.alive || amount <= 0) return;
   devotion(ctx, target);
+  spearhead(ctx, target);
   if (target.shield) {
     const absorbed = Math.min(target.shield, amount);
     target.shield -= absorbed;
@@ -711,6 +723,20 @@ function devotion(ctx: Ctx, target: Unit): void {
     if (u === target || !u.alive || u.side !== target.side || !hasPassive(u, 'devoted')) continue;
     log(ctx, `${unitName(u)} rushes to ${unitName(target)}’s side.`);
     haste(ctx, u, DEVOTED.haste);
+  }
+}
+
+/**
+ * Spearhead (2026-10-30; `SPEARHEAD`): `target` is hit, so each ally next
+ * to it is Hastened.
+ */
+function spearhead(ctx: Ctx, target: Unit): void {
+  if (!hasPassive(target, 'spearhead') || !target.hex) return;
+  for (const h of hexNeighbors(target.hex)) {
+    const a = unitAt(ctx.state, h);
+    if (!a || a.side !== target.side) continue;
+    log(ctx, `${unitName(target)} leads ${unitName(a)} on.`);
+    haste(ctx, a, SPEARHEAD.haste);
   }
 }
 
