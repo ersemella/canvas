@@ -1839,6 +1839,27 @@ describe('the Barbarian', () => {
     expect(hits('splash')).toEqual([3, 1, 1, 1]);
   });
 
+  it('Leap with `shield` Shields him by the damage enemies take, up to 3, and a leap hitting no one loses it', () => {
+    onTestFinished(() => {
+      Object.assign(ABILITY.leap, {shape: 'front', shield: false});
+    });
+    Object.assign(ABILITY.leap, {shape: 'front', shield: true});
+    const [a, d] = front(0);
+    // An enemy and an ally in front: only the enemy's damage counts.
+    const {s, b} = leaping({'e-modao': a!, 'p-modao': d!});
+    b.shield = 1;
+    b.lastingShield = 1;
+    applyTurn(s, b, {action: {ability: 'leap', target: {hex: landing(0)}}});
+    expect(hp(s, 'e-modao')).toBe(3);
+    expect([b.shield, b.lastingShield]).toEqual([3, 3]);
+    // No one in front of the next landing: the Shield is lost.
+    const {s: s2, b: b2} = leaping({});
+    b2.shield = 2;
+    b2.lastingShield = 2;
+    applyTurn(s2, b2, {action: {ability: 'leap', target: {hex: landing(0)}}});
+    expect(b2.shield).toBeUndefined();
+  });
+
   it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {
     const {s, b} = leaping({'p-modao': front(1)[0]!, 'p-mangudai': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';

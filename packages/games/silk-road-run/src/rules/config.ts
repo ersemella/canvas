@@ -840,7 +840,17 @@ export const ABILITY = {
    * flew over). `splash`: all six, the front two for his power and the
    * rest for `splash`, from no one's power.
    */
-  leap: {shape: 'front' as 'front' | 'forward' | 'splash', splash: 1 as number},
+  /**
+   * With `shield` (owner, 2026-10-30; off): a leap that hits enemies Shields
+   * him by the damage they take, until spent, his Shield at most
+   * `shieldCap`; one that hits no one takes away any Shield he has.
+   */
+  leap: {
+    shape: 'front' as 'front' | 'forward' | 'splash',
+    splash: 1 as number,
+    shield: false as boolean,
+    shieldCap: 3 as number,
+  },
   /**
    * Gore (owner, 2026-10-28), the Bull Demon King's: Stomp's charge
    * (`stomp.mode: 'charge'`, Trample as first built), a walk of up to

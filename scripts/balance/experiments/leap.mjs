@@ -3,8 +3,8 @@
 // the landing, for his power), `forward` (those and the one either side,
 // four for his power) and `splash` (the front two for his power, the other
 // four next to the landing for `splash`, 1), with Axe Throw as he had it
-// for a reference. The Barbarian in the damage seat of the three other
-// regions' mirrors, and each of their damage heroes in his seat of
+// for a reference; and `front` and `splash` with `ABILITY.leap.shield`.
+// The Barbarian in the damage seat of the three other regions' mirrors, and each of their damage heroes in his seat of
 // Byzantium's (as roles-twelve.mjs). `modWinPct` throughout.
 const regions = {
   steppe: ['bokh', 'mangudai', 'storm'],
@@ -21,6 +21,10 @@ const variants = {
   front: shape('front'),
   forward: shape('forward'),
   splash: shape('splash'),
+  // The owner's, later 2026-10-30: Shield by the damage enemies take,
+  // until spent, at most 3; a leap hitting no one loses it.
+  frontShield: (c) => Object.assign(c.ABILITY.leap, {shape: 'front', shield: true}),
+  splashShield: (c) => Object.assign(c.ABILITY.leap, {shape: 'splash', shield: true}),
 };
 export const experiments = {};
 for (const [v, patch] of Object.entries(variants))

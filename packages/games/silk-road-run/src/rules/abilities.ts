@@ -1898,7 +1898,11 @@ const leap: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: () =>
-    `Leap over anything to a free space 2 away, off your straight lines. ${leapSays()}`,
+    `Leap over anything to a free space 2 away, off your straight lines. ${leapSays()}${
+      ABILITY.leap.shield
+        ? ` Gain Shield equal to the damage dealt to enemies, until spent (at most ${ABILITY.leap.shieldCap}); a leap that hits no one loses your Shield.`
+        : ''
+    }`,
   area: leapArea,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
@@ -1919,9 +1923,23 @@ const leap: AbilityDef = {
       const u = unitAt(ctx.state, hex);
       return u ? [{u, full}] : [];
     });
+    // What the enemies caught have, health and Shield, for `ABILITY.leap.shield`.
+    const standing = () =>
+      caught.filter(({u}) => hostile(u, user)).reduce((n, {u}) => n + u.hp + (u.shield ?? 0), 0);
+    const before = standing();
     for (const {u, full} of caught)
       if (full) hit(ctx, user, u, 'The axe');
       else hitFor(ctx, user, u, 'The blow', ABILITY.leap.splash);
+    if (!ABILITY.leap.shield || !user.alive) return;
+    if (caught.length === 0) {
+      if (user.shield) log(ctx, `${unitName(user)} loses its Shield.`);
+      delete user.shield;
+      delete user.shieldUntil;
+      delete user.lastingShield;
+      return;
+    }
+    const room = ABILITY.leap.shieldCap - (user.shield ?? 0);
+    shield(ctx, user, Math.min(before - standing(), room), true);
   },
 };
 
