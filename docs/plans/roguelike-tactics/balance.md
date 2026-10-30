@@ -5087,6 +5087,40 @@ his next turn healed) in the other supports' seats. Unfinished fights
   42.9% kept in its own, 50.4% before), the Storm Caller beside the
   Cataphract and the Barbarian 67%. Not traced.
 
+### The Duelist's lunge through units (2026-10-30)
+
+Asked for (owner): the lunge of 2 with a walk of 2 and Haste 3 flat (no
+streak), passing through the unit next to him. Built as a switch, **off**
+(`ABILITY.swiftStrike.passThrough`): a lunge may cross units, each hit as
+it goes by, to land on a free space past them (with a lunge of 2, the one
+past the unit next to him), and strikes the unit in front of that too;
+one Haste for the turn however many it hits. `experiments/duelist-pass.mjs`,
+the rows of "The Duelist's lunge and streak", on `48c8916`'s rules (the
+Barbarian's Leap); the score over the Steppe's and Persia's seats only, as
+there.
+
+| Swift Strike (walk, Haste 3) | In others' seats | Kept in its own | Score | Speed +1 | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| As built (walk 3) | 47.1% | 50.4% | 48.7% | 77.5% | 48.5% | 51.6% | 3.1 |
+| Lunge 2, walk 2 | 56.1% | 56.6% | 56.4% | 78.5% | 38.8% | 53.5% | 14.7 |
+| **Lunge 2 through units, walk 2** | 62.5% | 62.1% | **62.3%** | 78.5% | 34.5% | 52.5% | **18** |
+
+Byzantium's seat (left out): the Duelist in it 70.4%, 74.4% and 78.9%, the
+Barbarian in China's 24.3%, 15% and 12.3%.
+
+- **Passing through is worth about 6 points more** on top of the lunge's
+  8: too strong at a walk of 2 (62.3%). He uses Swift Strike on 43.6% of
+  his turns (39% with the lunge that stops, 34.5% as built), and his sword
+  deals 8.3 a fight in the Steppe's seat (6.8, 6.4).
+- **The span is the widest measured (18)**, but it is a novice doing
+  worse (34.5%), not an expert better (52.5%, as with the lunge that
+  stops): a lunge into the middle of the enemy, and through it, is easy
+  to misplay.
+- **His speed +1 is no worse** (78.5%, as with the plain lunge).
+
+Not changed: the numbers are the owner's. To bring it to even, a walk of
+1 (the plain lunge's 47.2% at walk 1, from 56.4% at walk 2) is likeliest.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
