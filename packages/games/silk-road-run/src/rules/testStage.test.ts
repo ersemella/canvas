@@ -67,6 +67,28 @@ describe('the test stage', () => {
     );
     expect(() => parseTestStage({...raw, swiftStrike: {passThrough: 1}})).toThrow(/passThrough/);
     expect(() => parseTestStage({...raw, swiftStrike: {jump: 'yes'}})).toThrow(/jump/);
+    // The committed file's: one jump a turn, Haste 1, 2, 3 on turns striking running.
+    const one = createTestFight(1, {
+      ...raw,
+      swiftStrike: {
+        lunge: 1,
+        walk: 2,
+        jump: true,
+        chain: false,
+        streak: [1, 2, 3],
+        streakResets: true,
+      },
+    });
+    const d = one.units.find((u) => u.hero === 'youxia')!;
+    expect([d.jump, d.chain, d.streakResets, d.streakHaste]).toEqual([
+      true,
+      false,
+      true,
+      [1, 2, 3],
+    ]);
+    expect(ABILITIES.swiftStrike.summary(d)).toBe(
+      'Strike a unit up to 2 away in line, stepping in, or jump a unit next to you to the space past it, hitting it. When it hits, its card is Hastened 1, then 2, then 3 on turns striking running.'
+    );
     // Left out, Swift Strike is as built.
     const built = createTestFight(1, {player: [{hero: 'youxia'}], enemy: [{hero: 'wolf'}]});
     expect(movementCap(built.units.find((u) => u.hero === 'youxia')!)).toBe(3);

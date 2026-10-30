@@ -54,13 +54,15 @@ interface TestSetup {
   enemy: UnitSetup[];
   /** Wait's share for this fight (`FightState.waitShare`), or null for the rule's own. */
   wait: number | null;
-  /** Every Duelist's Swift Strike and walk (`Unit.lunge`, `.passThrough`, `.jump`, `.swiftHaste`, `.streakHaste`, `.moveCap`). */
+  /** Every Duelist's Swift Strike and walk (`Unit.lunge`, `.passThrough`, `.jump`, `.chain`, `.streakResets`, `.swiftHaste`, `.streakHaste`, `.moveCap`). */
   swiftStrike: {
     lunge?: number;
     walk?: number;
     haste?: number;
     passThrough?: boolean;
     jump?: boolean;
+    chain?: boolean;
+    streakResets?: boolean;
     streak?: number[];
   };
 }
@@ -198,7 +200,16 @@ export function parseTestStage(raw: unknown): TestSetup {
   if (v.swiftStrike !== undefined) {
     if (!isObject(v.swiftStrike)) fail('swiftStrike must be an object.');
     const s = v.swiftStrike as Record<string, unknown>;
-    onlyKeys('swiftStrike', s, ['lunge', 'walk', 'haste', 'passThrough', 'jump', 'streak']);
+    onlyKeys('swiftStrike', s, [
+      'lunge',
+      'walk',
+      'haste',
+      'passThrough',
+      'jump',
+      'chain',
+      'streakResets',
+      'streak',
+    ]);
     const small = (k: 'lunge' | 'walk' | 'haste') => {
       if (s[k] === undefined) return;
       if (!Number.isInteger(s[k]) || (s[k] as number) < 0 || (s[k] as number) > 8)
@@ -208,7 +219,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     small('lunge');
     small('walk');
     small('haste');
-    for (const k of ['passThrough', 'jump'] as const)
+    for (const k of ['passThrough', 'jump', 'chain', 'streakResets'] as const)
       if (s[k] !== undefined) {
         if (typeof s[k] !== 'boolean') fail(`swiftStrike.${k} must be true or false.`);
         swiftStrike[k] = s[k] as boolean;
@@ -287,7 +298,7 @@ export function createTestFight(
     ]),
   ];
   const units = placed.map(([u]) => u);
-  const {lunge, walk, haste, passThrough, jump, streak} = setup.swiftStrike;
+  const {lunge, walk, haste, passThrough, jump, chain, streakResets, streak} = setup.swiftStrike;
   for (const u of units)
     if (u.hero === 'youxia') {
       if (lunge !== undefined) u.lunge = lunge;
@@ -295,6 +306,8 @@ export function createTestFight(
       if (haste !== undefined) u.swiftHaste = haste;
       if (passThrough !== undefined) u.passThrough = passThrough;
       if (jump !== undefined) u.jump = jump;
+      if (chain !== undefined) u.chain = chain;
+      if (streakResets !== undefined) u.streakResets = streakResets;
       if (streak !== undefined) u.streakHaste = streak;
     }
   // The camel's road, at random (`ROUTES`), off any space a unit is set on.

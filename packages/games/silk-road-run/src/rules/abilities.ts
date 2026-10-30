@@ -1186,7 +1186,7 @@ function jump(ctx: Ctx, user: Unit, to: Hex): void {
   if (first && user.alive) struck(ctx, user);
   else user.struck = true;
   user.chaining =
-    ABILITY.swiftStrike.chain &&
+    (user.chain ?? ABILITY.swiftStrike.chain) &&
     user.alive &&
     ctx.state.phase === 'fight' &&
     jumpTargets(ctx.state, ctx.map, user, to).length > 0;
@@ -1327,7 +1327,7 @@ const swiftStrike: AbilityDef = {
     const lunge = lungeOf(user);
     const streak = streakOf(user);
     const first = jumps(user)
-      ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it, and jump again from there.`
+      ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it${(user.chain ?? ABILITY.swiftStrike.chain) ? ', and jump again from there' : ''}.`
       : lunge === 0
         ? 'Melee.'
         : passesThrough(user)

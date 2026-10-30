@@ -345,6 +345,9 @@ export interface Unit {
   passThrough?: boolean;
   /** Its own Swift Strike jumps (`ABILITY.swiftStrike.jump`; the test stage's). */
   jump?: boolean;
+  /** Its own `ABILITY.swiftStrike.chain` and `.streakResets` (the test stage's). */
+  chain?: boolean;
+  streakResets?: boolean;
   /**
    * Mid-chain of jumps (`ABILITY.swiftStrike.jump`): its turn is still its
    * own, with only another jump or Hold to choose, and the units it has
