@@ -664,7 +664,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       );
     }
     // `ABILITY.blessing.smite`: a hit, as any attack's.
-    if (u && hostile(u, unit)) {
+    if (u && hostile(u, unit) && ABILITY.blessing.shape !== 'line') {
       const damage = Math.min(damageOf(unit), u.hp);
       return (
         closing +
@@ -672,20 +672,21 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0)
       );
     }
-    // Each ally it reaches (`blessingCaught`, by its shape).
+    // Each unit it reaches (`blessingCaught`, by its shape), an enemy's a loss.
     let value = 0;
-    for (const a of blessingCaught(state, unit, unit.hex!, target!.hex!)) {
+    for (const a of blessingCaught(state, unit, unit.hex!, target!.hex!, mapOf(state))) {
       const given = blessingOf(unit, a);
       value +=
-        given.heal * (a.hero === CAMEL ? AI.camelHealthWeight : 1) +
-        lastingWorth(
-          state,
-          a,
-          (a.shield ?? 0) + given.shield,
-          (a.lastingShield ?? 0) + (ABILITY.blessing.lasts ? given.shield : 0),
-          Math.max(a.shieldUntil ?? 0, lastsThrough(state))
-        ) -
-        lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0, a.shieldUntil);
+        (hostile(a, unit) ? -1 : 1) *
+        (given.heal * (a.hero === CAMEL ? AI.camelHealthWeight : 1) +
+          lastingWorth(
+            state,
+            a,
+            (a.shield ?? 0) + given.shield,
+            (a.lastingShield ?? 0) + (ABILITY.blessing.lasts ? given.shield : 0),
+            Math.max(a.shieldUntil ?? 0, lastsThrough(state))
+          ) -
+          lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0, a.shieldUntil));
     }
     return closing + value;
   }

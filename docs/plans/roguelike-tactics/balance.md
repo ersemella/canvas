@@ -5246,6 +5246,39 @@ Not changed: the numbers are the owner's. One jump a turn with the streak
 0, 1, 2 or 1, 2 would bring it nearer, and walk 3 with one of those is the
 one to measure for the span.
 
+### Blessing in a line (2026-10-30)
+
+Asked for (the owner): Blessing fired down a straight line, through
+obstacles, at any range, healing every unit on it his power, allies and
+enemies. `ABILITY.blessing.shape` `line` (off): one of the six lines out
+from the Priest to the map's edge, through yurts and units, every unit on
+it blessed as one ally is (Humphrey too), aimed at the line's first
+space; nothing is a smite. As built per unit (the heal, its excess and 1
+more a lasting Shield, at most 3), or a heal alone (`overheal` off,
+`shield` 0). He is on no line of his own, so he can't bless himself;
+`lineSelf` (off) blesses him too whenever the line has a unit on it.
+`experiments/priest-line.mjs`, the seats and fights of "Blessing by the
+track", on today's rules. Unfinished fights 0–3.8%.
+
+| Priest | Steppe | China | Persia | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| As built | 42.7% | 40.3% | 50.9% | 42.9% | 43.8% | 47.9% | 51.3% | 3.4 |
+| Line, Blessing's Shield | 35.4% | 34.3% | 41.7% | 33.8% | 35.5% | 49.7% | 50.4% | 0.7 |
+| Line, a heal alone | **22.1%** | **18.3%** | **29.2%** | **28.5%** | **25.8%** | 48.5% | 50.3% | 1.8 |
+| **Line, Blessing's Shield, himself too (`lineSelf`)** | **44.6%** | **43.8%** | **56.6%** | 46.7% | **47.5%** | 45% | 49.7% | 4.7 |
+
+- **The line is weaker only because he loses himself**: no line holds
+  him, so he lives through 25–44% of fights (44–83% as built). Blessed
+  too (`lineSelf`), he survives 55–79% and is **2–6 points over Blessing
+  as built in every other seat** and 4 points in his own party, the best
+  Priest measured on today's rules.
+- **Enemies healed cost little**: the AI aims its lines past them (he
+  Blesses on 47–69% of his turns, walks on 24–41% to line up).
+- **The Shield is still most of his worth**: a heal alone loses 10–16
+  points more.
+- **Skill**: the line itself rewards play no more (0.7–1.8 points);
+  `lineSelf` 4.7, about as built (all ±3.5).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

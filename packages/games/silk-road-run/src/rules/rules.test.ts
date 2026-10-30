@@ -43,6 +43,7 @@ import {
   disarmed,
   lane,
   sortByHex,
+  line as lineOf,
 } from './board';
 import {
   ABILITIES,
@@ -3016,6 +3017,37 @@ describe('the Priest', () => {
     expect(ally.shield).toBeUndefined();
     hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
     expect(ally.hp).toBe(ally.maxHp - 3);
+  });
+
+  it('as a line (`shape` `line`), blesses every unit along it to the edge, enemies too', () => {
+    const blessing = ABILITY.blessing as {shape: string};
+    onTestFinished(() => {
+      blessing.shape = 'unit';
+    });
+    blessing.shape = 'line';
+    const ray = (n: number) => lineOf(mapOf(setup({}, party)), c, 0)[n - 1]!;
+    const {s, p} = ready({'p-bokh': ray(1), 'e-bokh': ray(2), 'p-storm': ray(5)});
+    const [ally, enemy, far] = ['p-bokh', 'e-bokh', 'p-storm'].map((id) => unit(s, id));
+    for (const u of [ally!, enemy!, far!]) u.hp = u.maxHp - 3;
+    const aim = ABILITIES.blessing.targets(s, mapOf(s), p, p.hex!);
+    expect(aim.some((t) => hexEquals(t.hex!, ray(1)))).toBe(true);
+    bless(s, p, ally!);
+    expect([ally!.hp, enemy!.hp, far!.hp]).toEqual([ally!.maxHp, enemy!.maxHp, far!.maxHp]);
+    expect([ally!.shield, enemy!.shield, far!.shield]).toEqual([1, 1, 1]);
+    expect(p.hp).toBe(p.maxHp);
+  });
+
+  it('as a line with `lineSelf`, blesses the Priest too, with a unit on it', () => {
+    const blessing = ABILITY.blessing as {shape: string; lineSelf: boolean};
+    onTestFinished(() => {
+      Object.assign(blessing, {shape: 'unit', lineSelf: false});
+    });
+    Object.assign(blessing, {shape: 'line', lineSelf: true});
+    const first = lineOf(mapOf(setup({}, party)), c, 0)[0]!;
+    const {s, p} = ready({'p-bokh': first});
+    p.hp = 1;
+    bless(s, p, unit(s, 'p-bokh'));
+    expect(p.hp).toBe(4);
   });
 
   describe('by the track (`mode` `track`)', () => {

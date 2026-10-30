@@ -212,6 +212,9 @@ in the support seats, in his own and played by a novice and an expert.
 lasting Shield (`.trackShield`).
 `priest-track-pure.mjs` (2026-10-30) the same without the smite (`.trackSmite`
 off), a pure support, also with `.split` 7 and 9.
+`priest-line.mjs` (2026-10-30) Blessing in a line (`.shape: 'line'`), with
+Blessing's Shield, as a heal alone, and with the Priest himself too
+(`.lineSelf`).
 
 ## Ability and stat ablation
 

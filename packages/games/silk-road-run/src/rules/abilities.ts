@@ -1008,13 +1008,36 @@ function trackTakes(state: FightState, user: Unit, u: Unit | undefined): u is Un
 }
 
 /**
+ * A Blessing's line (`ABILITY.blessing.shape` `line`) from `from` toward
+ * `target`: every space straight out to the map's edge, through anything.
+ */
+export function blessingLine(map: MapData, from: Hex, target: Hex): Hex[] {
+  const dir = hexDirectionTo(from, target);
+  return dir === null ? [] : lineFrom(map, from, dir);
+}
+
+/**
  * The allies a Blessing from `from` aimed at `target` reaches: the one on
  * `target`, or with `ABILITY.blessing.shape` `aura` every ally within
  * `radius` of the Priest.
  */
-export function blessingCaught(state: FightState, user: Unit, from: Hex, target: Hex): Unit[] {
+export function blessingCaught(
+  state: FightState,
+  user: Unit,
+  from: Hex,
+  target: Hex,
+  map?: MapData
+): Unit[] {
   const {shape, radius} = ABILITY.blessing;
   if (shape === 'unit') return [unitAt(state, target)].filter(blessingTakes(user));
+  if (shape === 'line') {
+    const caught = blessingLine(map!, from, target)
+      .map((h) => unitAt(state, h))
+      .filter(
+        (u): u is Unit => u !== undefined && u.alive && (ABILITY.blessing.camel || u.hero !== CAMEL)
+      );
+    return ABILITY.blessing.lineSelf && caught.length > 0 ? [user, ...caught] : caught;
+  }
   return state.units.filter(
     (u) =>
       u.side === user.side &&
@@ -1045,9 +1068,14 @@ const blessing: AbilityDef = {
   get targetsUnit() {
     return ABILITY.blessing.shape === 'unit';
   },
+  get area() {
+    return ABILITY.blessing.shape === 'line' ? blessingLine : undefined;
+  },
   get bothSides() {
     return (
-      ABILITY.blessing.smite || (ABILITY.blessing.mode === 'track' && ABILITY.blessing.trackSmite)
+      ABILITY.blessing.shape === 'line' ||
+      ABILITY.blessing.smite ||
+      (ABILITY.blessing.mode === 'track' && ABILITY.blessing.trackSmite)
     );
   },
   get range() {
@@ -1070,9 +1098,11 @@ const blessing: AbilityDef = {
       return `${ABILITY.blessing.trackSmite ? 'A unit' : 'An ally'} within ${range}${self ? ', yourself too' : ''}, by its card: an ally’s under ${split} slots on healed${smites}, ${by}.${rest}`;
     }
     const who =
-      shape === 'aura'
-        ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
-        : `An ally within ${range}${self ? ', yourself too' : ''}`;
+      shape === 'line'
+        ? 'Every unit in a straight line out from you, through anything, enemies too'
+        : shape === 'aura'
+          ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
+          : `An ally within ${range}${self ? ', yourself too' : ''}`;
     const until = ABILITY.blessing.lasts
       ? `until spent, at most ${ABILITY.blessing.cap} on a unit`
       : `for ${RULES.durations.turn} slots`;
@@ -1091,7 +1121,12 @@ const blessing: AbilityDef = {
         .filter((u): u is Unit => trackTakes(state, user, u))
         .map((u) => ({hex: u.hex!}));
     if (ABILITY.blessing.shape === 'aura')
-      return blessingCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
+      return blessingCaught(state, user, from, from, map).length > 0 ? [{hex: {...from}}] : [];
+    // A line: aimed at its first space, any of the six with a unit on it.
+    if (ABILITY.blessing.shape === 'line')
+      return DIRECTIONS.map((dir) => lineFrom(map, from, dir))
+        .filter((l) => l.length > 0 && blessingCaught(state, user, from, l[0]!, map).length > 0)
+        .map((l) => ({hex: {...l[0]!}}));
     return spacesWithin(map, from, ABILITY.blessing.range)
       .map((h) => unitAt(state, h))
       .filter(blessingTakes(user))
@@ -1112,12 +1147,12 @@ const blessing: AbilityDef = {
       }
       return;
     }
-    if (u && u.side !== user.side) {
+    if (u && u.side !== user.side && ABILITY.blessing.shape !== 'line') {
       log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
       hit(ctx, user, u, 'The smiting');
       return;
     }
-    for (const a of blessingCaught(ctx.state, user, user.hex!, target.hex!)) {
+    for (const a of blessingCaught(ctx.state, user, user.hex!, target.hex!, ctx.map)) {
       const given = blessingOf(user, a);
       log(ctx, `${unitName(user)} blesses ${unitName(a)}.`);
       heal(ctx, a, given.heal, user);

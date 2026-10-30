@@ -581,7 +581,11 @@ export const ABILITY = {
    * Switches for a Shield in place of the heal (balance.md, "Blessing as
    * a Shield"), off: `heal` false, no heal, the ally Shielded the Priest's
    * power (and `shield` more); `shape` `aura`, every ally within `radius`
-   * of the Priest at once, in place of one within `range`.
+   * of the Priest at once, in place of one within `range`; `shape` `line`
+   * (the owner, 2026-10-30; off), every unit on one of the six straight
+   * lines out from him to the map's edge, through yurts, units and all,
+   * allies and enemies alike, each blessed as one ally would be; with
+   * `lineSelf` (off) the Priest himself too.
    * `mode` `track` (the owner's idea, 2026-10-30; balance.md, "Blessing by
    * the track"; off): no Shield, a unit within `range` healed or hit by how
    * far its card lies from the current slot, `d` slots on. Below `split`
@@ -600,11 +604,12 @@ export const ABILITY = {
     split: 5 as number,
     trackShield: false as boolean,
     trackSmite: true as boolean,
+    lineSelf: false as boolean,
     lasts: true as boolean,
     cap: 3 as number,
     range: 2 as number,
     heal: true as boolean,
-    shape: 'unit' as 'unit' | 'aura',
+    shape: 'unit' as 'unit' | 'aura' | 'line',
     radius: 1 as number,
     smite: false as boolean,
     self: true as boolean,
