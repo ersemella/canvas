@@ -5053,6 +5053,40 @@ point). Unfinished fights 0–1.3%.
 - Untried: `bands` with the Persian seat's strength trimmed (range 2, or
   the smite at half power), and the Steppe and China seats given more.
 
+### Blessing by the track as a pure support (2026-10-30)
+
+Asked for (the owner): the track Blessing with its excess as Shield, but
+no smite, a pure support. `ABILITY.blessing.trackSmite` off (on as
+measured before): no enemy taken. `experiments/priest-track-pure.mjs`,
+`bands`, `trackShield`, range 3, the seats and fights of "Blessing by the
+track", with the smite and as built run again on today's rules (the
+Barbarian's Leap since, which moved the rows with the Priest's seat in
+Byzantium's party; the others' rows came out the same to the point).
+Then the pure support with `split` 7 and 9 (9: every ally acting before
+his next turn healed) in the other supports' seats. Unfinished fights
+0–3.8%.
+
+| Priest | Steppe | China | Persia | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| As built | 42.7% | 40.3% | 50.9% | 42.9% | 43.8% | 47.9% | 51.3% | 3.4 |
+| Track, with the smite | 40.5% | 37.8% | 60.1% | 50.4% | 48.3% | 46.3% | 52% | 5.7 |
+| **Track, pure support** | **28.5%** | **26%** | **32.5%** | **34.1%** | **31.6%** | 48.9% | 52.9% | 4 |
+| Pure support, `split` 7 | 31.6% | 30.5% | 47% | | | | | |
+| Pure support, `split` 9 | 35.6% | 40.8% | 49% | | | | | |
+
+- **The smite is most of what the Shield left**: without it he loses
+  12–28 points in every seat, 16.7 points of score. The two halves only
+  work together: the smite alone with no Shield was as weak (40.6%,
+  "Blessing by the track").
+- **Much of the loss is idle turns**: with no smite an ally acting late has
+  nothing from him, so he Holds on 8–20% of his turns (Blesses on 54–66%).
+  A later split gives back much of it (`split` 9: Holds 3–13%, Blesses
+  69–82%), but still 2–9 points under Blessing as built, which reaches any
+  ally within 2 and gives Shield 1 on top.
+- **His own party is weaker with any Blessing since the Leap** (as built
+  42.9% kept in its own, 50.4% before), the Storm Caller beside the
+  Cataphract and the Barbarian 67%. Not traced.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

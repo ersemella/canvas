@@ -1004,7 +1004,7 @@ function trackTakes(state: FightState, user: Unit, u: Unit | undefined): u is Un
   )
     return false;
   const given = trackBlessing(state, user, u);
-  return u.side === user.side ? given.heal > 0 : given.hit > 0;
+  return u.side === user.side ? given.heal > 0 : ABILITY.blessing.trackSmite && given.hit > 0;
 }
 
 /**
@@ -1040,13 +1040,15 @@ const blessing: AbilityDef = {
   name: 'Blessing',
   kind: 'support',
   get damages() {
-    return ABILITY.blessing.mode === 'track';
+    return ABILITY.blessing.mode === 'track' && ABILITY.blessing.trackSmite;
   },
   get targetsUnit() {
     return ABILITY.blessing.shape === 'unit';
   },
   get bothSides() {
-    return ABILITY.blessing.smite || ABILITY.blessing.mode === 'track';
+    return (
+      ABILITY.blessing.smite || (ABILITY.blessing.mode === 'track' && ABILITY.blessing.trackSmite)
+    );
   },
   get range() {
     return ABILITY.blessing.shape === 'aura' ? 0 : ABILITY.blessing.range;
@@ -1064,7 +1066,8 @@ const blessing: AbilityDef = {
       const rest = ABILITY.blessing.trackShield
         ? ` What it can’t heal becomes Shield, ${ABILITY.blessing.lasts ? `until spent, at most ${ABILITY.blessing.cap} on a unit` : `for ${RULES.durations.turn} slots`}.`
         : '';
-      return `A unit within ${range}${self ? ', yourself too' : ''}, by its card: an ally’s under ${split} slots on healed, an enemy’s over ${split} hit, ${by}.${rest}`;
+      const smites = ABILITY.blessing.trackSmite ? `, an enemy’s over ${split} hit` : '';
+      return `${ABILITY.blessing.trackSmite ? 'A unit' : 'An ally'} within ${range}${self ? ', yourself too' : ''}, by its card: an ally’s under ${split} slots on healed${smites}, ${by}.${rest}`;
     }
     const who =
       shape === 'aura'

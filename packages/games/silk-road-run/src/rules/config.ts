@@ -586,13 +586,15 @@ export const ABILITY = {
    * from `split`, half of it (rounded down) at 1. The Priest himself, his
    * card at the current slot, is healed. With `trackShield` (the owner,
    * 2026-10-30; off) the heal beyond the ally's missing health becomes
-   * Shield, lasting with `lasts`, a unit holding at most `cap`.
+   * Shield, lasting with `lasts`, a unit holding at most `cap`. With
+   * `trackSmite` off (the owner, 2026-10-30) no enemy is hit: a pure support.
    */
   blessing: {
     mode: 'heal' as 'heal' | 'track',
     scale: 'bands' as 'cap' | 'bands',
     split: 5 as number,
     trackShield: false as boolean,
+    trackSmite: true as boolean,
     lasts: true as boolean,
     cap: 3 as number,
     range: 2 as number,

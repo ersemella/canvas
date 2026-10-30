@@ -2972,6 +2972,14 @@ describe('the Priest', () => {
       expect([ally.shield, ally.lastingShield]).toEqual([3, 3]);
     });
 
+    it('with `trackSmite` off, takes no enemy, however late its card', () => {
+      (ABILITY.blessing as {trackSmite: boolean}).trackSmite = false;
+      const {s, p, ally, enemy} = cards(2, 8);
+      expect(isTarget(s, p, ally.hex!)).toBe(true);
+      expect(isTarget(s, p, enemy.hex!)).toBe(false);
+      expect(ABILITIES.blessing.bothSides).toBe(false);
+    });
+
     it('capped, 1 a slot from the split, at most his power with his Empower', () => {
       blessing.scale = 'cap';
       const {s, p, ally, enemy} = cards(3, 7);
