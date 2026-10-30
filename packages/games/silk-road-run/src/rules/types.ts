@@ -58,6 +58,8 @@ export type AbilityId =
   | 'blessing'
   | 'reave'
   | 'axeThrow'
+  // The Barbarian's since 2026-10-30, in place of Axe Throw.
+  | 'leap'
   | 'charge'
   // The Cyclops's (owner, 2026-10-28).
   | 'smash'
@@ -396,8 +398,8 @@ export interface LogEntry {
   text: string;
 }
 
-/** How a unit came to enter a hex: walked, thrown, or swapped places by a Grapple's throw. */
-export type Motion = 'walk' | 'throw' | 'swap' | 'push' | 'pull';
+/** How a unit came to enter a hex: walked, thrown, or swapped places by a Grapple's throw, or leapt (the Barbarian's Leap). */
+export type Motion = 'walk' | 'throw' | 'swap' | 'push' | 'pull' | 'leap';
 
 /** Something that happened on the board, in the order the rules resolved it. */
 export type FightEvent =

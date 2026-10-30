@@ -1,5 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, onTestFinished} from 'vitest';
 import {
+  hexDirectionTo,
   hexDistance,
   hexEquals,
   hexKey,
@@ -40,6 +41,7 @@ import {
   isStunned,
   disarmed,
   lane,
+  sortByHex,
 } from './board';
 import {
   ABILITIES,
@@ -128,7 +130,16 @@ import {
   placeCard,
   simultaneousOrder,
 } from './track';
-import type {CardId, DraftPick, FightState, HeroId, PassiveId, TurnInput, Unit} from './types';
+import type {
+  AbilityId,
+  CardId,
+  DraftPick,
+  FightState,
+  HeroId,
+  PassiveId,
+  TurnInput,
+  Unit,
+} from './types';
 
 /**
  * A space written as the old board of rows' column and row (pointy-top,
@@ -1683,27 +1694,82 @@ describe('the Barbarian', () => {
     return h;
   };
   /**
-   * A fight with no yurts and the Barbarian at `c` to act; with `reave`,
-   * carrying Reave in place of Axe Throw, as first built.
+   * A fight with no yurts and the Barbarian at `c` to act, carrying `kit`
+   * (Reave, as first built, unless given; null for its own, Leap).
    */
-  const ready = (placements: Record<string, Hex>, who = 'p-varangian', reave = true) => {
+  const ready = (
+    placements: Record<string, Hex>,
+    who = 'p-varangian',
+    kit: AbilityId | null = 'reave'
+  ) => {
     const s = setup({[who]: c, ...placements}, party);
     s.tiles = {};
     const b = unit(s, who);
-    if (reave) b.loadout = {abilities: ['reave', 'hold']};
+    if (kit) b.loadout = {abilities: [kit, 'hold']};
     b.slot = s.currentSlot;
     s.awaiting = b.id;
     return {s, b};
   };
   const throwing = (placements: Record<string, Hex>, who = 'p-varangian') =>
-    ready(placements, who, false);
+    ready(placements, who, 'axeThrow');
+  const leaping = (placements: Record<string, Hex>, who = 'p-varangian') =>
+    ready(placements, who, null);
   const hp = (s: FightState, id: string) => unit(s, id).maxHp - unit(s, id).hp;
+  /** Leap's landing setting out along `dir`, and the two spaces in front of it. */
+  const landing = (dir: number) => hexNeighbor(hexNeighbor(c, dir), dir + 1);
+  const front = (dir: number) => [
+    hexNeighbor(landing(dir), dir),
+    hexNeighbor(landing(dir), dir + 1),
+  ];
 
-  it('has speed 1, power 3, defence 2, Axe Throw, and is on the roster', () => {
-    const {b} = throwing({});
+  it('has speed 1, power 3, defence 2, Leap, and is on the roster', () => {
+    const {b} = leaping({});
     expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 3, 2, healthOf(2)]);
-    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['axeThrow', 'hold']);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['leap', 'hold']);
     expect(ROSTER).toContain('varangian');
+  });
+
+  it('Leap lands on any free space exactly 2 away off its six lines, over yurts and units', () => {
+    const {s, b} = leaping({'p-modao': hexNeighbor(c, 0), 'e-modao': landing(2)});
+    s.tiles = {[hexKey(hexNeighbor(c, 1))]: 'obstacle', [hexKey(landing(4))]: 'obstacle'};
+    const targets = ABILITIES.leap.targets(s, mapOf(s), b, b.hex!);
+    // Not the one a unit stands on, nor the yurt; over the ally and the yurt next to it.
+    expect(
+      sortByHex(
+        targets.map((t) => t.hex!),
+        (h) => h
+      )
+    ).toEqual(sortByHex([0, 1, 3, 5].map(landing), (h) => h));
+    for (const t of targets) {
+      expect(hexDistance(t.hex!, c)).toBe(2);
+      expect(hexDirectionTo(c, t.hex!)).toBeNull();
+    }
+    b.statuses.push({kind: 'immobilized'});
+    expect(ABILITIES.leap.targets(s, mapOf(s), b, b.hex!)).toEqual([]);
+  });
+
+  it('Leap lands there and hits every unit on the two spaces in front, allies too, and no one else', () => {
+    const [a, d] = front(0);
+    const {s, b} = leaping({
+      'e-modao': a!,
+      'p-modao': d!,
+      'e-mangudai': hexNeighbor(landing(0), 3),
+    });
+    s.events = [];
+    applyTurn(s, b, {action: {ability: 'leap', target: {hex: landing(0)}}});
+    expect(b.hex).toEqual(landing(0));
+    expect([hp(s, 'e-modao'), hp(s, 'p-modao'), hp(s, 'e-mangudai')]).toEqual([3, 3, 0]);
+    expect(s.events!.some((e) => e.kind === 'step' && e.how === 'leap')).toBe(true);
+  });
+
+  it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {
+    const {s, b} = leaping({'p-modao': front(1)[0]!, 'p-mangudai': at(0, 8)}, 'e-varangian');
+    b.controller = 'ai';
+    const turn = chooseAiTurn(s, b);
+    expect(turn.action.ability).toBe('leap');
+    const m = unit(s, 'p-modao');
+    const threat = threatsTo(s, mapOf(s), m).find((t) => t.enemyId === b.id)!;
+    expect(threatDamage([threat], s, m)).toBe(b.power);
   });
 
   it('Axe Throw reaches any unit within 3 on its six lines, over yurts and units in between', () => {

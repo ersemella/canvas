@@ -345,6 +345,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // The leap's arc, and the great axe coming down at its end.
+  leap: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '...+.+......',
+      '.+.......#..',
+      '........###.',
+      '+......####.',
+      '......=###..',
+      '+....=..#...',
+      '....=.......',
+      '+..=........',
+      '..=.........',
+      '............',
+      '............',
+    ],
+  },
   // A knotted club, its studs the accent.
   smash: {
     kind: 'attack',

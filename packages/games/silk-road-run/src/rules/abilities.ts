@@ -1716,6 +1716,63 @@ const axeThrow: AbilityDef = {
   },
 };
 
+/**
+ * Leap's landing setting out along direction `dir`: one space that way and
+ * one turned a sixth to the left, 2 away and off the six straight lines.
+ */
+const leapLanding = (from: Hex, dir: number): Hex => hexNeighbor(hexNeighbor(from, dir), dir + 1);
+
+/** The direction Leap sets out in from `from` to land on `landing`, or null if it isn't one of its six. */
+function leapDirection(from: Hex, landing: Hex): number | null {
+  const dir = DIRECTIONS.find((d) => hexEquals(leapLanding(from, d), landing));
+  return dir ?? null;
+}
+
+/**
+ * The two spaces Leap strikes landing on `landing` from `from`: the two
+ * next to it straight ahead, either side of the way it flew, yurts left out.
+ */
+export function leapArea(map: MapData, from: Hex, landing: Hex): Hex[] {
+  const dir = leapDirection(from, landing);
+  if (dir === null) return [];
+  return [dir, dir + 1].map((d) => hexNeighbor(landing, d)).filter((h) => walkable(map, h));
+}
+
+/**
+ * Leap (owner, 2026-10-30), the Barbarian's in place of Axe Throw: he
+ * jumps over yurts and units to a free space exactly 2 away that isn't on
+ * one of his six straight lines, and brings his axe down on the two spaces
+ * in front of where he lands, every unit there hit for his power, allies
+ * and the camel too. An Immobilized Barbarian can't leap.
+ */
+const leap: AbilityDef = {
+  id: 'leap',
+  name: 'Leap',
+  kind: 'attack',
+  stepsTo: true,
+  summary: () =>
+    'Leap over anything to a free space 2 away, off your straight lines. Hits every unit on the two spaces in front of where you land, allies included.',
+  area: leapArea,
+  targets(state, map, user, from) {
+    if (isImmobilized(user)) return [];
+    const out: ActionTarget[] = [];
+    for (const dir of DIRECTIONS) {
+      const hex = leapLanding(from, dir);
+      if (walkable(map, hex) && !unitAt(state, hex) && mayEndOn(map, user, hex)) out.push({hex});
+    }
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const area = leapArea(ctx.map, user.hex!, target.hex!);
+    log(ctx, `${unitName(user)} leaps.`);
+    enterHex(ctx, user, target.hex!, 'leap');
+    // Hail where it lands can fell it.
+    if (!user.alive || !user.hex) return;
+    const caught = area.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
+    for (const u of caught) hit(ctx, user, u, 'The axe');
+  },
+};
+
 // ─── Wolf ────────────────────────────────────────────────────────────────────
 
 const bite: AbilityDef = {
@@ -1981,6 +2038,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   blessing,
   reave,
   axeThrow,
+  leap,
   smash,
   boulder,
   gore,

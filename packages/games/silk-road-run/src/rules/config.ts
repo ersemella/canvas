@@ -271,12 +271,15 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's damage hero,
    * a Varangian guardsman with a great axe, slow and hard-hitting. Speed 1,
-   * defence 2 (health 6) and power 3 are the owner's. Axe Throw (owner,
-   * later 2026-10-28; `ABILITY.axeThrow`): any unit within 3 in a straight
-   * line, over whatever is in between, hit and Pushed 1; in place of Reave
-   * (the axe swung through three spaces next to it, or thrown down a line
-   * of three and left lying where it lands; balance.md, "All twelve
-   * heroes": 26–39% in the damage seats), kept for measuring.
+   * defence 2 (health 6) and power 3 are the owner's. Leap (owner,
+   * 2026-10-30): over anything to a free space 2 away off his straight
+   * lines, hitting the two spaces in front of where he lands. In place of
+   * Axe Throw (owner, later 2026-10-28; `ABILITY.axeThrow`: any unit within
+   * 3 in a straight line, over whatever is in between, hit and Pushed 1),
+   * itself in place of Reave (the axe swung through three spaces next to
+   * it, or thrown down a line of three and left lying where it lands;
+   * balance.md, "All twelve heroes": 26–39% in the damage seats); both
+   * kept for measuring.
    */
   varangian: {
     name: 'Barbarian',
@@ -284,7 +287,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 2,
     power: 3,
-    abilities: ['axeThrow', 'hold'],
+    abilities: ['leap', 'hold'],
   },
   /**
    * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a

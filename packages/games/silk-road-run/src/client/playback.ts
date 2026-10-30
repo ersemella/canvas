@@ -26,7 +26,7 @@ export function eventSeconds(e: RecordedEvent, last: boolean): number {
       // The last event is the player's own turn coming up: nothing to watch.
       return last ? 0 : 0.4;
     case 'step':
-      if (e.how === 'throw') return 0.32;
+      if (e.how === 'throw' || e.how === 'leap') return 0.32;
       return Math.max(WALK_SECONDS, 0.08 * hexDistance(e.from, e.to));
     case 'action':
       if (e.ability === 'hold') return 0;

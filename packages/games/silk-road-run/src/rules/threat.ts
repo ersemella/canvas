@@ -96,6 +96,17 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           if (!board.has(k)) break;
           mark(hexes, k, power);
         }
+    // Leap: the two spaces in front of each free landing, unless it can't move.
+    if (has('leap') && !isImmobilized(e))
+      AXIAL.forEach(([aq, ar], i) => {
+        const [bq, br] = AXIAL[(i + 1) % 6]!;
+        const lq = fq + aq + bq;
+        const lr = fr + ar + br;
+        const tile = board.get(id(lq, lr));
+        if (tile === undefined || blocks(tile) || occupied.has(id(lq, lr))) return;
+        mark(hexes, id(lq + aq, lr + ar), power);
+        mark(hexes, id(lq + bq, lr + br), power);
+      });
     // A charge (Stomp's first build, Gore): the spaces it walks into, `steps` each way.
     const charge = (steps: number) => {
       if (isImmobilized(e)) return;

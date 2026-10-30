@@ -496,6 +496,7 @@ const TRAITS: Partial<Record<AbilityId, Trait[]>> = {
   longshot: ['ranged', 'delays', 'single'],
   blessing: ['heals', 'single'],
   axeThrow: ['melee', 'ranged', 'single'],
+  leap: ['melee'],
   charge: ['melee'],
   reave: ['melee', 'ranged'],
 };

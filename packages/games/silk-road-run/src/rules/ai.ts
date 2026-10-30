@@ -247,6 +247,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('reave') && inLine && d <= ABILITY.reave.throwRange) return true;
     // Axe Throw: a line of `range`, over everything.
     if (has('axeThrow') && inLine && d <= ABILITY.axeThrow.range) return true;
+    // Leap: the two spaces in front of a landing, 3 away off its lines.
+    if (has('leap') && d === 3 && !inLine) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -498,9 +500,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     ? input.move[input.move.length - 1]!
     : plan
       ? plan.end
-      : endsElsewhere(input.action.ability) && target?.to
-        ? target.to
-        : unit.hex!;
+      : input.action.ability === 'leap'
+        ? target!.hex!
+        : endsElsewhere(input.action.ability) && target?.to
+          ? target.to
+          : unit.hex!;
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
@@ -517,7 +521,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const caughtBy =
     ability === 'gale'
       ? hexNeighbors(target!.hex!)
-      : ability === 'cleave' || ability === 'reave'
+      : ability === 'cleave' || ability === 'reave' || ability === 'leap'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!)
         : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {
@@ -753,12 +757,14 @@ function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
   const here = standing(state, unit);
   const guess = (input: TurnInput) => {
     let value = guessValue(state, unit, input, hunting);
-    // Where a walk or Skirmish's step ends: stood there for a moment, and put back.
+    // Where a walk, Skirmish's step or a Leap ends: stood there for a moment, and put back.
     const to = input.move?.length
       ? input.move[input.move.length - 1]
-      : endsElsewhere(input.action.ability)
-        ? input.action.target?.to
-        : undefined;
+      : input.action.ability === 'leap'
+        ? input.action.target?.hex
+        : endsElsewhere(input.action.ability)
+          ? input.action.target?.to
+          : undefined;
     if (to) {
       unit.hex = to;
       try {
@@ -1181,13 +1187,31 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
   return [0, 1, 2, 3, 4, 5].some((d) => firstInLane(state, map, at, d, me) === target) ? 0 : 1;
 }
 
+/**
+ * How far a Barbarian on `at` is from Leaping onto `target`: 0 three spaces
+ * away off its six lines (in front of a landing), otherwise the spaces to
+ * the nearest such.
+ */
+function leapGap(at: Hex, target: Hex): number {
+  const d = hexDistance(at, target);
+  const dq = target.q - at.q;
+  const dr = target.r - at.r;
+  const inLine = dq === 0 || dr === 0 || dq === -dr;
+  if (d === 3) return inLine ? 1 : 0;
+  return Math.abs(d - 3);
+}
+
 /** `quarryGap` were `me` standing on `at`. */
 function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number {
   if (me.hero === CAMEL) return 0;
   // Its axe thrown (Reave): to a space on or next to it first.
   if (me.axe) return Math.max(0, hexDistance(at, me.axe) - 1) + AI.axeOut;
   const gap = (target: Unit) =>
-    isRanged(me) ? shotGap(state, me, at, target) : hexDistance(at, target.hex!);
+    isRanged(me)
+      ? shotGap(state, me, at, target)
+      : kitOf(me).includes('leap')
+        ? leapGap(at, target.hex!)
+        : hexDistance(at, target.hex!);
   const camel = hunting ? camelOf(state) : undefined;
   if (camel?.alive && camel.hex) return gap(camel);
   let nearest = Infinity;

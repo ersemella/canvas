@@ -998,8 +998,8 @@ export function enterHex(
     const caster = ctx.state.units.find((u) => u.id === source);
     if (caster) hit(ctx, caster, unit, 'The hail', 0);
   }
-  // Moved onto scorched ground, not walking there: it burns (owner, 2026-10-28).
-  if (how !== 'walk') scorch(ctx, unit);
+  // Moved onto scorched ground, not walking or leaping there: it burns (owner, 2026-10-28).
+  if (how !== 'walk' && how !== 'leap') scorch(ctx, unit);
   // Fire burns whoever enters it, walking or Moved (owner, 2026-10-28).
   burn(ctx, unit, h);
   pickUpFan(ctx, unit);
