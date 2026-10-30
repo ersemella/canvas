@@ -533,8 +533,8 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         ? target!.hex!
         : endsElsewhere(input.action.ability) && target?.to
           ? target.to
-          : input.action.ability === 'swiftStrike' && target?.to
-            ? target.to
+          : input.action.ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
+            ? target.hex
             : input.action.ability === 'swiftStrike' && target?.hex
               ? lungeEnd(unit.hex!, target.hex)
               : unit.hex!;
@@ -556,7 +556,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       ? hexNeighbors(target!.hex!)
       : ability === 'cleave' || ability === 'reave' || ability === 'leap'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!)
-        : ability === 'swiftStrike' && target?.to
+        : ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
           ? lungeCaught(state, unit.hex!, target)
           : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {

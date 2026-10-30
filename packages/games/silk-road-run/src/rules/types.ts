@@ -342,6 +342,8 @@ export interface Unit {
    * `"swiftStrike"`).
    */
   lunge?: number;
+  passThrough?: boolean;
+  swiftHaste?: number;
   streakHaste?: number[];
   moveCap?: number;
   /**

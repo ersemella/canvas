@@ -1141,6 +1141,10 @@ export function lungeEnd(from: Hex, to: Hex): Hex {
 
 /** `u`'s Swift Strike lunge: its own (the test stage's), else `ABILITY.swiftStrike.lunge`. */
 export const lungeOf = (u: Unit): number => u.lunge ?? ABILITY.swiftStrike.lunge;
+/** Whether `u`'s lunge passes through units: its own (the test stage's), else `ABILITY.swiftStrike.passThrough`. */
+export const passesThrough = (u: Unit): boolean => u.passThrough ?? ABILITY.swiftStrike.passThrough;
+/** `u`'s flat Swift Strike Haste: its own, else `ABILITY.swiftStrike.haste`. */
+const hasteOf = (u: Unit): number => u.swiftHaste ?? ABILITY.swiftStrike.haste;
 /** `u`'s Swift Strike streak: its own, else `ABILITY.swiftStrike.streak`. */
 const streakOf = (u: Unit): number[] => u.streakHaste ?? ABILITY.swiftStrike.streak;
 
@@ -1174,17 +1178,17 @@ function swiftStrikeTargets(
       }
       if (stopsWalk(state, user, h)) limit = Math.min(limit, i + 1);
     }
-    if (ABILITY.swiftStrike.passThrough) out.push(...passTargets(state, map, user, way, reach));
+    if (passesThrough(user)) out.push(...passTargets(state, map, user, way, reach));
   }
   return sortByHex(out, (t) => t.hex!);
 }
 
 /**
- * A lunge through units (`ABILITY.swiftStrike.passThrough`) along `way`:
- * landing on a free space up to `reach` out with a unit on a space before
- * it, each unit passed through hit, then the unit in front, if any. Aimed
- * at the first unit passed, `to` the landing space. Yurts stop it; hail on
- * a free space it would cross does too (it ends a walk).
+ * A lunge through units (`passesThrough`) along `way`: landing on a free
+ * space up to `reach` out with a unit on a space before it, each unit
+ * passed through hit, then the unit in front, if any. Aimed at the landing
+ * space, so a free space aims it through and a unit aims it at that unit.
+ * Yurts stop it; hail on a free space it would cross does too (it ends a walk).
  */
 function passTargets(
   state: FightState,
@@ -1194,32 +1198,33 @@ function passTargets(
   reach: number
 ): ActionTarget[] {
   const out: ActionTarget[] = [];
-  let first: Hex | undefined;
+  let passed = false;
   for (let i = 0; i < reach && i < way.length; i++) {
     const h = way[i]!;
     const u = unitAt(state, h);
     if (u && u !== user) {
-      first ??= h;
+      passed = true;
       continue;
     }
-    if (first && mayEndOn(map, user, h)) out.push({hex: first, to: h});
+    if (passed && mayEndOn(map, user, h)) out.push({hex: h});
     if (stopsWalk(state, user, h)) break;
   }
   return out;
 }
 
 /**
- * The spaces of the units a lunge from `from` at `target` hits: those
- * passed through on the way to `target.to`, and the one in front of it
- * (`passTargets`); without a `to`, the unit aimed at. For the AI's guess.
+ * The spaces of the units a Swift Strike from `from` at `target` hits: the
+ * unit aimed at, or, aimed at a free space (`passTargets`), those passed
+ * through on the way there and the one in front of it.
  */
 export function lungeCaught(state: FightState, from: Hex, target: ActionTarget): Hex[] {
-  if (!target.to) return [target.hex!];
-  const dir = hexDirectionTo(from, target.to)!;
+  const to = target.hex!;
+  if (unitAt(state, to)) return [to];
+  const dir = hexDirectionTo(from, to)!;
   const out: Hex[] = [];
-  for (let at = hexNeighbor(from, dir); !hexEquals(at, target.to); at = hexNeighbor(at, dir))
+  for (let at = hexNeighbor(from, dir); !hexEquals(at, to); at = hexNeighbor(at, dir))
     if (unitAt(state, at)) out.push(at);
-  const front = hexNeighbor(target.to, dir);
+  const front = hexNeighbor(to, dir);
   if (unitAt(state, front)) out.push(front);
   return out;
 }
@@ -1230,7 +1235,7 @@ export function lungeCaught(state: FightState, from: Hex, target: ActionTarget):
  */
 export function swiftStrikeHaste(u: Unit, n: number): number {
   const streak = streakOf(u);
-  return streak.length === 0 ? ABILITY.swiftStrike.haste : streak[Math.min(n, streak.length) - 1]!;
+  return streak.length === 0 ? hasteOf(u) : streak[Math.min(n, streak.length) - 1]!;
 }
 
 /**
@@ -1251,17 +1256,29 @@ const swiftStrike: AbilityDef = {
   summary: (user) => {
     const lunge = lungeOf(user);
     const streak = streakOf(user);
-    const first = lunge > 0 ? `Lunge up to ${lunge} straight and strike the first unit.` : 'Melee.';
+    const first =
+      lunge === 0
+        ? 'Melee.'
+        : passesThrough(user)
+          ? `Lunge up to ${lunge} straight and strike the first unit, or through units to a free space, hitting each passed and the one in front.`
+          : `Lunge up to ${lunge} straight and strike the first unit.`;
     const then =
       streak.length > 0
-        ? `When it hits, its card is Hastened ${streak.join(', then ')} on turns striking running.`
-        : `When it hits, its card is Hastened ${ABILITY.swiftStrike.haste}.`;
-    return `${first} ${then}`;
+        ? ` When it hits, its card is Hastened ${streak.join(', then ')} on turns striking running.`
+        : hasteOf(user) > 0
+          ? ` When it hits, its card is Hastened ${hasteOf(user)}.`
+          : '';
+    return `${first}${then}`;
+  },
+  /** Aimed through units at a free space: an enemy it would hit there, else the first unit. */
+  aimedAt(state, user, target) {
+    const caught = lungeCaught(state, user.hex!, target).map((h) => unitAt(state, h)!);
+    return caught.find((u) => hostile(u, user)) ?? caught[0];
   },
   targetsUnit: true,
   targets: swiftStrikeTargets,
   resolve(ctx, user, target) {
-    if (target.to) return lungeThrough(ctx, user, target.to);
+    if (!unitAt(ctx.state, target.hex!)) return lungeThrough(ctx, user, target.hex!);
     const goal = target.hex!;
     const dir = hexDirectionTo(user.hex!, goal)!;
     if (hexDistance(user.hex!, goal) > 1) {

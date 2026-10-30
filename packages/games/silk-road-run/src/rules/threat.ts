@@ -9,7 +9,7 @@
 import {ABILITY, AI, ARMOURED} from './config';
 import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
-import {lungeOf} from './abilities';
+import {lungeOf, passesThrough} from './abilities';
 import {blocks, tileAt} from './map';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
@@ -80,7 +80,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (has('snapShot') || has('boulder')) lanes(fq, fr, power);
     // Swift Strike's lunge: the first unit in line, `lunge` free spaces out.
     if (has('swiftStrike') && lungeOf(e) > 0 && !isImmobilized(e)) {
-      if (!ABILITY.swiftStrike.passThrough) lanes(fq, fr, power, lungeOf(e) + 1);
+      if (!passesThrough(e)) lanes(fq, fr, power, lungeOf(e) + 1);
       // Through units: its lines to `lunge` + 1, stopped only by yurts.
       else
         for (const [dq, dr] of AXIAL)

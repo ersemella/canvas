@@ -54,8 +54,14 @@ interface TestSetup {
   enemy: UnitSetup[];
   /** Wait's share for this fight (`FightState.waitShare`), or null for the rule's own. */
   wait: number | null;
-  /** Every Duelist's Swift Strike lunge and streak and its walk (`Unit.lunge`, `.streakHaste`, `.moveCap`). */
-  swiftStrike: {lunge?: number; walk?: number; streak?: number[]};
+  /** Every Duelist's Swift Strike and walk (`Unit.lunge`, `.passThrough`, `.swiftHaste`, `.streakHaste`, `.moveCap`). */
+  swiftStrike: {
+    lunge?: number;
+    walk?: number;
+    haste?: number;
+    passThrough?: boolean;
+    streak?: number[];
+  };
 }
 
 /** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
@@ -191,8 +197,8 @@ export function parseTestStage(raw: unknown): TestSetup {
   if (v.swiftStrike !== undefined) {
     if (!isObject(v.swiftStrike)) fail('swiftStrike must be an object.');
     const s = v.swiftStrike as Record<string, unknown>;
-    onlyKeys('swiftStrike', s, ['lunge', 'walk', 'streak']);
-    const small = (k: 'lunge' | 'walk') => {
+    onlyKeys('swiftStrike', s, ['lunge', 'walk', 'haste', 'passThrough', 'streak']);
+    const small = (k: 'lunge' | 'walk' | 'haste') => {
       if (s[k] === undefined) return;
       if (!Number.isInteger(s[k]) || (s[k] as number) < 0 || (s[k] as number) > 8)
         fail(`swiftStrike.${k} must be a whole number from 0 to 8.`);
@@ -200,6 +206,12 @@ export function parseTestStage(raw: unknown): TestSetup {
     };
     small('lunge');
     small('walk');
+    small('haste');
+    if (s.passThrough !== undefined) {
+      if (typeof s.passThrough !== 'boolean')
+        fail('swiftStrike.passThrough must be true or false.');
+      swiftStrike.passThrough = s.passThrough as boolean;
+    }
     if (s.streak !== undefined) {
       const ok =
         Array.isArray(s.streak) &&
@@ -274,11 +286,13 @@ export function createTestFight(
     ]),
   ];
   const units = placed.map(([u]) => u);
-  const {lunge, walk, streak} = setup.swiftStrike;
+  const {lunge, walk, haste, passThrough, streak} = setup.swiftStrike;
   for (const u of units)
     if (u.hero === 'youxia') {
       if (lunge !== undefined) u.lunge = lunge;
       if (walk !== undefined) u.moveCap = walk;
+      if (haste !== undefined) u.swiftHaste = haste;
+      if (passThrough !== undefined) u.passThrough = passThrough;
       if (streak !== undefined) u.streakHaste = streak;
     }
   // The camel's road, at random (`ROUTES`), off any space a unit is set on.

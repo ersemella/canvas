@@ -20,16 +20,17 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 The committed file (2026-10-30): China's three heroes against the
 Steppe's, on the Cyclops's Cave, a map with nothing on it (no yurts,
 obstacles or mountains; the Fairy Chimneys before), with Wait on
-(`"wait": true`) for play-testing it, and every Duelist with the lunge, a
-walk of 2 and a streak of 2, 3, 4 (`"swiftStrike"`, below; balance.md,
-"The Duelist's lunge and streak").
+(`"wait": true`) for play-testing it, and every Duelist with the lunge
+through units, a walk of 2 and no Haste (`"swiftStrike"`, below;
+balance.md, "The Duelist's lunge through units"). To lunge through the
+unit next to him, aim Swift Strike at the free space past it.
 
 ```json
 {
   "seed": null,
   "map": "cave",
   "wait": true,
-  "swiftStrike": {"lunge": 2, "walk": 2, "streak": [2, 3, 4]},
+  "swiftStrike": {"lunge": 2, "walk": 2, "passThrough": true, "haste": 0},
   "yurts": "none",
   "camel": {},
   "player": [
@@ -98,7 +99,7 @@ it, unhurt.
 | `player` | Replaced by the start menu's party when started from there. Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
 | `wait` | **Wait** (proposed, timeline.md 3.2): `true` and a turn that does nothing (Skip turn, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) sends the card two thirds of its action cost on, rounded: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10, so Skip turn reads +6 beside an ability's +9. A number above 0 and at most 1 sets the share instead (`0.5`). Both sides play by it; the AI's search doesn't weigh the time a Wait saves, so it Waits only when that happens to look best, and an AI that does weigh it was measured Waiting in place of walking (balance.md, "Wait"). `false`: today's rule. | `false` |
-| `swiftStrike` | Every Duelist's Swift Strike, both sides (switches off in a run; balance.md, "The Duelist's lunge and streak"): `lunge`, up to that many spaces straight at the first unit in line before the strike, stopped by yurts, units and the map's edge, ending next to it; `walk`, the Duelist's own walk; `streak`, the Haste on turns striking running, the first strike's, the second's and so on, the last held while it lasts (`[2, 3, 4]`), a turn without a strike, a walk included, starting it again. Each part left out keeps its own rule. | Swift Strike as built: melee, Haste 3, a walk of 3 |
+| `swiftStrike` | Every Duelist's Swift Strike, both sides (switches off in a run; balance.md, "The Duelist's lunge and streak"): `lunge`, up to that many spaces straight at the first unit in line before the strike, stopped by yurts, units and the map's edge, ending next to it; `passThrough`, `true` and the lunge may also pass through the units on its way, each hit, to a free space past them (aimed at that space), striking the unit in front of it too; `walk`, the Duelist's own walk; `haste`, the slots his card is Hastened when he hits (`0`: none); `streak`, the Haste on turns striking running, the first strike's, the second's and so on, the last held while it lasts (`[2, 3, 4]`), a turn without a strike, a walk included, starting it again. Each part left out keeps its own rule. | Swift Strike as built: melee, not through units, Haste 3, a walk of 3 |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 

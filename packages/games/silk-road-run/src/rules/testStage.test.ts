@@ -39,7 +39,7 @@ describe('the test stage', () => {
     ).toThrow('No unit can start inside the salt dome');
   });
 
-  it('gives every Duelist the lunge, walk and streak "swiftStrike" sets', () => {
+  it('gives every Duelist the Swift Strike and walk "swiftStrike" sets', () => {
     const raw = {
       player: [{hero: 'youxia'}],
       enemy: [{hero: 'youxia'}, {hero: 'wolf'}],
@@ -54,6 +54,17 @@ describe('the test stage', () => {
       );
     }
     expect(s.units.find((u) => u.hero === 'wolf')!.lunge).toBeUndefined();
+    // The committed file's: through units, no Haste.
+    const through = createTestFight(1, {
+      ...raw,
+      swiftStrike: {lunge: 2, walk: 2, passThrough: true, haste: 0},
+    });
+    const y = through.units.find((u) => u.hero === 'youxia')!;
+    expect([y.passThrough, y.swiftHaste]).toEqual([true, 0]);
+    expect(ABILITIES.swiftStrike.summary(y)).toBe(
+      'Lunge up to 2 straight and strike the first unit, or through units to a free space, hitting each passed and the one in front.'
+    );
+    expect(() => parseTestStage({...raw, swiftStrike: {passThrough: 1}})).toThrow(/passThrough/);
     // Left out, Swift Strike is as built.
     const built = createTestFight(1, {player: [{hero: 'youxia'}], enemy: [{hero: 'wolf'}]});
     expect(movementCap(built.units.find((u) => u.hero === 'youxia')!)).toBe(3);

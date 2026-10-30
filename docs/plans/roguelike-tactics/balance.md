@@ -5138,9 +5138,10 @@ there.
 | As built (walk 3) | 47.1% | 50.4% | 48.7% | 77.5% | 48.5% | 51.6% | 3.1 |
 | Lunge 2, walk 2 | 56.1% | 56.6% | 56.4% | 78.5% | 38.8% | 53.5% | 14.7 |
 | **Lunge 2 through units, walk 2** | 62.5% | 62.1% | **62.3%** | 78.5% | 34.5% | 52.5% | **18** |
+| Lunge 2 through units, walk 2, **no Haste** (owner) | 46.7% | 45.4% | **46%** | **65.8%** | 40.3% | 54% | 13.7 |
 
-Byzantium's seat (left out): the Duelist in it 70.4%, 74.4% and 78.9%, the
-Barbarian in China's 24.3%, 15% and 12.3%.
+Byzantium's seat (left out): the Duelist in it 70.4%, 74.4%, 78.9% and
+58.7%, the Barbarian in China's 24.3%, 15%, 12.3% and 28.3%.
 
 - **Passing through is worth about 6 points more** on top of the lunge's
   8: too strong at a walk of 2 (62.3%). He uses Swift Strike on 43.6% of
@@ -5152,8 +5153,15 @@ Barbarian in China's 24.3%, 15% and 12.3%.
   to misplay.
 - **His speed +1 is no worse** (78.5%, as with the plain lunge).
 
-Not changed: the numbers are the owner's. To bring it to even, a walk of
-1 (the plain lunge's 47.2% at walk 1, from 56.4% at walk 2) is likeliest.
+- **Without the Haste (owner, the same day) it is about even** (46%, as
+  built 48.7%), the speed +1 that was his snowball down to 65.8%, near the
+  other heroes' best (62.5%), and the span still 13.7. He acts every 8
+  slots, never 5, so his speed point is worth no more than another fast
+  hero's. Put on the test stage (`"swiftStrike"`) for play-testing.
+
+Not changed in runs: the numbers are the owner's. Through units with no
+Haste is the version to play-test; a walk of 1 (the plain lunge's 47.2%
+at walk 1, from 56.4% at walk 2) would even the Haste 3 version instead.
 
 ## Principles for re-tuning
 

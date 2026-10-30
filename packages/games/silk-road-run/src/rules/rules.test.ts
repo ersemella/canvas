@@ -1720,10 +1720,14 @@ describe('the Duelist', () => {
     );
     s.tiles = {};
     const y = unit(s, 'p-youxia');
-    const through = {hex: along(c, 0, 1), to: along(c, 0, 2)};
+    // Aimed at the free space past the unit next to it.
+    const through = {hex: along(c, 0, 2)};
     const targets = ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!);
     expect(targets).toContainEqual({hex: along(c, 0, 1)});
     expect(targets).toContainEqual(through);
+    // The page offers it, and a tap on that space aims it.
+    expect(offeredTargets(s, mapOf(s), y, ABILITIES.swiftStrike)).toContainEqual(through);
+    expect(targetAt(mapOf(s), y.hex!, ABILITIES.swiftStrike, targets, through.hex)).toEqual(through);
     y.slot = s.currentSlot;
     applyTurn(s, y, {action: {ability: 'swiftStrike', target: through}});
     expect(y.hex).toEqual(along(c, 0, 2));
