@@ -25,6 +25,9 @@ const variants = {
   'lunge-w1': kit({lunge: 2, walk: 1}),
   'lunge-w2-streak': kit({lunge: 2, walk: 2, streak: [1, 2, 3]}),
   'lunge-w1-streak': kit({lunge: 2, walk: 1, streak: [1, 2, 3]}),
+  // A second round: streaks that start nearer Haste 3.
+  'lunge-w1-streak23': kit({lunge: 2, walk: 1, streak: [2, 3]}),
+  'lunge-w1-streak234': kit({lunge: 2, walk: 1, streak: [2, 3, 4]}),
 };
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};
