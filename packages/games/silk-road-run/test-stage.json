@@ -1,7 +1,7 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against the Steppe's, on the Gobi, with Wait on (a Skip turn comes back after two thirds of a turn).",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against the Steppe's, on the Fairy Chimneys, the Byzantine map, with Wait on (a Skip turn comes back after two thirds of a turn).",
   "seed": null,
-  "map": "gobi",
+  "map": "tuff",
   "wait": true,
   "yurts": "random",
   "camel": {},

@@ -15,12 +15,13 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 ## Example
 
 The committed file (2026-10-30): China's three heroes against the
-Steppe's, on the Gobi, with Wait on (`"wait": true`) for play-testing it.
+Steppe's, on the Fairy Chimneys, the Byzantine map, with Wait on
+(`"wait": true`) for play-testing it.
 
 ```json
 {
   "seed": null,
-  "map": "gobi",
+  "map": "tuff",
   "wait": true,
   "yurts": "random",
   "camel": {},
