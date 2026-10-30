@@ -4939,7 +4939,7 @@ with every ally within 2 Hastened (`SPEARHEAD.range`, 1 as built), Haste
   range 2 without measuring it on other heroes.
 - **Still lost in its own seat** to the Cataphract (62.8%) and less to the
   Grappler (54%); the Juggernaut there falls to 36.8%.
-- Range 2 doubles the spaces that count (18 to 6), so allies get the
+- Range 2 triples the spaces that count (18 for 6), so allies get the
   Haste without gathering round the tank, which was what lost at range 1
   with the AI's share (above). Not tried: range 2 at Haste 2.
 
