@@ -1,4 +1,4 @@
-import {describe, expect, it, onTestFinished} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, onTestFinished} from 'vitest';
 import {
   hexDistance,
   hexEquals,
@@ -41,7 +41,15 @@ import {
   disarmed,
   lane,
 } from './board';
-import {ABILITIES, abilitiesOf, arrowLanes, ridePlan, stompPlan, unusableReason} from './abilities';
+import {
+  ABILITIES,
+  abilitiesOf,
+  arrowLanes,
+  ridePlan,
+  stompPlan,
+  trackBlessing,
+  unusableReason,
+} from './abilities';
 import {chooseAiTurn, scoreOptions, simulate} from './ai';
 import {threatDamage, threatsTo} from './threat';
 import {castableSpaces, offeredTargets, onlyHold, targetAt} from './choices';
@@ -2731,6 +2739,72 @@ describe('the Priest', () => {
     expect(ally.shield).toBeUndefined();
     hit(ctx, unit(s, 'e-priest'), ally, 'The blow');
     expect(ally.hp).toBe(ally.maxHp - 3);
+  });
+
+  describe('by the track (`mode` `track`)', () => {
+    const blessing = ABILITY.blessing as {mode: string; scale: string; range: number};
+    const saved = {...blessing};
+    beforeEach(() => Object.assign(blessing, {mode: 'track', range: 3}));
+    afterEach(() => Object.assign(blessing, saved));
+    /** The Priest at `c` with his Grappler and an enemy's, their cards `d` slots on. */
+    const cards = (mine: number, theirs: number) => {
+      const {s, p} = ready({
+        'p-bokh': hexNeighbor(hexNeighbor(hexNeighbor(c, 0), 0), 0),
+        'e-bokh': hexNeighbor(hexNeighbor(c, 1), 1),
+      });
+      const ally = unit(s, 'p-bokh');
+      const enemy = unit(s, 'e-bokh');
+      ally.slot = s.currentSlot + mine;
+      enemy.slot = s.currentSlot + theirs;
+      return {s, p, ally, enemy};
+    };
+
+    it('heals an ally acting soon and hits an enemy acting late, no Shield, within 3', () => {
+      const {s, p, ally, enemy} = cards(2, 8);
+      expect(isTarget(s, p, ally.hex!)).toBe(true);
+      expect(isTarget(s, p, enemy.hex!)).toBe(true);
+      ally.hp = 1;
+      bless(s, p, ally);
+      expect(ally.hp).toBe(4);
+      expect(ally.shield).toBeUndefined();
+      p.slot = s.currentSlot;
+      s.awaiting = p.id;
+      bless(s, p, enemy);
+      expect(enemy.hp).toBe(enemy.maxHp - 3);
+    });
+
+    it('takes no ally acting late, no enemy acting soon, and no one at the split', () => {
+      const {s, p, ally, enemy} = cards(8, 2);
+      expect(isTarget(s, p, ally.hex!)).toBe(false);
+      expect(isTarget(s, p, enemy.hex!)).toBe(false);
+      ally.slot = enemy.slot = s.currentSlot + 5;
+      expect(isTarget(s, p, ally.hex!)).toBe(false);
+      expect(isTarget(s, p, enemy.hex!)).toBe(false);
+      // The Priest himself, acting now, is healed.
+      expect(trackBlessing(s, p, p)).toEqual({heal: 3, hit: 0});
+    });
+
+    it('in bands, half his power a slot either side of the split', () => {
+      blessing.scale = 'bands';
+      const {s, p, ally, enemy} = cards(4, 6);
+      expect(trackBlessing(s, p, ally)).toEqual({heal: 1, hit: 0});
+      expect(trackBlessing(s, p, enemy)).toEqual({heal: 0, hit: 1});
+      ally.slot = s.currentSlot + 3;
+      enemy.slot = s.currentSlot + 7;
+      expect(trackBlessing(s, p, ally)).toEqual({heal: 3, hit: 0});
+      expect(trackBlessing(s, p, enemy)).toEqual({heal: 0, hit: 3});
+    });
+
+    it('capped, 1 a slot from the split, at most his power with his Empower', () => {
+      blessing.scale = 'cap';
+      const {s, p, ally, enemy} = cards(3, 7);
+      expect(trackBlessing(s, p, ally)).toEqual({heal: 2, hit: 0});
+      expect(trackBlessing(s, p, enemy)).toEqual({heal: 0, hit: 2});
+      enemy.slot = s.currentSlot + 12;
+      expect(trackBlessing(s, p, enemy)).toEqual({heal: 0, hit: 3});
+      p.empower = 2;
+      expect(trackBlessing(s, p, enemy)).toEqual({heal: 0, hit: 5});
+    });
   });
 
   it('a Shield that isn’t his (Rally’s) adds to his and still goes as its slots run out', () => {

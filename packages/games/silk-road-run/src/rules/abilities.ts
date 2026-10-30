@@ -46,8 +46,10 @@ import {
   hailHolds,
   liftHail,
   haste,
+  damageOf,
   heal,
   hit,
+  hitFor,
   immobilize,
   log,
   record,
@@ -947,6 +949,45 @@ export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} 
 }
 
 /**
+ * A Blessing on `u` by the track (`ABILITY.blessing.mode` `track`): its
+ * card `d` slots past the current one (the Priest's own, acting, 0), a heal
+ * below `split` and a hit above it, the amount by `scale` from the Priest's
+ * power with his Empower, Weaken and passives.
+ */
+export function trackBlessing(state: FightState, user: Unit, u: Unit): {heal: number; hit: number} {
+  const {split, scale} = ABILITY.blessing;
+  if (u.slot === null && u.id !== user.id) return {heal: 0, hit: 0};
+  const d = u.id === user.id ? 0 : u.slot! - state.currentSlot;
+  const power = damageOf(user, user.empower ?? 0, state);
+  const off = Math.abs(d - split);
+  const amount =
+    scale === 'cap'
+      ? Math.min(power, off)
+      : off >= 2
+        ? power
+        : off === 1
+          ? Math.floor(power / 2)
+          : 0;
+  return d < split ? {heal: amount, hit: 0} : {heal: 0, hit: amount};
+}
+
+/**
+ * Whether a track Blessing can take `u`: within reach as `blessingTakes`
+ * allows, of either side, an ally it would heal or an enemy it would hit.
+ */
+function trackTakes(state: FightState, user: Unit, u: Unit | undefined): u is Unit {
+  if (
+    u === undefined ||
+    !u.alive ||
+    (!ABILITY.blessing.self && u.id === user.id) ||
+    (!ABILITY.blessing.camel && u.hero === CAMEL)
+  )
+    return false;
+  const given = trackBlessing(state, user, u);
+  return u.side === user.side ? given.heal > 0 : given.hit > 0;
+}
+
+/**
  * The allies a Blessing from `from` aimed at `target` reaches: the one on
  * `target`, or with `ABILITY.blessing.shape` `aura` every ally within
  * `radius` of the Priest.
@@ -978,18 +1019,30 @@ const blessing: AbilityDef = {
   },
   name: 'Blessing',
   kind: 'support',
-  damages: false,
+  get damages() {
+    return ABILITY.blessing.mode === 'track';
+  },
   get targetsUnit() {
     return ABILITY.blessing.shape === 'unit';
   },
   get bothSides() {
-    return ABILITY.blessing.smite;
+    return ABILITY.blessing.smite || ABILITY.blessing.mode === 'track';
   },
   get range() {
     return ABILITY.blessing.shape === 'aura' ? 0 : ABILITY.blessing.range;
   },
   summary(user) {
     const {range, self, overheal, shield: extra, shape, radius} = ABILITY.blessing;
+    if (ABILITY.blessing.mode === 'track') {
+      const {split, scale} = ABILITY.blessing;
+      const power = damageOf(user);
+      const half = Math.floor(power / 2);
+      const by =
+        scale === 'cap'
+          ? `1 a slot from ${split}, at most ${power}`
+          : `${power}, or ${half} a slot either side of ${split}`;
+      return `A unit within ${range}${self ? ', yourself too' : ''}, by its card: an ally’s under ${split} slots on healed, an enemy’s over ${split} hit, ${by}.`;
+    }
     const who =
       shape === 'aura'
         ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
@@ -1006,6 +1059,11 @@ const blessing: AbilityDef = {
     return `${who}: heals ${user.power}${shields.length ? `; ${shields.join(', and ')}, ${until}` : ''}.${smite}`;
   },
   targets(state, map, user, from) {
+    if (ABILITY.blessing.mode === 'track')
+      return spacesWithin(map, from, ABILITY.blessing.range)
+        .map((h) => unitAt(state, h))
+        .filter((u): u is Unit => trackTakes(state, user, u))
+        .map((u) => ({hex: u.hex!}));
     if (ABILITY.blessing.shape === 'aura')
       return blessingCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
     return spacesWithin(map, from, ABILITY.blessing.range)
@@ -1015,6 +1073,17 @@ const blessing: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!);
+    if (u && ABILITY.blessing.mode === 'track') {
+      const given = trackBlessing(ctx.state, user, u);
+      if (u.side === user.side) {
+        log(ctx, `${unitName(user)} blesses ${unitName(u)}.`);
+        heal(ctx, u, given.heal, user);
+      } else {
+        log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
+        hitFor(ctx, user, u, 'The smiting', given.hit);
+      }
+      return;
+    }
     if (u && u.side !== user.side) {
       log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
       hit(ctx, user, u, 'The smiting');

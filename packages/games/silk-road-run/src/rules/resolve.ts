@@ -135,6 +135,22 @@ export function hit(
   if (amount <= 0) return;
   if (empower) log(ctx, `Empower adds ${empower}.`);
   if (bonus) log(ctx, `Passives add ${bonus}.`);
+  hitFor(ctx, attacker, target, what, amount, pierce);
+}
+
+/**
+ * A hit of `amount` already reckoned (a track Blessing's share of the
+ * Priest's power): Armour and Bulwark as `hit`'s, and an attack's riders.
+ */
+export function hitFor(
+  ctx: Ctx,
+  attacker: Unit,
+  target: Unit,
+  what: string,
+  amount: number,
+  pierce = false
+): void {
+  if (!target.alive || amount <= 0) return;
   const pierces =
     pierce ||
     (hasPassive(attacker, 'piercingEye') && isImmobilized(target)) ||

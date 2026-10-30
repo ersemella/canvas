@@ -566,8 +566,19 @@ export const ABILITY = {
    * a Shield"), off: `heal` false, no heal, the ally Shielded the Priest's
    * power (and `shield` more); `shape` `aura`, every ally within `radius`
    * of the Priest at once, in place of one within `range`.
+   * `mode` `track` (the owner's idea, 2026-10-30; balance.md, "Blessing by
+   * the track"; off): no Shield, a unit within `range` healed or hit by how
+   * far its card lies from the current slot, `d` slots on. Below `split`
+   * an ally is healed, above it an enemy is hit; at `split`, nothing. With
+   * `scale` `cap` the amount is `|d − split|`, at most his power (Empower,
+   * Weaken and passives counted); with `bands`, his power at 2 or more
+   * from `split`, half of it (rounded down) at 1. The Priest himself, his
+   * card at the current slot, is healed.
    */
   blessing: {
+    mode: 'heal' as 'heal' | 'track',
+    scale: 'bands' as 'cap' | 'bands',
+    split: 5 as number,
     lasts: true as boolean,
     cap: 3 as number,
     range: 2 as number,

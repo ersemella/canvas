@@ -66,9 +66,10 @@ const SOURCES: [RegExp, string][] = [
   [/^The bite hits/, 'bite'],
   [/^The cleave hits/, 'cleave'],
   [/^The jian hits/, 'swiftStrike'],
+  [/^The smiting hits/, 'blessing'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the jian| gives .+ an elixir)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the jian| gives .+ an elixir| smites| blesses)/;
 
 /** Runs `choose` with `settings` in place of production's AI settings (`Mod.ai`). */
 function withAi<T>(settings: Record<string, unknown> | undefined, choose: () => T): T {
