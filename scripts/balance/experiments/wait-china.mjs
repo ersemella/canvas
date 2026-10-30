@@ -9,3 +9,12 @@ for (const hero of party)
     party,
     mod: {passives: {[hero]: ['patient']}},
   };
+// The control: Patient saving nothing, so only the passive's presence differs.
+for (const hero of party)
+  experiments[`p0-${hero}`] = {
+    patch: (c) => {
+      c.RULES.patientSlots = 0;
+    },
+    party,
+    mod: {passives: {[hero]: ['patient']}},
+  };
