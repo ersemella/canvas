@@ -1141,6 +1141,56 @@ export function lungeEnd(from: Hex, to: Hex): Hex {
 
 /** `u`'s Swift Strike lunge: its own (the test stage's), else `ABILITY.swiftStrike.lunge`. */
 export const lungeOf = (u: Unit): number => u.lunge ?? ABILITY.swiftStrike.lunge;
+/** Whether `u`'s Swift Strike jumps: its own (the test stage's), else `ABILITY.swiftStrike.jump`. */
+export const jumps = (u: Unit): boolean => u.jump ?? ABILITY.swiftStrike.jump;
+
+/**
+ * Swift Strike's jumps from `from` (`jumps`): over a unit next to it, not
+ * one it has jumped this turn, to the free space straight past it, which a
+ * jump is aimed at. Not Immobilized.
+ */
+function jumpTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
+  if (isImmobilized(user)) return [];
+  const out: ActionTarget[] = [];
+  for (const dir of DIRECTIONS) {
+    const over = hexNeighbor(from, dir);
+    const u = unitAt(state, over);
+    if (!u || u === user || user.jumped?.includes(u.id)) continue;
+    const land = hexNeighbor(over, dir);
+    if (walkable(map, land) && !unitAt(state, land) && mayEndOn(map, user, land))
+      out.push({hex: land});
+  }
+  return out;
+}
+
+/** Whether `target` is a jump (`jumpTargets`): a free space 2 away, a unit between. */
+function isJump(state: FightState, user: Unit, target: ActionTarget): boolean {
+  const h = target.hex!;
+  if (!jumps(user) || unitAt(state, h) || hexDistance(user.hex!, h) !== 2) return false;
+  const dir = hexDirectionTo(user.hex!, h);
+  return dir !== null && Boolean(unitAt(state, hexNeighbor(user.hex!, dir)));
+}
+
+/**
+ * A jump over the unit next to it to `to`: the unit hit, the Duelist on
+ * `to`; if it can jump again from there, its turn goes on (`Unit.chaining`).
+ */
+function jump(ctx: Ctx, user: Unit, to: Hex): void {
+  const dir = hexDirectionTo(user.hex!, to)!;
+  const u = unitAt(ctx.state, hexNeighbor(user.hex!, dir))!;
+  log(ctx, `${unitName(user)} leaps over ${unitName(u)}, cutting it.`);
+  user.jumped = [...(user.jumped ?? []), u.id];
+  hit(ctx, user, u, 'The sword');
+  const first = !user.struck;
+  if (user.alive) enterHex(ctx, user, to, 'walk');
+  if (first && user.alive) struck(ctx, user);
+  else user.struck = true;
+  user.chaining =
+    user.alive &&
+    ctx.state.phase === 'fight' &&
+    jumpTargets(ctx.state, ctx.map, user, to).length > 0;
+}
+
 /** Whether `u`'s lunge passes through units: its own (the test stage's), else `ABILITY.swiftStrike.passThrough`. */
 export const passesThrough = (u: Unit): boolean => u.passThrough ?? ABILITY.swiftStrike.passThrough;
 /** `u`'s flat Swift Strike Haste: its own, else `ABILITY.swiftStrike.haste`. */
@@ -1162,6 +1212,17 @@ function swiftStrikeTargets(
   user: Unit,
   from: Hex
 ): ActionTarget[] {
+  if (jumps(user)) {
+    const out = jumpTargets(state, map, user, from);
+    if (user.chaining) return out;
+    out.push(...lungeTargets(state, map, user, from));
+    return sortByHex(out, (t) => t.hex!);
+  }
+  return lungeTargets(state, map, user, from);
+}
+
+/** Swift Strike's strikes from `from`, next to it or after a lunge (`swiftStrikeTargets`). */
+function lungeTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
   const reach = isImmobilized(user) ? 0 : lungeOf(user);
   if (reach === 0) return adjacentUnits(state, from, (u) => u !== user);
   const out: ActionTarget[] = [];
@@ -1217,9 +1278,17 @@ function passTargets(
  * unit aimed at, or, aimed at a free space (`passTargets`), those passed
  * through on the way there and the one in front of it.
  */
-export function lungeCaught(state: FightState, from: Hex, target: ActionTarget): Hex[] {
+export function lungeCaught(
+  state: FightState,
+  from: Hex,
+  target: ActionTarget,
+  user?: Unit
+): Hex[] {
   const to = target.hex!;
   if (unitAt(state, to)) return [to];
+  // A jump (`jumpTargets`): the unit jumped only.
+  if (user && isJump(state, {...user, hex: from}, target))
+    return [hexNeighbor(from, hexDirectionTo(from, to)!)];
   const dir = hexDirectionTo(from, to)!;
   const out: Hex[] = [];
   for (let at = hexNeighbor(from, dir); !hexEquals(at, to); at = hexNeighbor(at, dir))
@@ -1272,12 +1341,13 @@ const swiftStrike: AbilityDef = {
   },
   /** Aimed through units at a free space: an enemy it would hit there, else the first unit. */
   aimedAt(state, user, target) {
-    const caught = lungeCaught(state, user.hex!, target).map((h) => unitAt(state, h)!);
+    const caught = lungeCaught(state, user.hex!, target, user).map((h) => unitAt(state, h)!);
     return caught.find((u) => hostile(u, user)) ?? caught[0];
   },
   targetsUnit: true,
   targets: swiftStrikeTargets,
   resolve(ctx, user, target) {
+    if (isJump(ctx.state, user, target)) return jump(ctx, user, target.hex!);
     if (!unitAt(ctx.state, target.hex!)) return lungeThrough(ctx, user, target.hex!);
     const goal = target.hex!;
     const dir = hexDirectionTo(user.hex!, goal)!;

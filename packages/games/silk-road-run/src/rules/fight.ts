@@ -376,6 +376,8 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId, stunn
   // Swift Strike's streak: a turn without a strike starts it again.
   if (!unit.struck) delete unit.streak;
   delete unit.struck;
+  delete unit.chaining;
+  delete unit.jumped;
   if (!unit.alive) return;
   const now = state.currentSlot;
   let slot = aimSlot(state, unit, now, ability, idle && !stunned);
@@ -449,6 +451,10 @@ export function applyTurn(
   // Move + Hold encodes a move-only turn without changing the turn protocol.
   if (path.length > 0 && def.id !== 'hold')
     throw new RuleError('Movement and an ability require separate turns.');
+  // Mid-chain of jumps (Swift Strike): another jump, or Hold to end the turn.
+  const chained = Boolean(unit.chaining);
+  if (chained && (path.length > 0 || (def.id !== 'swiftStrike' && def.id !== 'hold')))
+    throw new RuleError('Mid-chain, only another jump or Skip turn.');
 
   if (path.length > 0) {
     const bad = invalidPath(state, map, unit, path);
@@ -497,11 +503,15 @@ export function applyTurn(
     face(unit, from, target.hex);
   }
   settle(ctx);
-  state.awaiting = null;
   checkEnd(state);
+  // A jump that can go on (Swift Strike): the turn is still its own.
+  if (unit.chaining && def.id === 'swiftStrike' && state.phase === 'fight' && unit.alive) return;
+  state.awaiting = null;
   endTurnOn(ctx, unit);
   // A charged ability's card is pushed out to its charge, the cards there moving on.
-  endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
+  // A Hold that ends a chain of jumps is the strike's turn, not a Wait.
+  if (chained) endTurn(ctx, unit, false, 'swiftStrike');
+  else endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
   // A card a grapple held off the track comes back once the grapple is over.
   returnFreed(state);
 }

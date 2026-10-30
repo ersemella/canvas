@@ -557,7 +557,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       : ability === 'cleave' || ability === 'reave' || ability === 'leap'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!)
         : ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
-          ? lungeCaught(state, unit.hex!, target)
+          ? lungeCaught(state, unit.hex!, target, unit)
           : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {
     let value = -1;

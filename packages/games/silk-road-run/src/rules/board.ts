@@ -253,7 +253,7 @@ export function addStatus(unit: Unit, status: Status): void {
 }
 
 export function movementCap(unit: Unit): number {
-  if (isImmobilized(unit)) return 0;
+  if (isImmobilized(unit) || unit.chaining) return 0;
   if (HEROES[unit.hero].movesStraight) return Infinity;
   return unit.moveCap ?? HEROES[unit.hero].moveCap ?? RULES.movementCap;
 }

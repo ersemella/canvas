@@ -343,6 +343,15 @@ export interface Unit {
    */
   lunge?: number;
   passThrough?: boolean;
+  /** Its own Swift Strike jumps (`ABILITY.swiftStrike.jump`; the test stage's). */
+  jump?: boolean;
+  /**
+   * Mid-chain of jumps (`ABILITY.swiftStrike.jump`): its turn is still its
+   * own, with only another jump or Hold to choose, and the units it has
+   * jumped this turn (`jumped`), which it can't jump again.
+   */
+  chaining?: boolean;
+  jumped?: string[];
   swiftHaste?: number;
   streakHaste?: number[];
   moveCap?: number;

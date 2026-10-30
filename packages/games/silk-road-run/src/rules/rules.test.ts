@@ -1713,6 +1713,65 @@ describe('the Duelist', () => {
     expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual([{hex: along(c, 0, 2)}]);
   });
 
+  it('jumping, it hits a unit next to it, lands past it and may jump again in the same turn', () => {
+    withSwift({lunge: 1, jump: true, haste: 0});
+    // A next to it; B next to where it lands, a free space past B.
+    const a = along(c, 0, 1);
+    const land = along(c, 0, 2);
+    const b = hexNeighbor(land, 1);
+    const s = setup({'p-youxia': c, 'e-modao': a, 'e-mangudai': b, 'e-storm': at(0, 0)}, party);
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toContainEqual({hex: land});
+    y.slot = s.currentSlot;
+    s.awaiting = y.id;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: land}}});
+    expect(y.hex).toEqual(land);
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
+    // Its turn goes on: only jumps (never back over A) or Skip turn, and no walk.
+    expect([s.awaiting, y.chaining, y.slot]).toEqual([y.id, true, s.currentSlot]);
+    expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual([
+      {hex: hexNeighbor(b, 1)},
+    ]);
+    expect(reachableHexes(s, mapOf(s), y).filter((r) => r.path.length > 0)).toEqual([]);
+    expect(() => applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: a}}})).toThrow();
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: hexNeighbor(b, 1)}}});
+    expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - y.power);
+    // No unit left to jump: the turn ends, its card a strike's cost on.
+    expect([s.awaiting, y.chaining, y.slot]).toEqual([null, undefined, actionCost(y)]);
+  });
+
+  it('with jumps, it hits a unit 2 away in line, stepping one space in; Skip turn ends a chain as a strike', () => {
+    withSwift({lunge: 1, jump: true, haste: 0});
+    const s = setup(
+      {'p-youxia': c, 'e-modao': along(c, 0, 2), 'e-mangudai': along(c, 3, 1), 'e-storm': at(0, 0)},
+      party
+    );
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    y.slot = s.currentSlot;
+    s.awaiting = y.id;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: along(c, 0, 2)}}});
+    expect(y.hex).toEqual(along(c, 0, 1));
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
+    // A jump over the Outrider, then Skip turn mid-chain: a strike's cost, not a Wait's.
+    const t = setup(
+      {'p-youxia': c, 'e-mangudai': along(c, 0, 1), 'e-modao': along(c, 1, 3)},
+      party
+    );
+    t.tiles = {};
+    const z = unit(t, 'p-youxia');
+    z.slot = t.currentSlot;
+    t.awaiting = z.id;
+    // Keep a chain open: a second unit next to the landing space.
+    const landing = along(c, 0, 2);
+    unit(t, 'e-modao').hex = hexNeighbor(landing, 1);
+    applyTurn(t, z, {action: {ability: 'swiftStrike', target: {hex: landing}}});
+    expect(z.chaining).toBe(true);
+    applyTurn(t, z, {action: {ability: 'hold', target: {}}});
+    expect([t.awaiting, z.slot]).toEqual([null, actionCost(z)]);
+  });
+
   it('passing through, it hits the unit next to it and the one in front of where it lands', () => {
     withSwift({lunge: 2, passThrough: true});
     const s = setup(
@@ -1728,7 +1787,9 @@ describe('the Duelist', () => {
     expect(targets).toContainEqual(through);
     // The page offers it, and a tap on that space aims it.
     expect(offeredTargets(s, mapOf(s), y, ABILITIES.swiftStrike)).toContainEqual(through);
-    expect(targetAt(mapOf(s), y.hex!, ABILITIES.swiftStrike, targets, through.hex)).toEqual(through);
+    expect(targetAt(mapOf(s), y.hex!, ABILITIES.swiftStrike, targets, through.hex)).toEqual(
+      through
+    );
     y.slot = s.currentSlot;
     applyTurn(s, y, {action: {ability: 'swiftStrike', target: through}});
     expect(y.hex).toEqual(along(c, 0, 2));

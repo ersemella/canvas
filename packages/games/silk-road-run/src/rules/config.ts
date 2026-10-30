@@ -757,6 +757,14 @@ export const ABILITY = {
      */
     passThrough: false as boolean,
     /**
+     * Jumps (owner's idea, 2026-10-30): Swift Strike may also hit a unit
+     * next to it and land on the free space past it, and from there jump
+     * another unit next to it, and so on in the same turn, as a checkers
+     * king does, never the same unit twice. With `lunge` 1 it also hits a
+     * unit 2 away in line, stepping one space in. Off as built.
+     */
+    jump: false as boolean,
+    /**
      * The Haste by how many turns running it has struck (owner's idea,
      * 2026-10-30): the first strike's, the second's, and the last held while
      * the streak lasts; a turn without a strike starts it again. Empty as
