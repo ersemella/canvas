@@ -1675,6 +1675,58 @@ describe('the Duelist', () => {
     expect(y.slot).toBe(actionCost(y) - ABILITY.swiftStrike.haste);
   });
 
+  /** Swift Strike with `ABILITY.swiftStrike` patched for one test. */
+  const withSwift = (patch: Partial<typeof ABILITY.swiftStrike>) => {
+    const was = {...ABILITY.swiftStrike};
+    Object.assign(ABILITY.swiftStrike, patch);
+    onTestFinished(() => void Object.assign(ABILITY.swiftStrike, was));
+  };
+  const along = (h: Hex, dir: number, n: number): Hex => {
+    for (let i = 0; i < n; i++) h = hexNeighbor(h, dir);
+    return h;
+  };
+
+  it('with a lunge, strikes the first unit in line, ending next to it', () => {
+    withSwift({lunge: 2});
+    const far = along(c, 0, 3);
+    const s = setup({'p-youxia': c, 'e-modao': far, 'e-mangudai': along(c, 3, 4)}, party);
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    const targets = ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!);
+    // Three spaces out is in reach; four is not.
+    expect(targets).toEqual([{hex: far}]);
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: far}}});
+    expect(y.hex).toEqual(along(c, 0, 2));
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
+  });
+
+  it('a unit in the way blocks the lunge: only the nearer one is a target', () => {
+    withSwift({lunge: 2});
+    const s = setup({'p-youxia': c, 'e-modao': along(c, 0, 2), 'e-mangudai': along(c, 0, 3)}, party);
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual([{hex: along(c, 0, 2)}]);
+  });
+
+  it('with a streak, its Haste grows on turns striking running, and a turn without starts it again', () => {
+    withSwift({streak: [1, 2, 3]});
+    const e = hexNeighbor(c, 0);
+    const s = setup({'p-youxia': c, 'e-modao': e, 'e-mangudai': at(8, 8)}, party);
+    const y = unit(s, 'p-youxia');
+    const m = unit(s, 'e-modao');
+    const strike = () => {
+      m.hp = m.maxHp;
+      y.slot = s.currentSlot;
+      applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: e}}});
+      return actionCost(y) - (y.slot! - s.currentSlot);
+    };
+    expect([strike(), strike(), strike(), strike()]).toEqual([1, 2, 3, 3]);
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'hold', target: {}}});
+    expect(strike()).toBe(1);
+  });
+
   it('a walk and Hold leave its card where it was due', () => {
     const s = setup({'p-youxia': c, 'e-modao': at(4, 7)}, party);
     const y = unit(s, 'p-youxia');

@@ -45,6 +45,7 @@ import {
   reaveThrows,
   stompPlan,
   ridePlan,
+  lungeEnd,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -243,6 +244,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const dr = e.hex.r - u.hex!.r;
     const inLine = dq === 0 || dr === 0 || dq === -dr;
     if ((has('snapShot') || has('longshot') || has('boulder')) && inLine) return true;
+    // Swift Strike's lunge: a line of `lunge` and the space past it.
+    if (has('swiftStrike') && inLine && d <= ABILITY.swiftStrike.lunge + 1) return true;
     // Reave's throw: a line of `throwRange`.
     if (has('reave') && inLine && d <= ABILITY.reave.throwRange) return true;
     // Axe Throw: a line of `range`, over everything.
@@ -504,7 +507,9 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         ? target!.hex!
         : endsElsewhere(input.action.ability) && target?.to
           ? target.to
-          : unit.hex!;
+          : input.action.ability === 'swiftStrike' && target?.hex
+            ? lungeEnd(unit.hex!, target.hex)
+            : unit.hex!;
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;

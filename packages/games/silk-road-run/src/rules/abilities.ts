@@ -1101,23 +1101,99 @@ const blessing: AbilityDef = {
 // ─── Duelist ─────────────────────────────────────────────────────────────────
 
 /**
+ * Where a lunge from `from` at the unit on `to` ends: the space next to it,
+ * straight back toward `from` (`from` itself when they are next to each other).
+ */
+export function lungeEnd(from: Hex, to: Hex): Hex {
+  const dir = hexDirectionTo(from, to)!;
+  let at = from;
+  while (hexDistance(at, to) > 1) at = hexNeighbor(at, dir);
+  return at;
+}
+
+/**
+ * Swift Strike's targets from `from`: the units next to it, and with a
+ * lunge (`ABILITY.swiftStrike.lunge`), the first unit straight out along
+ * each of the six directions with no more than `lunge` free spaces before
+ * it, stopped by yurts, the map's edge and other units; a lunge into hail
+ * ends there (it Immobilizes), so only the space past it is still in reach.
+ * An Immobilized Duelist strikes next to it only.
+ */
+function swiftStrikeTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
+  const reach = isImmobilized(user) ? 0 : ABILITY.swiftStrike.lunge;
+  if (reach === 0) return adjacentUnits(state, from, (u) => u !== user);
+  const out: ActionTarget[] = [];
+  for (const dir of DIRECTIONS) {
+    const way = laneFrom(map, from, dir);
+    let limit = reach;
+    for (let i = 0; i <= limit && i < way.length; i++) {
+      const h = way[i]!;
+      const u = unitAt(state, h);
+      if (u && u !== user) {
+        // An enemy can't end its lunge on the camel's exit (`mayEndOn`).
+        if (i === 0 || mayEndOn(map, user, way[i - 1]!)) out.push({hex: h});
+        break;
+      }
+      if (stopsWalk(state, user, h)) limit = Math.min(limit, i + 1);
+    }
+  }
+  return sortByHex(out, (t) => t.hex!);
+}
+
+/**
+ * Swift Strike's Haste for the `n`th hit of a streak (`ABILITY.swiftStrike.streak`),
+ * or `haste` without one.
+ */
+export function swiftStrikeHaste(n: number): number {
+  const {haste: slots, streak} = ABILITY.swiftStrike;
+  return streak.length === 0 ? slots : streak[Math.min(n, streak.length) - 1]!;
+}
+
+/**
  * Swift Strike (owner, 2026-10-26): melee, the Duelist's power; when it
  * hits, its card is Hastened `ABILITY.swiftStrike.haste`, taken off as its
- * card is placed after this turn (`haste`).
+ * card is placed after this turn (`haste`). Two switches, off as built
+ * (2026-10-30, measured in balance.md, "The Duelist's lunge and streak"):
+ * `lunge`, a walk of up to that many spaces straight at the unit first,
+ * ending next to it (`swiftStrikeTargets`); `streak`, the Haste by how many
+ * turns running it has struck (`Unit.streak`), a turn without a strike
+ * starting it again.
  */
 const swiftStrike: AbilityDef = {
   id: 'swiftStrike',
   single: true,
   name: 'Swift Strike',
   kind: 'attack',
-  summary: () => `Melee. When it hits, its card is Hastened ${ABILITY.swiftStrike.haste}.`,
+  summary: () => {
+    const {lunge, streak} = ABILITY.swiftStrike;
+    const first = lunge > 0 ? `Lunge up to ${lunge} straight and strike the first unit.` : 'Melee.';
+    const then =
+      streak.length > 0
+        ? `When it hits, its card is Hastened ${streak.join(', then ')} on turns striking running.`
+        : `When it hits, its card is Hastened ${ABILITY.swiftStrike.haste}.`;
+    return `${first} ${then}`;
+  },
   targetsUnit: true,
-  targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
+  targets: swiftStrikeTargets,
   resolve(ctx, user, target) {
-    const u = unitAt(ctx.state, target.hex!)!;
+    const goal = target.hex!;
+    const dir = hexDirectionTo(user.hex!, goal)!;
+    if (hexDistance(user.hex!, goal) > 1) {
+      log(ctx, `${unitName(user)} lunges.`);
+      while (user.alive && user.hex && hexDistance(user.hex, goal) > 1 && !isImmobilized(user)) {
+        const next = hexNeighbor(user.hex, dir);
+        if (!walkable(ctx.map, next) || unitAt(ctx.state, next)) break;
+        enterHex(ctx, user, next, 'walk', true);
+      }
+      if (user.alive) endGrapplesApart(ctx, user);
+    }
+    const u = unitAt(ctx.state, goal);
+    if (!user.alive || !user.hex || !u || hexDistance(user.hex, goal) !== 1) return;
     log(ctx, `${unitName(user)} strikes ${unitName(u)} with the sword.`);
     hit(ctx, user, u, 'The sword');
-    haste(ctx, user, ABILITY.swiftStrike.haste);
+    if (!user.struck) user.streak = (user.streak ?? 0) + 1;
+    user.struck = true;
+    haste(ctx, user, swiftStrikeHaste(user.streak ?? 1));
   },
 };
 

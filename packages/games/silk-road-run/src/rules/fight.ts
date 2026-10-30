@@ -373,6 +373,9 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId, stunn
     haste(ctx, unit, 1);
   }
   delete unit.tookOff;
+  // Swift Strike's streak: a turn without a strike starts it again.
+  if (!unit.struck) delete unit.streak;
+  delete unit.struck;
   if (!unit.alive) return;
   const now = state.currentSlot;
   let slot = aimSlot(state, unit, now, ability, idle && !stunned);

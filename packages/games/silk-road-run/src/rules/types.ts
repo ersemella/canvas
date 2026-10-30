@@ -329,6 +329,12 @@ export interface Unit {
   /** It took a unit off the board this turn (Momentum, 19.8). */
   tookOff?: boolean;
   /**
+   * Turns running it has struck with Swift Strike (`ABILITY.swiftStrike.streak`),
+   * and whether it has this turn (`struck`); a turn without one ends the streak.
+   */
+  streak?: number;
+  struck?: boolean;
+  /**
    * It has lost health this fight, healed back or not: Humphrey unhurt all
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
    */

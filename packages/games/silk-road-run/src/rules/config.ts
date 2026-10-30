@@ -723,7 +723,23 @@ export const ABILITY = {
    * the Duelist's *jian*: melee, and when it hits, the Duelist's card is Hastened `haste` slots (keywords.md
    * 17.3). 3 (owner, 2026-10-26; 2 the builder's first; balance.md, "The Vanguard's buffs other than speed").
    */
-  swiftStrike: {haste: 3 as number},
+  swiftStrike: {
+    haste: 3 as number,
+    /**
+     * A lunge first (owner's idea, 2026-10-30; balance.md, "The Duelist's
+     * lunge and streak"): up to this many spaces straight at the unit it
+     * strikes, stopped by yurts and units, ending next to it. 0 as built
+     * (melee only).
+     */
+    lunge: 0 as number,
+    /**
+     * The Haste by how many turns running it has struck (owner's idea,
+     * 2026-10-30): the first strike's, the second's, and the last held while
+     * the streak lasts; a turn without a strike starts it again. Empty as
+     * built (`haste` every time).
+     */
+    streak: [] as number[],
+  },
   /**
    * Omen (owner, 2026-10-28; roster.md), the Magus's, named Conjunction
    * until then (balance.md, "Omen": 48.8% in the Steppe's

@@ -77,6 +77,9 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('snapShot') || has('boulder')) lanes(fq, fr, power);
+    // Swift Strike's lunge: the first unit in line, `lunge` free spaces out.
+    if (has('swiftStrike') && ABILITY.swiftStrike.lunge > 0 && !isImmobilized(e))
+      lanes(fq, fr, power, ABILITY.swiftStrike.lunge + 1);
     if (has('longshot') && ABILITY.longshot.first)
       lanes(fq, fr, power, ABILITY.longshot.range, ABILITY.longshot.minRange - 1);
     // Longshot built first (`first` off): its six lines to the map's edge,
