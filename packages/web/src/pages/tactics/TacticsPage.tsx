@@ -469,6 +469,7 @@ export function TacticsPage() {
         busy={busy}
         error={error}
         onSetOut={setOut}
+        onReset={() => setStartMenu(true)}
       />
     );
   }

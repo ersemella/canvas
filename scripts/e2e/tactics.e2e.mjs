@@ -882,6 +882,20 @@ try {
       );
     }
     await shot(page, 'caravanserai-phone');
+    // The run menu beside Set out: the run can be given up here too.
+    await page.getByTestId('caravanserai').getByRole('button', {name: 'Menu'}).click();
+    check(
+      'the caravanserai: the run menu beside Set out offers Reset run',
+      await page
+        .getByRole('menuitem', {name: 'Reset run'})
+        .waitFor({timeout: 5_000})
+        .then(
+          () => true,
+          () => false
+        )
+    );
+    await shot(page, 'caravanserai-menu-phone');
+    await page.keyboard.press('Escape');
     await setOut.click();
     await page.waitForFunction((x) => window.__tactics.run.view.stage > x, before.stage, {
       timeout: 15_000,

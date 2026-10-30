@@ -681,7 +681,8 @@
     inset var(--px) var(--px) 0 var(--c-dusk4),
     inset calc(-1 * var(--px)) calc(-1 * var(--px)) 0 var(--c-dusk0);
 }
-.actionBar .menuButton.menuButton {
+.actionBar .menuButton.menuButton,
+.setOutBar .menuButton.menuButton {
   width: 50px;
   height: 50px;
 }

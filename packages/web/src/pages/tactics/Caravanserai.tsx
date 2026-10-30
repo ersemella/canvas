@@ -19,7 +19,7 @@ import type {
   StatId,
   Unit,
 } from '@canvas/games-silk-road-run';
-import {PALETTE_VARS} from './TacticsPanels';
+import {PALETTE_VARS, RunMenu} from './TacticsPanels';
 import styles from './TacticsPage.module.css';
 
 /** Each rarity's name on a drafted card (progression.md, 19.3b). */
@@ -81,6 +81,8 @@ export function Caravanserai(props: {
   /** Locks in one of the party's picks: the rules answer with the rival's. */
   onPick: (pick: DraftPick) => void;
   onSetOut: () => void;
+  /** Gives up the run, for the start menu (the run menu's Reset run). */
+  onReset: () => void;
 }) {
   const [pending, setPending] = useState<Pending | null>(null);
   const draft = props.draft;
@@ -319,17 +321,20 @@ export function Caravanserai(props: {
                   ? 'Nothing to choose this time: the caravan only rests.'
                   : 'Ready to set out.'}
             </Text>
-            <Button
-              size="lg"
-              className={styles.seal!}
-              fw="bold"
-              loading={props.busy}
-              disabled={!done}
-              data-testid="set-out"
-              onClick={props.onSetOut}
-            >
-              Set out
-            </Button>
+            <div className={styles.confirmRow}>
+              <Button
+                size="lg"
+                className={styles.seal!}
+                fw="bold"
+                loading={props.busy}
+                disabled={!done}
+                data-testid="set-out"
+                onClick={props.onSetOut}
+              >
+                Set out
+              </Button>
+              <RunMenu busy={props.busy} onReset={props.onReset} />
+            </div>
             {props.error && <Text c="var(--c-madderLight)">{props.error}</Text>}
           </Stack>
         </Stack>
