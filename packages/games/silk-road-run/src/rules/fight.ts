@@ -322,7 +322,7 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
       continue;
     }
     if (isStunned(unit)) {
-      skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`);
+      skipTurn(ctx, unit, `${unitName(unit)} is Stunned: turn skipped.`, true);
       continue;
     }
     // Nothing to do but Hold: the track goes on without asking.
@@ -361,11 +361,18 @@ function landCharge(ctx: Ctx, unit: Unit): void {
 
 /**
  * Places `unit`'s card at the end of its turn (3.2): its action cost on,
- * or `ability`'s charge, `idle` (a turn without moving or an ability) 2
- * fewer slots on with Patient (19.8); then the Haste it was given during
- * the turn, Momentum's included.
+ * or `ability`'s charge; `idle` (a turn without moving or an ability) a
+ * Wait's cost on unless `stunned` (`RULES.waitShare`), and
+ * `RULES.patientSlots` fewer with Patient (19.8); then the Haste it was
+ * given during the turn, Momentum's included.
  */
-function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void {
+function endTurn(
+  ctx: Ctx,
+  unit: Unit,
+  idle: boolean,
+  ability?: AbilityId,
+  stunned = false
+): void {
   const {state} = ctx;
   if (unit.tookOff && hasPassive(unit, 'momentum')) {
     log(ctx, `${unitName(unit)} rides its momentum.`);
@@ -374,8 +381,8 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId): void
   delete unit.tookOff;
   if (!unit.alive) return;
   const now = state.currentSlot;
-  let slot = aimSlot(state, unit, now, ability);
-  if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - 2);
+  let slot = aimSlot(state, unit, now, ability, idle && !stunned);
+  if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - RULES.patientSlots);
   placeCard(state, unit, slot, ability !== undefined && chargeOf(unit, ability) > 0);
   takeHasteDue(state, unit);
 }
@@ -391,12 +398,12 @@ function endTurnOn(ctx: Ctx, unit: Unit): void {
 }
 
 /** A turn it can't take, or with only Hold to choose: its card marked as skipped, placed as after any turn. */
-function skipTurn(ctx: Ctx, unit: Unit, text: string): void {
+function skipTurn(ctx: Ctx, unit: Unit, text: string, stunned = false): void {
   unit.skipped = true;
   log(ctx, text);
   record(ctx.state, {kind: 'skip', unitId: unit.id});
   endTurnOn(ctx, unit);
-  endTurn(ctx, unit, true);
+  endTurn(ctx, unit, true, undefined, stunned);
 }
 
 /**

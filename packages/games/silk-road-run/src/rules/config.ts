@@ -20,6 +20,16 @@ export const RULES = {
    */
   actionBase: 12,
   speedPivot: 5,
+  /**
+   * Wait (timeline.md, 3.2; proposed 2026-10-30): a turn that does nothing,
+   * a Hold without a walk or a turn skipped with only Hold to choose (not
+   * a Stunned one, nor Temee's), sends the card this share of its action
+   * cost on, rounded, at least 1: at 2/3, 5, 6 and 7 slots for speeds 3, 2
+   * and 1 in place of 8, 9 and 10. 1 turns it off.
+   */
+  waitShare: 1 as number,
+  /** Patient's saving (19.8): an idle turn's card goes this many slots fewer on, after Wait. */
+  patientSlots: 2 as number,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
   camelStartSlot: 12,
   /**

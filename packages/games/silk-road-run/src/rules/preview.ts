@@ -66,10 +66,11 @@ export function previewTurn(
   const after = simulate(state, unitId, input);
   if (!after) return null;
   const unit = after.units.find((u) => u.id === unitId)!;
+  const idle = input.action.ability === 'hold' && !input.move?.length;
   return {
     changes: diff(state, after),
     slot: unit.slot,
-    aimSlot: unit.alive ? aimSlot(after, unit, after.currentSlot, input.action.ability) : null,
+    aimSlot: unit.alive ? aimSlot(after, unit, after.currentSlot, input.action.ability, idle) : null,
     bumped: bumpedCards(state, after, unitId),
   };
 }

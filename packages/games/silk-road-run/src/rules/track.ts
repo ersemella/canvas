@@ -15,6 +15,16 @@ export function actionCost(unit: Unit): number {
 }
 
 /**
+ * How many slots a Wait sends `unit`'s card on (3.2): `RULES.waitShare` of
+ * its action cost, rounded, at least 1; the whole cost for Temee, whose
+ * walk is the fight's clock.
+ */
+export function waitCost(unit: Unit): number {
+  if (HEROES[unit.hero].walksRoad) return actionCost(unit);
+  return Math.max(1, Math.round(actionCost(unit) * RULES.waitShare));
+}
+
+/**
  * A charged ability's charge (owner, 2026-10-23): its user's card goes
  * this many slots on instead of its action cost (Skirmish's: half of it,
  * rounded), greyed while it charges,
@@ -34,14 +44,17 @@ export function chargeOf(unit: Unit, ability: AbilityId): number {
 
 /**
  * Where a turn ending at slot `now` aims `unit`'s card, before yielding
- * (3.2): its action cost on, or the charge of a charged `ability`.
+ * (3.2): its action cost on, the charge of a charged `ability`, or a
+ * Wait's cost for an `idle` turn (one without a walk or an ability).
  */
 export function aimSlot(
   state: FightState,
   unit: Unit,
   now = state.currentSlot,
-  ability?: AbilityId
+  ability?: AbilityId,
+  idle = false
 ): number {
+  if (idle) return now + waitCost(unit);
   const charge = ability ? chargeOf(unit, ability) : 0;
   return now + (charge > 0 ? charge : actionCost(unit));
 }
