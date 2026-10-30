@@ -1815,6 +1815,31 @@ describe('the Duelist', () => {
     y.slot = s.currentSlot;
     applyTurn(s, y, {action: {ability: 'hold', target: {}}});
     expect(strike()).toBe(1);
+    // Built up all fight (`streakResets` off): a turn without a strike keeps it.
+    withSwift({streakResets: false});
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'hold', target: {}}});
+    expect(strike()).toBe(2);
+  });
+
+  it('without the chain, a jump ends the turn', () => {
+    withSwift({lunge: 1, jump: true, chain: false, haste: 0});
+    const land = along(c, 0, 2);
+    const s = setup(
+      {
+        'p-youxia': c,
+        'e-modao': along(c, 0, 1),
+        'e-mangudai': hexNeighbor(land, 1),
+        'e-storm': at(0, 0),
+      },
+      party
+    );
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    y.slot = s.currentSlot;
+    s.awaiting = y.id;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: land}}});
+    expect([s.awaiting, y.chaining, y.slot]).toEqual([null, undefined, actionCost(y)]);
   });
 
   it('a walk and Hold leave its card where it was due', () => {

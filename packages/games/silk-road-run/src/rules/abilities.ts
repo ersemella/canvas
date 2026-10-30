@@ -1186,6 +1186,7 @@ function jump(ctx: Ctx, user: Unit, to: Hex): void {
   if (first && user.alive) struck(ctx, user);
   else user.struck = true;
   user.chaining =
+    ABILITY.swiftStrike.chain &&
     user.alive &&
     ctx.state.phase === 'fight' &&
     jumpTargets(ctx.state, ctx.map, user, to).length > 0;

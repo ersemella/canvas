@@ -5,7 +5,7 @@
  */
 import {hexDirectionTo, hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
+import {ABILITY, CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
 import {
   canMove,
   faceStart,
@@ -374,7 +374,7 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId, stunn
   }
   delete unit.tookOff;
   // Swift Strike's streak: a turn without a strike starts it again.
-  if (!unit.struck) delete unit.streak;
+  if (!unit.struck && ABILITY.swiftStrike.streakResets) delete unit.streak;
   delete unit.struck;
   delete unit.chaining;
   delete unit.jumped;

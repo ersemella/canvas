@@ -764,6 +764,14 @@ export const ABILITY = {
      * unit 2 away in line, stepping one space in. Off as built.
      */
     jump: false as boolean,
+    /** With `jump`, a jump may be followed by another in the same turn. On (owner, 2026-10-30). */
+    chain: true as boolean,
+    /**
+     * Whether a turn without a strike starts the streak again (on), or it
+     * runs all fight, each hit raising the Haste (off; owner's idea,
+     * 2026-10-30).
+     */
+    streakResets: true as boolean,
     /**
      * The Haste by how many turns running it has struck (owner's idea,
      * 2026-10-30): the first strike's, the second's, and the last held while
