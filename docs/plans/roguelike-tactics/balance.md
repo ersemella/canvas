@@ -4684,6 +4684,76 @@ in front, or the slam's Delay 4); the Vanguard (a point of power, or
 Cleave's Delay 8 back); what the Alchemist's Elixir gives China's
 Vanguard and Duelist that no other support does.
 
+### Wait: a turn that does nothing comes back sooner (2026-10-30)
+
+Asked for: whether a cheaper Hold adds depth to the track without
+costing readability. Built as `RULES.waitShare` (timeline.md, 3.2,
+proposed), **off** (1): a Hold without a walk, or a turn skipped with
+only Hold to choose, sends the card that share of its action cost on,
+rounded, at least 1 (not a Stunned skip, nor Temee's); at 2/3, 5, 6 and
+7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10. The preview aims
+a Hold at its Wait, so Skip turn reads +6 beside an ability's +9. A walk
+stays full price: cheap walks were what made the old per-action costs
+fiddly (25 Horse Archer turns a fight, "Tactical options and strategy").
+`experiments/wait.mjs` and `wait-china.mjs`, 800 fights a row (about
+±1.8 points), seeds from 1000, production AI, on `04c459d`.
+
+**One side with Wait, the other without.** Given as Patient
+(`RULES.patientSlots`) on every unit of one side with Wait off: at 2/3
+Wait saves exactly 3 slots at speeds 1 to 3, so Patient 3 is Wait for
+that side; Patient 4 is about 1/2. `modWinPct` in each region's mirror;
+the deep rows give the side with Wait a horizon of 4 and 4× the work,
+against the same search without Wait.
+
+| Mirror | Wait 2/3 | Wait ~1/2 | Deep, with Wait | Deep, without | Wait's worth, deep |
+|---|---:|---:|---:|---:|---:|
+| Steppe | 50.6% | 49.8% | 60.8% | 60.6% | +0.2 |
+| China | **43.9%** | **37.5%** | 52.1% | 57.4% | **−5.3** |
+| Persia | 50.6% | 51.5% | 57.6% | 58.8% | −1.2 |
+| Byzantium | 50.9% | 49% | 53.6% | 57.2% | −3.6 |
+
+Worth nothing in three regions and a loss in China, and a deeper search
+finds no more in it. In China it is the Alchemist's alone: Wait on her
+only, 43.1%; on the Duelist 46.3%; on the Vanguard 50.9%; Patient saving
+0 slots on her, the control, 50.0%. She Holds 2.7% of her turns with it,
+0.1% without, and those few Holds cost her side 7 points. The search
+doesn't price what a Wait gives up: its leaf (`evaluatePosition`) has no
+term for how soon a card comes back, so a Hold and then the Elixir, both
+inside the horizon, scores like the Elixir now, the third of a turn lost
+unseen. Patient (2 slots) measured worthless the same way (49.4%,
+"A provision against a passive or an upgrade").
+
+**Both sides with Wait** (`built` against `wait`), the player side's
+win rate in the mirrors (the side bias: tie order, the board) and
+`modWinPct` party against party:
+
+| | Built | Wait 2/3 | Median actions | Share of turns held |
+|---|---:|---:|---:|---:|
+| Steppe mirror | 64.8% | 64.9% | 50 → 51 | 12.9% → 17.0% |
+| China mirror | 43.8% | **59.0%** | 71 → 76 | 11.2% → 14.3% |
+| Persia mirror | 78.2% | 77.8% | 50 → 51 | 10.7% → 11.6% |
+| Byzantium mirror | 73.1% | 76.7% | 94 → 96 | 7.7% → 9.3% |
+| China v Steppe | 50.4% | 46.4% | 57 → 59 | 7.8% → 11.9% |
+| Persia v Steppe | 70% | 66.5% | 50 → 53 | 12.3% → 16.6% |
+| Byzantium v Steppe | 53.2% | 53.1% | 77 → 79 | 8.5% → 11.6% |
+| Persia v China | 54.1% | 58.8% | 50 → 51 | 4.8% → 7.4% |
+| Byzantium v China | 61.9% | 64.3% | 80 → 82 | 4.0% → 6.5% |
+| Byzantium v Persia | 54.5% | 49.9% | 75 → 76 | 8.2% → 9.9% |
+
+Fights barely longer (1 to 5 actions), Holds up 1 to 4 points of turns,
+no more unfinished fights (0–2.4%); parties move 2–5 points, China's
+mirror 15 on the side that acts first at ties.
+
+**Not switched on.** As the AI plays it, Wait adds nothing, and in China
+it adds AI mistakes. That says as much about the AI as the rule: Wait's
+value is timing (stepping out of a 16-slot hail, acting just before an
+enemy card, letting an 8-slot Weaken lapse), which the leaf can't see.
+Before judging it again, give `evaluatePosition` the track: each card's
+slots to its next turn, priced as a share of a turn
+(`turnValue`, as `AI.trackWorth` prices the cards a turn moves), then
+re-run `wait.mjs`; Patient, Haste and Delay would be measured truer too.
+Or play it from the test stage, with `waitShare` 2/3.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

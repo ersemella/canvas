@@ -115,6 +115,8 @@ in place of Hail (`mod.kits`), with heal 2 (`ABILITY.eye.heal`) and Weaken
 either core's side, and a Storm Caller that can't hurt keeping back
 (`AI.supportKeepsBack`).
 
+`wait.mjs` (2026-10-30) measures Wait (`RULES.waitShare`): one side with it, as Patient 3 or 4 (`RULES.patientSlots`) on its every unit, at production's search and a deep one against the same search without; and both sides with it at 2/3 against the built rule, the four regions' mirrors and parties. `wait-china.mjs` gives it to one Chinese hero at a time, with Patient saving 0 as the control.
+
 `elixir-swap.mjs` (2026-10-27) measures the Elixir swapping an ally's
 speed and health (`ABILITY.elixir.swap`, `.swapUntil`), the AI's first
 guess at its risk at 0.5 and 0 (`AI.swapRisk`), against the built Elixir.
