@@ -4925,6 +4925,40 @@ a walk of 1, Haste 3 flat. If the streak is wanted, one a walk doesn't end
 (only a Hold, a skip or an ability that isn't Swift Strike) is the variant
 to measure next.
 
+### The Barbarian's Leap by its shape (2026-10-30)
+
+Asked for (the owner): Leap, the Barbarian's in place of Axe Throw (over
+anything to a free space 2 away off his six lines), hitting the four
+spaces next to the landing facing forward, and the front two for his power
+with the other four for 1, against Leap as built (the front two).
+`ABILITY.leap.shape` `front` (built), `forward`, `splash` (`.splash` 1),
+and Axe Throw (`HEROES.varangian.abilities`) for a reference.
+`experiments/leap.mjs`, on `cd0f9d1` before its rebase: the Barbarian in
+the damage seat of the three other regions' mirrors, and each of their
+damage heroes in his seat of Byzantium's (as "Each hero in its role"), 400
+fights each (about ±2.5 points a cell). Unfinished fights 0–5.8%.
+
+| Barbarian with | Steppe | China | Persia | Kept in its own (100 − theirs) | Leap's share of his turns | He lives through |
+|---|---:|---:|---:|---:|---:|---:|
+| Axe Throw | 50.8% | 50.5% | 35.9% | 55.6% / 48% / 46.2% | 26–31% (Axe Throw) | 57–78% |
+| Leap, `front` (built) | **32%** | **24.3%** | **24.9%** | 42% / 29.6% / 36% | 9–16% | 42–54% |
+| Leap, `forward` | **33.5%** | **25%** | **28.5%** | 43.4% / 33.7% / 34.6% | 14–19% | 37–50% |
+| Leap, `splash` | **31.8%** | **20.8%** | **26.1%** | 41.7% / 30.3% / 36% | 20–28% | 35–55% |
+
+- **Every Leap is far weaker than Axe Throw**: 15–26 points down in
+  others' seats, and Byzantium's party 7–18 points worse with him in it.
+  The shapes are within noise of each other: more spaces raise how often
+  he leaps (9–16% of turns to 20–28%), not how often his side wins.
+- **He dies more**: he lives through 35–55% of fights, 57–78% with Axe
+  Throw. A leap ends next to the enemy with 6 health and speed 1, and
+  `splash` puts him in the middle of them.
+- **He walks or Holds most turns** (Hold 17–25%), so the AI rarely finds
+  a landing worth it; how much of the loss is the AI's play and how much
+  the ability's is unmeasured (a novice and an expert, as "Skill on all
+  twelve heroes", would say).
+- The damage by source wasn't counted: `ablate.ts` learnt the axe's and
+  the splash's lines after the run started.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
