@@ -145,11 +145,17 @@ export interface DraftView {
  * A new run with the party chosen on the start menu (`{party}`; all three
  * heroes if none is given), its fight advanced to the first decision,
  * the player's or the AI's. `{test: true}` starts the test stage instead,
- * a run of one fight set up in test-stage.json.
+ * a run of one fight set up in test-stage.json, the party (if given) on
+ * the player's side in place of the file's.
  */
 export function createRun(seed: number, setup?: unknown): RunState {
   if ((setup as {test?: unknown} | null | undefined)?.test === true) {
-    const fight = createTestFight(seed);
+    const {party} = setup as {party?: unknown};
+    const fight = createTestFight(
+      seed,
+      undefined,
+      party === undefined ? undefined : parseParty(setup)
+    );
     fight.events = [];
     advanceToDecision(fight);
     return {format: RUN_FORMAT, seed, version: 0, stage: 0, test: true, fight};

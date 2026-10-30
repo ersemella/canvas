@@ -180,9 +180,9 @@ export function useRun(events: MutableRefObject<EventBus | null>) {
     (party: HeroId[]) => void send(() => localRuns.start({party}), 'run'),
     [send]
   );
-  /** The test stage: one fight set up in the game package's test-stage.json. */
+  /** The test stage: one fight set up in the game package's test-stage.json, with the chosen party. */
   const startTest = useCallback(
-    () => void send(() => localRuns.start({test: true}), 'run'),
+    (party: HeroId[]) => void send(() => localRuns.start({test: true, party}), 'run'),
     [send]
   );
 

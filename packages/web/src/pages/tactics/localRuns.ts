@@ -131,8 +131,8 @@ export const localRuns = {
     // Throws `expired` for an outdated one, with its message.
     return runResponse(silkRoadRun, record);
   },
-  /** A run with the chosen party, or the test stage (test-stage.json in the game's package). */
-  start: async (setup: {party: HeroId[]} | {test: true}): Promise<RunResponse> => {
+  /** A run with the chosen party, or the test stage with it (test-stage.json in the game's package). */
+  start: async (setup: {party: HeroId[]; test?: true}): Promise<RunResponse> => {
     const seed = crypto.getRandomValues(new Uint32Array(1))[0]!;
     const record = startRun(silkRoadRun, {runId: randomId(), game: GAME, seed, setup});
     // Starting a run abandons the active one, which counts as a death.

@@ -103,13 +103,14 @@ function savedParty(): HeroId[] {
  * The start menu: what the game is, which heroes to take (the camel always
  * comes), and Start, which always starts a new run (a new seed), and a way
  * back to the Canvas home page. Test stage starts a run of one fight set
- * up in test-stage.json instead (in the game's package), for play-testing.
+ * up in test-stage.json instead (in the game's package), for play-testing,
+ * with the heroes picked here as the party.
  */
 export function StartMenu(props: {
   busy: boolean;
   error: string | null;
   onStart: (party: HeroId[]) => void;
-  onTest: () => void;
+  onTest: (party: HeroId[]) => void;
 }) {
   const [party, setParty] = useState<HeroId[]>(savedParty);
   // The hero whose story and stats show: the party's first at first.
@@ -124,13 +125,13 @@ export function StartMenu(props: {
         ? p
         : ROSTER.filter((h) => (h === hero ? !p.includes(h) : p.includes(h)))
     );
-  const start = () => {
+  const start = (onStart: (party: HeroId[]) => void) => {
     try {
       localStorage.setItem(PARTY_STORAGE, JSON.stringify(party));
     } catch {
       // the choice just isn't remembered
     }
-    props.onStart(party);
+    onStart(party);
   };
 
   return (
@@ -220,7 +221,7 @@ export function StartMenu(props: {
               size="lg"
               className={styles.seal!}
               fw="bold"
-              onClick={start}
+              onClick={() => start(props.onStart)}
               loading={props.busy}
               disabled={party.length === 0}
             >
@@ -238,8 +239,8 @@ export function StartMenu(props: {
               variant="subtle"
               color="gray"
               size="xs"
-              onClick={props.onTest}
-              disabled={props.busy}
+              onClick={() => start(props.onTest)}
+              disabled={props.busy || party.length === 0}
               data-testid="test-stage"
             >
               Test stage (set up in test-stage.json)

@@ -161,6 +161,13 @@ describe('the test stage', () => {
     expect(bad({...ok, yurts: 'lots'})).toMatch(/yurts must be/);
   });
 
+  it("puts the start menu's party on the player's side", () => {
+    const run = createRun(1, {test: true, party: ['priest', 'archer']});
+    const heroes = run.fight.units.filter((u) => u.side === 'player').map((u) => u.hero);
+    expect(heroes).toEqual(['priest', 'archer', 'camel']);
+    expect(() => createRun(1, {test: true, party: []})).toThrow(RuleError);
+  });
+
   it('is a run of one fight, won to win the run', () => {
     let run = createRun(5, {test: true});
     expect(run.test).toBe(true);

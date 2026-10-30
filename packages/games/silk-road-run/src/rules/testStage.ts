@@ -4,8 +4,9 @@
  * stages don't bring. Each unit names its hero and may give its own speed,
  * defence, power, abilities and passives (`Unit.loadout`) and its starting
  * space;
- * the camel can be left out. The file is checked when the stage starts,
- * and a mistake is reported on the start menu.
+ * the camel can be left out. Started from the start menu, the party picked
+ * there takes the file's `player` side's place. The file is checked when
+ * the stage starts, and a mistake is reported on the start menu.
  */
 import {hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
@@ -201,12 +202,19 @@ export function parseTestStage(raw: unknown): TestSetup {
 
 /**
  * The test stage's fight, already under way: the units on their spaces,
+ * the player's side the `party` picked on the start menu if given (each
+ * hero as it starts a run, on a random space), else the file's,
  * the rest scattered over their side's two starting columns (the player's right,
  * the enemy's left), off the camel's road's ends, the yurts as set; with random yurts, scattered again
  * until no unit starts boxed in, as in a stage's fight (`createFight`).
  */
-export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): FightState {
+export function createTestFight(
+  runSeed: number,
+  raw: unknown = TEST_STAGE,
+  party?: HeroId[]
+): FightState {
   const setup = parseTestStage(raw);
+  if (party) setup.player = party.map((hero) => ({hero}));
   const random = seededRandom(setup.seed ?? runSeed);
   const map = mapById(setup.map);
   const copies = (list: UnitSetup[], i: number) =>
