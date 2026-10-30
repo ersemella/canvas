@@ -914,6 +914,14 @@ export const AI = {
    */
   leafTrack: 0 as number,
   /**
+   * A switch for measuring (2026-10-30; balance.md, "Spearhead"): a unit
+   * standing next to an ally with Spearhead is worth this × the Haste it
+   * would get from one hit on that ally, as a share of its turn × its
+   * turn's worth (`spearheadPoints` in ai.ts): roughly the hits the ally
+   * takes before the unit's next turn. 0 as built: allies don't seek it.
+   */
+  spearheadShare: 0 as number,
+  /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
    * × the share of its health that is, and this share of `kill` if it

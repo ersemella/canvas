@@ -3,7 +3,8 @@ import {hexDistance, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {chooseAiTurn, evaluatePosition, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
-import {AI, HEROES, RULES} from './config';
+import {AI, HEROES, RULES, SPEARHEAD} from './config';
+import {actionCost} from './track';
 import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
 import {STEPPE} from './map';
@@ -292,5 +293,32 @@ describe('the search timeline', () => {
         advanceToDecision(s);
       }
     }
+  });
+});
+
+describe('allies seeking Spearhead (AI.spearheadShare)', () => {
+  it('scores ending next to a Spearhead ally higher by the Haste it would bring', () => {
+    const s = setup({'p-bokh': hex(3, 0), 'p-storm': hex(1, 0), 'e-mangudai': hex(-3, 0)});
+    unit(s, 'p-bokh').passives = ['spearhead'];
+    const storm = unit(s, 'p-storm');
+    const scores = (share: number) => {
+      const ai = AI as {spearheadShare: number};
+      const saved = ai.spearheadShare;
+      ai.spearheadShare = share;
+      try {
+        return new Map(scoreOptions(s, storm).map((o) => [JSON.stringify(o.input), o]));
+      } finally {
+        ai.spearheadShare = saved;
+      }
+    };
+    const [off, on] = [scores(0), scores(1)];
+    const bonus = (SPEARHEAD.haste / actionCost(storm)) * Math.max(1, storm.power);
+    let next = 0;
+    for (const [key, o] of on) {
+      const beside = hexDistance(unit(o.after, 'p-storm').hex!, hex(3, 0)) === 1;
+      if (beside) next++;
+      expect(o.score - off.get(key)!.score, key).toBeCloseTo(beside ? bonus : 0);
+    }
+    expect(next).toBeGreaterThan(0);
   });
 });

@@ -6,7 +6,7 @@
 import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {placeStartingCards} from '@balance-rules/track';
 import {chooseAiTurn} from '@balance-rules/ai';
-import {ABILITY, AI, CAMEL, HEROES, RULES} from '@balance-rules/config';
+import {ABILITY, AI, CAMEL, HEROES, RULES, SPEARHEAD} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import {unitName} from '@balance-rules/resolve';
 import {MAPS} from '@balance-rules/map';
@@ -102,7 +102,7 @@ function searchWith({depth, work}: {depth: number; work: number}) {
 }
 
 export function ablate(options: Options) {
-  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES};
+  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES, SPEARHEAD};
   const restore = snapshot(config);
   try {
     options.patch?.(config);

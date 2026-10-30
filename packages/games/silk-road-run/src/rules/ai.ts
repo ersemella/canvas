@@ -11,7 +11,7 @@ import {
   hexNeighbors,
 } from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, AI, CAMEL, RULES} from './config';
+import {ABILITY, AI, CAMEL, RULES, SPEARHEAD} from './config';
 import {
   cleaveAreas,
   fireOn,
@@ -412,7 +412,22 @@ export function scoreOutcome(
     }
   }
   score -= quarryGap(after, me, huntsTemee(before, actor)) * AI.perHexFromEnemy;
+  score += spearheadPoints(after, me);
   return score;
+}
+
+/**
+ * `AI.spearheadShare` (2026-10-30): what `unit` standing next to its allies
+ * with Spearhead is worth, each one's hit Hastening it `SPEARHEAD.haste`.
+ */
+function spearheadPoints(state: FightState, unit: Unit): number {
+  if (!AI.spearheadShare || !unit.alive || !unit.hex) return 0;
+  let n = 0;
+  for (const h of hexNeighbors(unit.hex)) {
+    const a = unitAt(state, h);
+    if (a && a.side === unit.side && a.passives?.includes('spearhead')) n++;
+  }
+  return n * AI.spearheadShare * (SPEARHEAD.haste / cardCost(unit)) * turnValue(unit);
 }
 
 /**
@@ -1144,7 +1159,12 @@ function actionCost(before: FightState, unit: Unit, option: ScoredOption): numbe
   const hunting = huntsTemee(before, before.units.find((u) => u.id === unit.id)!);
   const gap = (state: FightState) =>
     quarryGap(state, state.units.find((u) => u.id === unit.id)!, hunting);
-  return -(gap(before) - gap(option.after)) * AI.perHexFromEnemy + chargeCost(unit, option.input);
+  const me = (state: FightState) => state.units.find((u) => u.id === unit.id)!;
+  return (
+    -(gap(before) - gap(option.after)) * AI.perHexFromEnemy +
+    chargeCost(unit, option.input) -
+    (spearheadPoints(option.after, me(option.after)) - spearheadPoints(before, me(before)))
+  );
 }
 
 /**

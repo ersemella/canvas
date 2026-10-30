@@ -7,6 +7,7 @@ export type Config = {
   HEROES: any;
   RULES: any;
   ABILITIES: any;
+  SPEARHEAD: any;
 };
 /** Saves the config; the function returned restores it. */
 export function snapshot(config: Config) {
@@ -20,6 +21,7 @@ export function snapshot(config: Config) {
     AI: config.AI,
     HEROES: config.HEROES,
     RULES: config.RULES,
+    SPEARHEAD: config.SPEARHEAD,
   });
   return () => {
     const restore = (target: any, from: any) => {
@@ -30,7 +32,7 @@ export function snapshot(config: Config) {
         else target[k] = v;
       }
     };
-    for (const key of ['ABILITY', 'AI', 'HEROES', 'RULES'] as const)
+    for (const key of ['ABILITY', 'AI', 'HEROES', 'RULES', 'SPEARHEAD'] as const)
       restore(config[key], saved[key]);
   };
 }
