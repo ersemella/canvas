@@ -859,6 +859,14 @@ export const AI = {
    */
   trackWorth: 0 as number,
   /**
+   * A switch for measuring (2026-10-30; balance.md, "Wait"): what the
+   * search's leaf (`evaluatePosition`) counts for how soon each card comes
+   * back, × the share of a turn it is from its next turn × its turn's
+   * worth (`trackPoints` in ai.ts), and the actor's own card in its
+   * screening. 0 as built: the leaf has no track.
+   */
+  leafTrack: 0 as number,
+  /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
    * × the share of its health that is, and this share of `kill` if it

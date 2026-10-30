@@ -49,7 +49,7 @@ import {
 import {allowedTargets} from './choices';
 import {threatDamage, threatsTo} from './threat';
 import type {Threat} from './threat';
-import {RuleError, advanceToDecision, applyTurn, cloneFight, mapOf} from './fight';
+import {RuleError, advanceToDecision, applyTurn, charging, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
 import {armourOf, camelOf, damageOf, lastsThrough, shotEmpower} from './resolve';
 import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
@@ -386,6 +386,13 @@ export function scoreOutcome(
     score += firePoints(after, actor.side) - firePoints(before, actor.side);
   }
   const me = after.units.find((u) => u.id === actor.id)!;
+  // `AI.leafTrack`: the actor's own card sooner than its action cost (a
+  // Wait, a Haste) or later (a yield), as the leaf counts it.
+  if (AI.leafTrack && me.alive && me.slot !== null && !charging(after, me))
+    score +=
+      ((before.currentSlot + cardCost(actor) - me.slot) / cardCost(actor)) *
+      turnValue(actor) *
+      AI.leafTrack;
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
   const caution = AI.threatFactor * AI.caution[me.hero];
@@ -397,6 +404,25 @@ export function scoreOutcome(
     }
   }
   score -= quarryGap(after, me, huntsTemee(before, actor)) * AI.perHexFromEnemy;
+  return score;
+}
+
+/**
+ * `AI.leafTrack`: how soon each card comes back, for `side` (2026-10-30):
+ * each unit's slots to its next turn as a share of its action cost, × its
+ * turn's worth (`turnValue`), less for its side the later it is. Without
+ * it the search can't price a Wait's or a Haste's time, nor a Delay's,
+ * past the turns it plays. A charging card (a shot in the air) is priced
+ * by `chargeCost` instead; a card off the track (grappled) by its Stun.
+ */
+function trackPoints(state: FightState, side: Side): number {
+  if (!AI.leafTrack) return 0;
+  let score = 0;
+  for (const u of state.units) {
+    if (!u.alive || u.slot === null || charging(state, u)) continue;
+    const owed = ((u.slot - state.currentSlot) / cardCost(u)) * turnValue(u) * AI.leafTrack;
+    score += u.side === side ? -owed : owed;
+  }
   return score;
 }
 
@@ -853,7 +879,7 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side) + shotPoints(state, side);
+  let score = camelProgress(state, side) + shotPoints(state, side) + trackPoints(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
