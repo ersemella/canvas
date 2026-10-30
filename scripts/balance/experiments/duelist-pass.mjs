@@ -11,14 +11,16 @@ const regions = {
 };
 const china = ['modao', 'youxia', 'alchemist'];
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
-const kit = ({lunge = 0, walk = 3, passThrough = false}) => (c) => {
-  Object.assign(c.ABILITY.swiftStrike, {lunge, passThrough, streak: []});
+const kit = ({lunge = 0, walk = 3, passThrough = false, haste = 3}) => (c) => {
+  Object.assign(c.ABILITY.swiftStrike, {lunge, passThrough, haste, streak: []});
   c.HEROES.youxia.moveCap = walk;
 };
 const variants = {
   built: kit({}),
   'lunge-w2': kit({lunge: 2, walk: 2}),
   'lunge-w2-pass': kit({lunge: 2, walk: 2, passThrough: true}),
+  // Then without the Haste (owner, 2026-10-30).
+  'lunge-w2-pass-h0': kit({lunge: 2, walk: 2, passThrough: true, haste: 0}),
 };
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};
