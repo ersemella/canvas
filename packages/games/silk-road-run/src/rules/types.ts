@@ -122,7 +122,7 @@ export type PassiveId =
   | 'regrow'
   // A hero's own, not in 19.8's pool: the Cataphract's (owner, 2026-10-29).
   | 'armoured'
-  // The Vanguard's, built off for measuring (2026-10-30).
+  // The Vanguard's (owner, 2026-10-30).
   | 'spearhead'
   // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
   // drafted with the passives. Track

@@ -184,6 +184,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 3,
     power: 2,
     abilities: ['cleave', 'hold'],
+    // Spearhead at range 2 (owner, 2026-10-30; balance.md, "Spearhead at
+    // range 2": its role score 45.6% to 51%).
+    passives: ['spearhead'],
   },
   /**
    * The Alchemist (owner, 2026-10-25; roster.md): a support whose
@@ -488,12 +491,14 @@ export const ONE_EYE = {armour: 3 as number};
 export const ARMOURED = {armour: 1 as number};
 
 /**
- * Spearhead (2026-10-30), for the Vanguard, built off: no hero starts with
- * it (balance.md, "Spearhead"). Whenever it is hit (any damage coming at
- * it, a Shield's or not, as Devoted), each ally within `range` of it (next
- * to it as built), Humphrey too, is Hastened `haste`, Devoted's number.
+ * Spearhead, the Vanguard's (owner, 2026-10-30; balance.md, "Spearhead"),
+ * not offered at the caravanserai: whenever it is hit (any damage coming
+ * at it, a Shield's or not, as Devoted), each ally within `range` of it,
+ * Humphrey too, is Hastened `haste`, Devoted's number. Range 2 (owner,
+ * 2026-10-30, as measured: "Spearhead at range 2"); 1, next to it, when
+ * first built, off.
  */
-export const SPEARHEAD = {haste: 3 as number, range: 1 as number};
+export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 
 /**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,

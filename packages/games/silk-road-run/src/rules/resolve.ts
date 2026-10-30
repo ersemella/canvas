@@ -644,8 +644,8 @@ export function startTurnPassives(ctx: Ctx, unit: Unit): void {
  * Then the passives that answer damage (19.8): Shake Loose, Last Stand,
  * Second Wind. `source`, the unit dealing it, if any, is credited with a
  * kill (Momentum). Any damage coming at a Devoted unit, whatever takes it,
- * Hastens its partner first (`devotion`), and at a Spearhead its allies next
- * to it (`spearhead`).
+ * Hastens its partner first (`devotion`), and at a Spearhead its allies
+ * within its range (`spearhead`).
  */
 export function applyDamage(
   ctx: Ctx,

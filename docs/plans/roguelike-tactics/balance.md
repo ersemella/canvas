@@ -4942,6 +4942,8 @@ with every ally within 2 Hastened (`SPEARHEAD.range`, 1 as built), Haste
 - Range 2 triples the spaces that count (18 for 6), so allies get the
   Haste without gathering round the tank, which was what lost at range 1
   with the AI's share (above). Not tried: range 2 at Haste 2.
+- **Built (owner, 2026-10-30):** the Vanguard starts with Spearhead at
+  range 2, Haste 3, the AI's share 0; not offered at the caravanserai.
 
 ### The Duelist's lunge and streak (2026-10-30)
 

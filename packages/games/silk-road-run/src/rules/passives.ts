@@ -379,9 +379,9 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
  * Passives a hero starts with that the caravanserai doesn't offer:
  * Unstoppable, the Juggernaut's (owner, 2026-10-27), One Eye, the
  * Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
- * 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), and the
+ * 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), the
  * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29), and
- * Spearhead, measured for the Vanguard (2026-10-30), aren't in 19.8's pool.
+ * Spearhead, the Vanguard's (owner, 2026-10-30), aren't in 19.8's pool.
  */
 export const NOT_OFFERED: readonly PassiveId[] = [
   'unstoppable',

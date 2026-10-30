@@ -6,7 +6,9 @@
 // every duration in slots" (2026-10-29). `modWinPct` throughout.
 // Variants (a suffix): `h5`, `h6` its Haste (`SPEARHEAD.haste`); `a1`, `a2`
 // the AI's allies seeking it (`AI.spearheadShare`), both sides' AIs; `r2`
-// allies within 2 (`SPEARHEAD.range`).
+// allies within 2 (`SPEARHEAD.range`). Since the Vanguard starts with it at
+// range 2 (2026-10-30), the `base-` rows and the variants without `-r2`
+// reproduce only at their revision (`6b1e917` and before).
 const regions = {
   steppe: ['bokh', 'mangudai', 'storm'],
   china: ['modao', 'youxia', 'alchemist'],

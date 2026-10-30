@@ -315,7 +315,7 @@ describe('allies seeking Spearhead (AI.spearheadShare)', () => {
     const bonus = (SPEARHEAD.haste / actionCost(storm)) * Math.max(1, storm.power);
     let next = 0;
     for (const [key, o] of on) {
-      const beside = hexDistance(unit(o.after, 'p-storm').hex!, hex(3, 0)) === 1;
+      const beside = hexDistance(unit(o.after, 'p-storm').hex!, hex(3, 0)) <= SPEARHEAD.range;
       if (beside) next++;
       expect(o.score - off.get(key)!.score, key).toBeCloseTo(beside ? bonus : 0);
     }
