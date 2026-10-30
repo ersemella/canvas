@@ -1008,6 +1008,14 @@ function trackTakes(state: FightState, user: Unit, u: Unit | undefined): u is Un
 }
 
 /**
+ * Blessing's six lines from `from` (`ABILITY.blessing.shape` `line`): each
+ * straight out to the map's edge through anything, for the page's lanes.
+ */
+export function blessingLines(map: MapData, from: Hex): Hex[][] {
+  return DIRECTIONS.map((dir) => lineFrom(map, from, dir));
+}
+
+/**
  * A Blessing's line (`ABILITY.blessing.shape` `line`) from `from` toward
  * `target`: every space straight out to the map's edge, through anything.
  */
@@ -1036,7 +1044,7 @@ export function blessingCaught(
       .filter(
         (u): u is Unit => u !== undefined && u.alive && (ABILITY.blessing.camel || u.hero !== CAMEL)
       );
-    return ABILITY.blessing.lineSelf && caught.length > 0 ? [user, ...caught] : caught;
+    return ABILITY.blessing.lineSelf ? [user, ...caught] : caught;
   }
   return state.units.filter(
     (u) =>
@@ -1125,10 +1133,11 @@ const blessing: AbilityDef = {
         .map((u) => ({hex: u.hex!}));
     if (ABILITY.blessing.shape === 'aura')
       return blessingCaught(state, user, from, from, map).length > 0 ? [{hex: {...from}}] : [];
-    // A line: aimed at its first space, any of the six with a unit on it.
+    // A line: any of the six, aimed at its first space (a tap anywhere along it
+    // aims it, as `area`), with or without a unit on it (owner, 2026-10-30).
     if (ABILITY.blessing.shape === 'line')
-      return DIRECTIONS.map((dir) => lineFrom(map, from, dir))
-        .filter((l) => l.length > 0 && blessingCaught(state, user, from, l[0]!, map).length > 0)
+      return blessingLines(map, from)
+        .filter((l) => l.length > 0)
         .map((l) => ({hex: {...l[0]!}}));
     return spacesWithin(map, from, ABILITY.blessing.range)
       .map((h) => unitAt(state, h))

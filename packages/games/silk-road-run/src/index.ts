@@ -68,6 +68,7 @@ export {
   abilitiesOf,
   arrowLanes,
   axeLines,
+  blessingLines,
   forks,
   longshotLanes,
   longshotLines,

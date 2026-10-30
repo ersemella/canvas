@@ -3043,16 +3043,13 @@ describe('the Priest', () => {
     expect(p.hp).toBe(p.maxHp);
   });
 
-  it('as a line with `lineSelf`, blesses the Priest too, with a unit on it', () => {
-    const blessing = ABILITY.blessing as {shape: string; lineSelf: boolean};
-    onTestFinished(() => {
-      Object.assign(blessing, {shape: 'line', lineSelf: true});
-    });
-    Object.assign(blessing, {shape: 'line', lineSelf: true});
-    const first = lineOf(mapOf(setup({}, party)), c, 0)[0]!;
-    const {s, p} = ready({'p-bokh': first});
+  it('as a line, any of the six can be aimed, empty or not, and blesses the Priest himself', () => {
+    const {s, p} = ready({});
+    const aims = ABILITIES.blessing.targets(s, mapOf(s), p, p.hex!);
+    const lines = [0, 1, 2, 3, 4, 5].filter((d) => lineOf(mapOf(s), c, d).length > 0);
+    expect(aims).toHaveLength(lines.length);
     p.hp = 1;
-    bless(s, p, unit(s, 'p-bokh'));
+    applyTurn(s, p, {action: {ability: 'blessing', target: aims[0]!}});
     expect(p.hp).toBe(4);
   });
 

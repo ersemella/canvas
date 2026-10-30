@@ -5,6 +5,7 @@
  * decides when to send it.
  */
 import {
+  hexDirectionTo,
   hexDistance,
   hexEquals,
   hexKey,
@@ -18,6 +19,7 @@ import {
   ABILITIES,
   ABILITY,
   arrowLanes,
+  blessingLines,
   axeLines,
   castableSpaces,
   longshotLanes,
@@ -221,6 +223,20 @@ export function buildScene(input: SceneInput): BoardScene {
           }));
         }),
       };
+    // Blessing in a line: its six lines, each to the map's edge through
+    // everything, as a lane to aim along; the one aimed, or hovered, alone once picked.
+    if (from && ability === 'blessing' && ABILITY.blessing.shape === 'line') {
+      const aimed =
+        target?.hex ?? (hoverHex && targetAt(mapOf(fight), from, def, targets, hoverHex)?.hex);
+      const dirOf = (h: Hex) => hexDirectionTo(from, h);
+      out.lanes = {
+        from,
+        lanes: blessingLines(mapOf(fight), from)
+          .filter((line) => line.length > 0)
+          .filter((line) => !aimed || dirOf(line[0]!) === dirOf(aimed))
+          .map((line) => ({hexes: line, target: true})),
+      };
+    }
     // Who the turn Pushes or Pulls (Shove, Haul, Gale), and where to; a
     // second pick's move (Throw's landing) is drawn as `step` instead.
     if (preview && !targets.some((t) => t.to)) {

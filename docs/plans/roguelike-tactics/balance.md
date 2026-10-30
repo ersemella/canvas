@@ -5280,6 +5280,17 @@ track", on today's rules. Unfinished fights 0–3.8%.
   `lineSelf` 4.7, about as built (all ±3.5).
 - **Built** (owner, 2026-10-30): `shape` `line` and `lineSelf` are now
   Blessing's defaults; Blessing as one ally is `shape` `unit`.
+- **Then any line, the Priest always blessed** (owner, later 2026-10-30):
+  aimed as Snap Shot is, along any of the six lines to the edge, a unit on
+  it or not, so he can bless himself down an empty one.
+  `experiments/priest-line-any.mjs`, the same seats and fights: **45.2%,
+  48.8% and 52.5%** in the other supports' seats (44.6%, 43.8%, 56.6%
+  with a unit needed), 43.5% kept in his own (46.7%), a score of **46.2%**
+  (47.5%); more even across the seats, about as strong. He Blesses on
+  78–84% of his turns (58–69%) and lives through 54–75% of fights.
+  Skill span **0.8** (novice 48.2%, expert 49%; 4.7): with a Blessing
+  always to hand there is less to choose. Unfinished fights 0–2.8%, 5%
+  with the Storm Caller in his seat in Byzantium's party.
 
 ## Principles for re-tuning
 

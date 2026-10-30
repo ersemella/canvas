@@ -215,6 +215,8 @@ off), a pure support, also with `.split` 7 and 9.
 `priest-line.mjs` (2026-10-30) Blessing in a line (`.shape: 'line'`), with
 Blessing's Shield, as a heal alone, and with the Priest himself too
 (`.lineSelf`).
+`priest-line-any.mjs` (2026-10-30) Blessing as built then: any line aimed,
+the Priest always blessed.
 
 ## Ability and stat ablation
 

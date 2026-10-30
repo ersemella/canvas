@@ -586,8 +586,9 @@ export const ABILITY = {
    * of the Priest at once, in place of one within `range`; `shape` `line`
    * (the owner, 2026-10-30; off), every unit on one of the six straight
    * lines out from him to the map's edge, through yurts, units and all,
-   * allies and enemies alike, each blessed as one ally would be; with
-   * `lineSelf` (off) the Priest himself too.
+   * allies and enemies alike, each blessed as one ally would be, any line
+   * aimed, a unit on it or not; with `lineSelf` the Priest himself too
+   * (whenever the line held a unit until later 2026-10-30, as measured).
    * `mode` `track` (the owner's idea, 2026-10-30; balance.md, "Blessing by
    * the track"; off): no Shield, a unit within `range` healed or hit by how
    * far its card lies from the current slot, `d` slots on. Below `split`
