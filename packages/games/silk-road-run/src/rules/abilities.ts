@@ -957,6 +957,7 @@ export function blessingOf(user: Unit, u: Unit): {heal: number; shield: number} 
 export function trackBlessing(state: FightState, user: Unit, u: Unit): {heal: number; hit: number} {
   const {split, scale} = ABILITY.blessing;
   if (u.slot === null && u.id !== user.id) return {heal: 0, hit: 0};
+  if (!u.alive) return {heal: 0, hit: 0};
   const d = u.id === user.id ? 0 : u.slot! - state.currentSlot;
   const power = damageOf(user, user.empower ?? 0, state);
   const off = Math.abs(d - split);
@@ -969,6 +970,25 @@ export function trackBlessing(state: FightState, user: Unit, u: Unit): {heal: nu
           ? Math.floor(power / 2)
           : 0;
   return d < split ? {heal: amount, hit: 0} : {heal: 0, hit: amount};
+}
+
+/**
+ * A track Blessing's heal on ally `u` (`trackBlessing`): what it restores,
+ * and with `ABILITY.blessing.trackShield` the rest of it as Shield, held
+ * to `cap` of lasting Shield as `blessingOf`'s.
+ */
+export function trackHealOf(
+  state: FightState,
+  user: Unit,
+  u: Unit
+): {heal: number; shield: number} {
+  const {heal: amount} = trackBlessing(state, user, u);
+  const healed = Math.min(amount, Math.max(0, u.maxHp - u.hp));
+  if (!ABILITY.blessing.trackShield) return {heal: healed, shield: 0};
+  const room = ABILITY.blessing.lasts
+    ? Math.max(0, ABILITY.blessing.cap - (u.lastingShield ?? 0))
+    : Infinity;
+  return {heal: healed, shield: Math.min(amount - healed, room)};
 }
 
 /**
@@ -1041,7 +1061,10 @@ const blessing: AbilityDef = {
         scale === 'cap'
           ? `1 a slot from ${split}, at most ${power}`
           : `${power}, or ${half} a slot either side of ${split}`;
-      return `A unit within ${range}${self ? ', yourself too' : ''}, by its card: an ally’s under ${split} slots on healed, an enemy’s over ${split} hit, ${by}.`;
+      const rest = ABILITY.blessing.trackShield
+        ? ` What it can’t heal becomes Shield, ${ABILITY.blessing.lasts ? `until spent, at most ${ABILITY.blessing.cap} on a unit` : `for ${RULES.durations.turn} slots`}.`
+        : '';
+      return `A unit within ${range}${self ? ', yourself too' : ''}, by its card: an ally’s under ${split} slots on healed, an enemy’s over ${split} hit, ${by}.${rest}`;
     }
     const who =
       shape === 'aura'
@@ -1077,7 +1100,9 @@ const blessing: AbilityDef = {
       const given = trackBlessing(ctx.state, user, u);
       if (u.side === user.side) {
         log(ctx, `${unitName(user)} blesses ${unitName(u)}.`);
+        const healed = trackHealOf(ctx.state, user, u);
         heal(ctx, u, given.heal, user);
+        shield(ctx, u, healed.shield, ABILITY.blessing.lasts);
       } else {
         log(ctx, `${unitName(user)} smites ${unitName(u)}.`);
         hitFor(ctx, user, u, 'The smiting', given.hit);

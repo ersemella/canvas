@@ -208,6 +208,8 @@ revision.
 `priest-track.mjs` (2026-10-30) Blessing by the track (`.mode: 'track'`,
 `.scale` `bands` and `cap`, range 3, no Shield) against Blessing as built,
 in the support seats, in his own and played by a novice and an expert.
+`priest-track-shield.mjs` (2026-10-30) the same with the heal's excess as a
+lasting Shield (`.trackShield`).
 
 ## Ability and stat ablation
 

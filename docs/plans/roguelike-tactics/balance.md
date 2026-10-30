@@ -4995,6 +4995,38 @@ fights each (about ±2.5 points a cell). Unfinished fights 0–5.8%.
 - The damage by source wasn't counted: `ablate.ts` learnt the axe's and
   the splash's lines after the run started.
 
+### Blessing by the track with its excess as Shield (2026-10-30)
+
+Asked for (the owner), after "Blessing by the track": the heal still by
+the track, and what it can't restore a Shield again.
+`ABILITY.blessing.trackShield` (off): the heal beyond the ally's missing
+health becomes a lasting Shield, a unit holding at most `cap` (3) of it,
+no Shield on top (`shield`'s 1 not given); the smite as before; range 3.
+`experiments/priest-track-shield.mjs`, the seats and fights of "Blessing
+by the track", Blessing as built run again alongside (the same to the
+point). Unfinished fights 0–1.3%.
+
+| Priest | Steppe | China | Persia | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| As built | 42.7% | 40.3% | 50.9% | 50.4% | 47.5% | 47.9% | 51.3% | 3.4 |
+| Track, `bands`, excess as Shield | 40.5% | 37.8% | **60.1%** | **57%** | **51.6%** | 46.3% | 52% | 5.7 |
+| Track, `cap`, excess as Shield | 37% | **31%** | 57.3% | 49.6% | 45.7% | 49.3% | 52.5% | 3.2 |
+| *Track, `bands`, no Shield ("Blessing by the track")* | *31%* | *20%* | *45.1%* | *49.2%* | *40.6%* | *49%* | *51.3%* | *2.3* |
+
+- **The Shield gives back 10–18 points** in every seat: `bands` scores
+  51.6%, 4 points over Blessing as built, but unevenly: under it in the
+  Steppe and China (2–3 points, within noise), 9 over in Persia's seat
+  and 7 over in his own party. Too strong beside the Persians, about even
+  elsewhere.
+- **`bands` beats `cap` again** (by about 6 points): `cap`'s heal of 1 or 2
+  near the split is too little for a turn.
+- He Blesses on 67–74% of his turns (81–85% as built), smites 1.5–2.3
+  times a fight for 3.5–6.5 damage, and lives through 35–70% of fights
+  (44–83% as built). Fights stay shorter (114–124 slots, 128–137).
+- **Skill**: `bands` 5.7 points, `cap` 3.2, as built 3.4 (±3.5 each).
+- Untried: `bands` with the Persian seat's strength trimmed (range 2, or
+  the smite at half power), and the Steppe and China seats given more.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -39,6 +39,7 @@ import {
   forks,
   blessingOf,
   trackBlessing,
+  trackHealOf,
   grappling,
   chargePlan,
   longshotLanes,
@@ -629,7 +630,23 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     if (u && ABILITY.blessing.mode === 'track') {
       const given = trackBlessing(state, unit, u);
       const weight = u.hero === CAMEL ? AI.camelHealthWeight : 1;
-      if (!hostile(u, unit)) return closing + Math.min(given.heal, u.maxHp - u.hp) * weight;
+      if (!hostile(u, unit)) {
+        // With `trackShield`, the rest of the heal as Shield, weighed as Blessing's.
+        const healed = trackHealOf(state, unit, u);
+        const lasting = ABILITY.blessing.lasts ? healed.shield : 0;
+        return (
+          closing +
+          healed.heal * weight +
+          lastingWorth(
+            state,
+            u,
+            (u.shield ?? 0) + healed.shield,
+            (u.lastingShield ?? 0) + lasting,
+            Math.max(u.shieldUntil ?? 0, lastsThrough(state))
+          ) -
+          lastingWorth(state, u, u.shield ?? 0, u.lastingShield ?? 0, u.shieldUntil)
+        );
+      }
       const damage = Math.min(Math.max(0, given.hit - armourOf(undefined, u, unit.hex)), u.hp);
       return (
         closing + damage * weight + (damage > 0 && damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0)

@@ -2938,6 +2938,19 @@ describe('the Priest', () => {
       expect(trackBlessing(s, p, enemy)).toEqual({heal: 0, hit: 3});
     });
 
+    it('with `trackShield`, what the heal can’t restore becomes a lasting Shield, at most 3', () => {
+      (ABILITY.blessing as {trackShield: boolean}).trackShield = true;
+      const {s, p, ally} = cards(2, 8);
+      ally.hp = ally.maxHp - 1;
+      bless(s, p, ally);
+      expect([ally.hp, ally.shield, ally.lastingShield]).toEqual([ally.maxHp, 2, 2]);
+      p.slot = s.currentSlot;
+      s.awaiting = p.id;
+      ally.slot = s.currentSlot + 2;
+      bless(s, p, ally);
+      expect([ally.shield, ally.lastingShield]).toEqual([3, 3]);
+    });
+
     it('capped, 1 a slot from the split, at most his power with his Empower', () => {
       blessing.scale = 'cap';
       const {s, p, ally, enemy} = cards(3, 7);
