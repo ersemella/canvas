@@ -66,12 +66,22 @@ export function previewTurn(
   const after = simulate(state, unitId, input);
   if (!after) return null;
   const unit = after.units.find((u) => u.id === unitId)!;
-  const idle = input.action.ability === 'hold' && !input.move?.length;
+  // Mid-chain of jumps (Swift Strike), Skip turn ends the strike's turn, not a Wait.
+  const chained = Boolean(state.units.find((u) => u.id === unitId)?.chaining);
+  const idle = input.action.ability === 'hold' && !input.move?.length && !chained;
+  // A jump that goes on: the card goes as the strike's will once the chain ends.
+  const open = unit.alive && unit.chaining;
   return {
     changes: diff(state, after),
-    slot: unit.slot,
+    slot: open ? aimSlot(after, unit, after.currentSlot, 'swiftStrike') : unit.slot,
     aimSlot: unit.alive
-      ? aimSlot(after, unit, after.currentSlot, input.action.ability, idle)
+      ? aimSlot(
+          after,
+          unit,
+          after.currentSlot,
+          chained ? 'swiftStrike' : input.action.ability,
+          idle
+        )
       : null,
     bumped: bumpedCards(state, after, unitId),
   };

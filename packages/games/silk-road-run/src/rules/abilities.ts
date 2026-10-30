@@ -1325,8 +1325,9 @@ const swiftStrike: AbilityDef = {
   summary: (user) => {
     const lunge = lungeOf(user);
     const streak = streakOf(user);
-    const first =
-      lunge === 0
+    const first = jumps(user)
+      ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it, and jump again from there.`
+      : lunge === 0
         ? 'Melee.'
         : passesThrough(user)
           ? `Lunge up to ${lunge} straight and strike the first unit, or through units to a free space, hitting each passed and the one in front.`

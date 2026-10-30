@@ -1,9 +1,9 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against the Steppe's, on the Cyclops's Cave, a map with no obstacles or mountains, with Wait on (a Skip turn comes back after two thirds of a turn), and every Duelist with the lunge (Swift Strike after up to 2 spaces straight at the first unit in line, or through the unit next to him to the space past it, hitting it and the unit in front), a walk of 2 and no Haste.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against the Steppe's, on the Cyclops's Cave, a map with no obstacles or mountains, with Wait on (a Skip turn comes back after two thirds of a turn), and every Duelist with jumps (Swift Strike hits a unit 2 away in line, stepping one space in, or jumps a unit next to him to the free space past it, hitting it, and may jump again in the same turn), a walk of 2 and no Haste.",
   "seed": null,
   "map": "cave",
   "wait": true,
-  "swiftStrike": {"lunge": 2, "walk": 2, "passThrough": true, "haste": 0},
+  "swiftStrike": {"lunge": 1, "walk": 2, "jump": true, "haste": 0},
   "yurts": "none",
   "camel": {},
   "player": [{"hero": "modao"}, {"hero": "youxia"}, {"hero": "alchemist"}],

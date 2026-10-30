@@ -3,7 +3,8 @@ import {hexKey} from '@canvas/engine/server';
 import {DOME, spaceAt, spaceOf} from './map';
 import {abilitiesOf, unusableReason, ABILITIES} from './abilities';
 import {HEROES} from './config';
-import {RuleError, refreshStats} from './fight';
+import {RuleError, advanceToDecision, applyTurn, mapOf, refreshStats} from './fight';
+import {previewTurn} from './preview';
 import {createRun, handleRunAction, runStatus, runView} from './run';
 import {createTestFight, parseTestStage} from './testStage';
 import {aimSlot, actionCost} from './track';
@@ -65,12 +66,45 @@ describe('the test stage', () => {
       'Lunge up to 2 straight and strike the first unit, or through units to a free space, hitting each passed and the one in front.'
     );
     expect(() => parseTestStage({...raw, swiftStrike: {passThrough: 1}})).toThrow(/passThrough/);
+    expect(() => parseTestStage({...raw, swiftStrike: {jump: 'yes'}})).toThrow(/jump/);
     // Left out, Swift Strike is as built.
     const built = createTestFight(1, {player: [{hero: 'youxia'}], enemy: [{hero: 'wolf'}]});
     expect(movementCap(built.units.find((u) => u.hero === 'youxia')!)).toBe(3);
     expect(() => parseTestStage({...raw, swiftStrike: {lunge: -1}})).toThrow(/lunge/);
     expect(() => parseTestStage({...raw, swiftStrike: {streak: 3}})).toThrow(/streak/);
     expect(() => parseTestStage({...raw, swiftStrike: {reach: 2}})).toThrow(/unknown field/);
+  });
+
+  it('with jumps, a Duelist jumps a unit next to it and its turn goes on while another jump is open', () => {
+    // The Duelist at (6, 4); the Grappler next to it and the Outrider next to the space past it.
+    const raw = {
+      seed: 1,
+      yurts: 'none',
+      camel: false,
+      player: [{hero: 'youxia', at: space(6, 4)}],
+      enemy: [
+        {hero: 'bokh', at: space(5, 4)},
+        {hero: 'mangudai', at: space(3, 4)},
+      ],
+      swiftStrike: {lunge: 1, walk: 2, jump: true, haste: 0},
+    };
+    const s = createTestFight(1, raw);
+    const y = s.units.find((u) => u.hero === 'youxia')!;
+    for (const u of s.units) u.slot = u === y ? 0 : 50;
+    s.currentSlot = 0;
+    s.awaiting = y.id;
+    const jumps = ABILITIES.swiftStrike
+      .targets(s, mapOf(s), y, y.hex!)
+      .filter((t) => !s.units.some((u) => u.hex && hexKey(u.hex) === hexKey(t.hex!)));
+    expect(jumps).toHaveLength(1);
+    // Its preview: the card as a strike's, the turn not over.
+    const first = previewTurn(s, y.id, {action: {ability: 'swiftStrike', target: jumps[0]!}})!;
+    expect(first.slot).toBe(actionCost(y));
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: jumps[0]!}});
+    expect(advanceToDecision(s)).toBe(y);
+    expect(y.chaining).toBe(true);
+    // Skip turn mid-chain: a strike's turn, not a Wait.
+    expect(previewTurn(s, y.id, {action: {ability: 'hold', target: {}}})!.slot).toBe(actionCost(y));
   });
 
   it('plays with Wait when "wait" says so: true for two thirds of a turn, or a share', () => {
