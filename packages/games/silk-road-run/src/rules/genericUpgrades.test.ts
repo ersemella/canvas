@@ -235,7 +235,7 @@ describe('generic upgrades: healing', () => {
     give(s, 'p-bokh', 'invigorate', 'quickening');
     const ally = unit(s, 'p-storm');
     const before = ally.slot!;
-    act(s, 'p-bokh', 'blessing', {hex: out(0, 2)});
+    act(s, 'p-bokh', 'blessing', {hex: out(0, 1)});
     expect(ally.empower).toBe(1);
     expect(ally.slot).toBe(before - 2);
   });
@@ -245,7 +245,7 @@ describe('generic upgrades: chains', () => {
   it('Quickening’s Haste sets off Fervour: the ally healed is Empowered 1', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 2), 'e-bokh': out(3, 3)});
     give(s, 'p-bokh', 'quickening', 'fervour');
-    act(s, 'p-bokh', 'blessing', {hex: out(0, 2)});
+    act(s, 'p-bokh', 'blessing', {hex: out(0, 1)});
     expect(unit(s, 'p-storm').empower).toBe(1);
   });
 });

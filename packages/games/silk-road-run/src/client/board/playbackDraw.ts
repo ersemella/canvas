@@ -2,7 +2,7 @@
  * A turn's events playing back on the board: whose turn it is, the
  * ability and where it strikes, hits, falls.
  */
-import {hexDistance} from '@canvas/engine';
+import {hexDistance, hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import type {AbilityId} from '../../rules/types';
 import {HEROES} from '../../rules/config';
@@ -133,7 +133,19 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
       // Effects move in steps, as pixel art does.
       const steps = eventSeconds(e, false) * EFFECT_FPS;
       const stepped = steps > 0 ? Math.floor(k * steps) / steps : k;
-      if (e.target && effect) {
+      // Blessing in a line: its halo on every unit along it, and on the Priest.
+      const blessed =
+        e.ability === 'blessing' && def.area && u.hex
+          ? [
+              u.hex,
+              ...area.filter((h) =>
+                fight.units.some((v) => v.alive && v.hex && hexEquals(v.hex, h))
+              ),
+            ]
+          : null;
+      if (e.target && effect && blessed) {
+        for (const h of blessed) effect(ctx, {from: u.hex, target: h, area, k: stepped});
+      } else if (e.target && effect) {
         effect(ctx, {from: u.hex, target: e.target, area, k: stepped});
       } else if (e.target) {
         ctx.save();

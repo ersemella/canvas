@@ -39,7 +39,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   stomp: 'Nowhere to Stomp.',
   charge: 'Nowhere to charge.',
   longshot: 'No one in any of your lanes.',
-  blessing: 'No ally within 2.',
+  blessing: 'No one in any of your lines.',
   smash: 'No enemy next to you.',
   boulder: 'No one in any of your lanes.',
   gore: 'Nowhere to charge.',

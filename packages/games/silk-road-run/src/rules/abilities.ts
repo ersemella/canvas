@@ -1048,7 +1048,10 @@ export function blessingCaught(
 }
 
 /**
- * Blessing (owner, 2026-10-28; roster.md): one ally within
+ * Blessing as built since 2026-10-30 (owner; balance.md, "Blessing in a
+ * line"): `ABILITY.blessing.shape` `line` with `lineSelf`, every unit on
+ * one of the Priest's six lines, through anything, and the Priest himself,
+ * blessed as below. As first built (owner, 2026-10-28; roster.md): one ally within
  * `ABILITY.blessing.range` (2), the Priest himself too, the camel too, no
  * line of fire, heals the Priest's power; what the heal can't restore
  * becomes Shield until the start of the ally's next turn (keywords.md,
@@ -1099,7 +1102,7 @@ const blessing: AbilityDef = {
     }
     const who =
       shape === 'line'
-        ? 'Every unit in a straight line out from you, through anything, enemies too'
+        ? `Every unit in a straight line out from you, through anything, enemies too${ABILITY.blessing.lineSelf ? ', and yourself' : ''}`
         : shape === 'aura'
           ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
           : `An ally within ${range}${self ? ', yourself too' : ''}`;

@@ -49,7 +49,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   varangian:
     'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow, but it leaps over anything in its way, foes and rocks alike, and brings its great axe down on the two spaces in front of where it lands, harder than anyone, friend or foe.',
   priest:
-    'A priest of the imperial city, who walks with the army to tend the wounded. The Priest strikes no blow of his own, but his blessing mends an ally within reach, himself too, and what it cannot mend, and a little more, becomes a ward that holds until it is broken.',
+    'A priest of the imperial city, who walks with the army to tend the wounded. The Priest strikes no blow of his own, but his blessing runs out from him in a straight line through anything in its way, mending everyone it touches, friend or foe, and himself too; what it cannot mend, and a little more, becomes a ward that holds until it is broken.',
   cataphract:
     'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying everyone in its way before it, as far as there is room, and whoever it slams into rock or the edge is left reeling, losing time; its iron takes 1 off every blow.',
   magus:

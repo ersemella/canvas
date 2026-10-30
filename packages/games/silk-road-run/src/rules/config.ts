@@ -566,7 +566,9 @@ export const ABILITY = {
     pin: false as boolean,
   },
   /**
-   * Blessing (owner, 2026-10-28; roster.md), the Priest's: one ally within
+   * Blessing (owner, 2026-10-28; roster.md), the Priest's, built in a line
+   * with himself too since 2026-10-30 (`shape` `line`, `lineSelf`; balance.md,
+   * "Blessing in a line": 47.5% as a score, 43.8% as one ally). As one ally: within
    * `range` (2), the Priest himself too (`self`) and the camel too
    * (`camel`), no line of fire, heals the Priest's power; with `overheal`,
    * the heal beyond the ally's missing health becomes Shield (keywords.md,
@@ -604,12 +606,12 @@ export const ABILITY = {
     split: 5 as number,
     trackShield: false as boolean,
     trackSmite: true as boolean,
-    lineSelf: false as boolean,
+    lineSelf: true as boolean,
     lasts: true as boolean,
     cap: 3 as number,
     range: 2 as number,
     heal: true as boolean,
-    shape: 'unit' as 'unit' | 'aura' | 'line',
+    shape: 'line' as 'unit' | 'aura' | 'line',
     radius: 1 as number,
     smite: false as boolean,
     self: true as boolean,

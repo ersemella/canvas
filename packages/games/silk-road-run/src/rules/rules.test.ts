@@ -2965,10 +2965,16 @@ describe('the Priest', () => {
     const {p} = ready({});
     expect([p.speed, p.defence, p.power, p.maxHp]).toEqual([2, 1, 3, healthOf(1)]);
     expect(abilitiesOf(p).map((d) => d.id)).toEqual(['blessing', 'hold']);
+    expect([ABILITY.blessing.shape, ABILITY.blessing.lineSelf]).toEqual(['line', true]);
     expect(ROSTER).toContain('priest');
   });
 
-  it('Blessing reaches allies within 2, the Priest too, and no enemy', () => {
+  it('as one unit (`shape` `unit`), Blessing reaches allies within 2, the Priest too, and no enemy', () => {
+    const blessing = ABILITY.blessing as {shape: string};
+    onTestFinished(() => {
+      blessing.shape = 'line';
+    });
+    blessing.shape = 'unit';
     const {s, p} = ready({
       'p-bokh': hexNeighbor(hexNeighbor(c, 0), 0),
       'p-storm': hexNeighbor(hexNeighbor(hexNeighbor(c, 3), 3), 3),
@@ -3022,7 +3028,7 @@ describe('the Priest', () => {
   it('as a line (`shape` `line`), blesses every unit along it to the edge, enemies too', () => {
     const blessing = ABILITY.blessing as {shape: string};
     onTestFinished(() => {
-      blessing.shape = 'unit';
+      blessing.shape = 'line';
     });
     blessing.shape = 'line';
     const ray = (n: number) => lineOf(mapOf(setup({}, party)), c, 0)[n - 1]!;
@@ -3040,7 +3046,7 @@ describe('the Priest', () => {
   it('as a line with `lineSelf`, blesses the Priest too, with a unit on it', () => {
     const blessing = ABILITY.blessing as {shape: string; lineSelf: boolean};
     onTestFinished(() => {
-      Object.assign(blessing, {shape: 'unit', lineSelf: false});
+      Object.assign(blessing, {shape: 'line', lineSelf: true});
     });
     Object.assign(blessing, {shape: 'line', lineSelf: true});
     const first = lineOf(mapOf(setup({}, party)), c, 0)[0]!;
@@ -3053,7 +3059,7 @@ describe('the Priest', () => {
   describe('by the track (`mode` `track`)', () => {
     const blessing = ABILITY.blessing as {mode: string; scale: string; range: number};
     const saved = {...blessing};
-    beforeEach(() => Object.assign(blessing, {mode: 'track', range: 3}));
+    beforeEach(() => Object.assign(blessing, {mode: 'track', range: 3, shape: 'unit'}));
     afterEach(() => Object.assign(blessing, saved));
     /** The Priest at `c` with his Grappler and an enemy's, their cards `d` slots on. */
     const cards = (mine: number, theirs: number) => {
@@ -3214,7 +3220,8 @@ describe('the Priest', () => {
   });
 
   it('the AI blesses a hurt ally rather than hold', () => {
-    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-bokh': at(6, 4)});
+    // The enemy off the ally's line, which would bless it too.
+    const {s, p} = ready({'p-bokh': hexNeighbor(c, 0), 'e-bokh': at(6, 7)});
     p.controller = 'ai';
     const ally = unit(s, 'p-bokh');
     ally.hp = 3;

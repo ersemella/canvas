@@ -5278,6 +5278,8 @@ track", on today's rules. Unfinished fights 0–3.8%.
   points more.
 - **Skill**: the line itself rewards play no more (0.7–1.8 points);
   `lineSelf` 4.7, about as built (all ±3.5).
+- **Built** (owner, 2026-10-30): `shape` `line` and `lineSelf` are now
+  Blessing's defaults; Blessing as one ally is `shape` `unit`.
 
 ## Principles for re-tuning
 
