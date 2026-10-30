@@ -5206,6 +5206,46 @@ Not changed: the numbers are the owner's. Jumps at walk 3 with no Haste
 is the even one of these; the lunge through units with no Haste
 (46%, span 13.7) gives more to play.
 
+### The Duelist's jumps one a turn, the Haste growing (2026-10-30)
+
+Asked for (owner): in place of chaining jumps in one turn, each Swift
+Strike hit giving more Haste. The jumps of "The Duelist's jumps" (lunge 1)
+one a turn (`ABILITY.swiftStrike.chain` off, a switch, on as built), the
+Haste 1, 2, then 3: by `streak`, hits on turns running, a turn without
+one starting it again; or built up all fight (`streakResets` off, a
+switch, on as built). `experiments/duelist-jump-streak.mjs`, the rows of
+"The Duelist's lunge and streak", on `f9c3ecd`'s rules; the score over
+the Steppe's and Persia's seats only, as there. In brackets, the chained
+jumps at walk 2 with no Haste (`7f2ae72`).
+
+| Jumps, one a turn | In others' seats | Kept in its own | Score | Speed +1 | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Walk 2, no Haste | 46.7% | 43.9% | 45.3% (47.5%) | 68.5% (67.8%) | 46.5% | 51% | 4.5 (7) |
+| **Walk 2, streak 1, 2, 3** | 54.3% | 50.8% | **52.5%** | 70.5% | 45.5% | 54% | 8.5 |
+| Walk 2, built up 1, 2, 3 | 55.5% | 55.6% | 55.5% | 70.5% | 43.5% | 54% | 10.5 |
+| Walk 3, streak 1, 2, 3 | 53.3% | 57% | 55.1% | 72.5% | 36.5% | 57% | **20.5** |
+
+Byzantium's seat (left out): the Duelist in it 59.2%, 72.3%, 73.7% and
+75.7%, the Barbarian in China's 34.5%, 26.5%, 18.5% and 21%.
+
+- **The chain is worth about 2 points** (45.3% one a turn, 47.5%
+  chained), inside the noise, and 2.5 points of span.
+- **Now a streak pays**: 1, 2, 3 at walk 2 is 7 points over no Haste
+  (52.5%), where on the plain Swift Strike it lost 6 ("The Duelist's lunge
+  and streak", walk 3). The 2-space strike and the jump close in as they
+  hit, so he walks less and the streak lasts. Built up all fight it is 3
+  points more (55.5%).
+- **His speed +1 stays down** (70.5–72.5%, 75.8% as built): the Haste
+  starts at 1 and only a streak reaches 3.
+- **Walk 3 with the streak spans 20.5**, the widest measured, a novice
+  36.5% against an expert 57% (about ±3.5 a span): a novice walks out of
+  his streak; but it is 55.1%, a little strong.
+
+Not changed: the numbers are the owner's. One jump a turn with the streak
+1, 2, 3 at walk 2 is the nearest to even of these (52.5%); a streak of
+0, 1, 2 or 1, 2 would bring it nearer, and walk 3 with one of those is the
+one to measure for the span.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
