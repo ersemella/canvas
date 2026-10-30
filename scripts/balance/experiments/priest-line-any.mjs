@@ -1,6 +1,7 @@
 // Blessing in a line as built later 2026-10-30 (the owner): any of the six
 // lines aimed, a unit on it or not, the Priest himself always blessed. The
-// seats of priest-track.mjs, on the rules as built. `modWinPct` throughout.
+// seats of priest-track.mjs, on the rules as built; and the same without his
+// own blessing (`lineSelf` off, `noSelf-`). `modWinPct` throughout.
 const regions = {
   steppe: ['bokh', 'mangudai', 'storm'],
   china: ['modao', 'youxia', 'alchemist'],
@@ -26,3 +27,6 @@ for (const [level, search] of [
     party: seat(regions.steppe, 2, 'priest'),
     mod: {search, searchHeroes: ['priest']},
   };
+const noSelf = (c) => Object.assign(c.ABILITY.blessing, {lineSelf: false});
+for (const [name, e] of Object.entries({...experiments}))
+  experiments[`noSelf-${name}`] = {...e, patch: noSelf};

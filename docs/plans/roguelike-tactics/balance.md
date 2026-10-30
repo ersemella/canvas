@@ -5291,6 +5291,14 @@ track", on today's rules. Unfinished fights 0–3.8%.
   Skill span **0.8** (novice 48.2%, expert 49%; 4.7): with a Blessing
   always to hand there is less to choose. Unfinished fights 0–2.8%, 5%
   with the Storm Caller in his seat in Byzantium's party.
+- **Without his own blessing** (`lineSelf` off; the owner's question,
+  later 2026-10-30; `noSelf-` rows of `priest-line-any.mjs`): **33.9%,
+  32.8% and 41.6%** in the other supports' seats, 32.9% kept in his own,
+  a score of **34.5%** (46.2% with it), skill span 1.6. As measured with a
+  unit needed on the line (35.5%): an empty line does nothing for him, so
+  the aiming makes no difference. He lives through 27–43% of fights
+  (54–75% with it) and walks on 37–39% of his turns to line up allies:
+  healing himself is about 12 points of his worth.
 
 ## Principles for re-tuning
 
