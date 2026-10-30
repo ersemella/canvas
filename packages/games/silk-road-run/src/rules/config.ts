@@ -746,6 +746,12 @@ export const ABILITY = {
      */
     lunge: 0 as number,
     /**
+     * The lunge passes through units (owner's idea, 2026-10-30): each unit on
+     * a space it crosses is hit, and it lands on a free space past them,
+     * striking the unit in front too. Off as built.
+     */
+    passThrough: false as boolean,
+    /**
      * The Haste by how many turns running it has struck (owner's idea,
      * 2026-10-30): the first strike's, the second's, and the last held while
      * the streak lasts; a turn without a strike starts it again. Empty as

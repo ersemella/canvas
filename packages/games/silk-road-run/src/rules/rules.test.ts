@@ -1712,6 +1712,27 @@ describe('the Duelist', () => {
     expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual([{hex: along(c, 0, 2)}]);
   });
 
+  it('passing through, it hits the unit next to it and the one in front of where it lands', () => {
+    withSwift({lunge: 2, passThrough: true});
+    const s = setup(
+      {'p-youxia': c, 'e-modao': along(c, 0, 1), 'e-mangudai': along(c, 0, 3)},
+      party
+    );
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    const through = {hex: along(c, 0, 1), to: along(c, 0, 2)};
+    const targets = ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!);
+    expect(targets).toContainEqual({hex: along(c, 0, 1)});
+    expect(targets).toContainEqual(through);
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: through}});
+    expect(y.hex).toEqual(along(c, 0, 2));
+    for (const id of ['e-modao', 'e-mangudai'])
+      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - y.power);
+    // One Haste for the turn, however many it hits.
+    expect(y.slot).toBe(actionCost(y) - ABILITY.swiftStrike.haste);
+  });
+
   it('with a streak, its Haste grows on turns striking running, and a turn without starts it again', () => {
     withSwift({streak: [1, 2, 3]});
     const e = hexNeighbor(c, 0);

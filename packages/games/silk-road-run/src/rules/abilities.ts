@@ -1174,8 +1174,54 @@ function swiftStrikeTargets(
       }
       if (stopsWalk(state, user, h)) limit = Math.min(limit, i + 1);
     }
+    if (ABILITY.swiftStrike.passThrough) out.push(...passTargets(state, map, user, way, reach));
   }
   return sortByHex(out, (t) => t.hex!);
+}
+
+/**
+ * A lunge through units (`ABILITY.swiftStrike.passThrough`) along `way`:
+ * landing on a free space up to `reach` out with a unit on a space before
+ * it, each unit passed through hit, then the unit in front, if any. Aimed
+ * at the first unit passed, `to` the landing space. Yurts stop it; hail on
+ * a free space it would cross does too (it ends a walk).
+ */
+function passTargets(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  way: Hex[],
+  reach: number
+): ActionTarget[] {
+  const out: ActionTarget[] = [];
+  let first: Hex | undefined;
+  for (let i = 0; i < reach && i < way.length; i++) {
+    const h = way[i]!;
+    const u = unitAt(state, h);
+    if (u && u !== user) {
+      first ??= h;
+      continue;
+    }
+    if (first && mayEndOn(map, user, h)) out.push({hex: first, to: h});
+    if (stopsWalk(state, user, h)) break;
+  }
+  return out;
+}
+
+/**
+ * The spaces of the units a lunge from `from` at `target` hits: those
+ * passed through on the way to `target.to`, and the one in front of it
+ * (`passTargets`); without a `to`, the unit aimed at. For the AI's guess.
+ */
+export function lungeCaught(state: FightState, from: Hex, target: ActionTarget): Hex[] {
+  if (!target.to) return [target.hex!];
+  const dir = hexDirectionTo(from, target.to)!;
+  const out: Hex[] = [];
+  for (let at = hexNeighbor(from, dir); !hexEquals(at, target.to); at = hexNeighbor(at, dir))
+    if (unitAt(state, at)) out.push(at);
+  const front = hexNeighbor(target.to, dir);
+  if (unitAt(state, front)) out.push(front);
+  return out;
 }
 
 /**
@@ -1215,6 +1261,7 @@ const swiftStrike: AbilityDef = {
   targetsUnit: true,
   targets: swiftStrikeTargets,
   resolve(ctx, user, target) {
+    if (target.to) return lungeThrough(ctx, user, target.to);
     const goal = target.hex!;
     const dir = hexDirectionTo(user.hex!, goal)!;
     if (hexDistance(user.hex!, goal) > 1) {
@@ -1230,11 +1277,49 @@ const swiftStrike: AbilityDef = {
     if (!user.alive || !user.hex || !u || hexDistance(user.hex, goal) !== 1) return;
     log(ctx, `${unitName(user)} strikes ${unitName(u)} with the sword.`);
     hit(ctx, user, u, 'The sword');
-    if (!user.struck) user.streak = (user.streak ?? 0) + 1;
-    user.struck = true;
-    haste(ctx, user, swiftStrikeHaste(user, user.streak ?? 1));
+    struck(ctx, user);
   },
 };
+
+/** Swift Strike's Haste once it has hit, and its streak (`Unit.streak`). */
+function struck(ctx: Ctx, user: Unit): void {
+  if (!user.struck) user.streak = (user.streak ?? 0) + 1;
+  user.struck = true;
+  haste(ctx, user, swiftStrikeHaste(user, user.streak ?? 1));
+}
+
+/**
+ * A lunge through units to `to` (`passTargets`): each unit passed through
+ * hit as it goes by, then the unit in front of `to`, if any; hail on a free
+ * space on the way ends it there.
+ */
+function lungeThrough(ctx: Ctx, user: Unit, to: Hex): void {
+  const dir = hexDirectionTo(user.hex!, to)!;
+  log(ctx, `${unitName(user)} lunges through.`);
+  let hits = 0;
+  let at = user.hex!;
+  while (user.alive && !hexEquals(at, to)) {
+    at = hexNeighbor(at, dir);
+    const u = unitAt(ctx.state, at);
+    if (u && u !== user) {
+      log(ctx, `${unitName(user)} cuts ${unitName(u)} passing.`);
+      hit(ctx, user, u, 'The sword');
+      hits++;
+      continue;
+    }
+    if (!walkable(ctx.map, at)) break;
+    enterHex(ctx, user, at, 'walk', true);
+    if (isImmobilized(user)) break;
+  }
+  if (user.alive) endGrapplesApart(ctx, user);
+  const front = user.alive && user.hex ? unitAt(ctx.state, hexNeighbor(user.hex, dir)) : undefined;
+  if (front && hexEquals(user.hex!, to)) {
+    log(ctx, `${unitName(user)} strikes ${unitName(front)} with the sword.`);
+    hit(ctx, user, front, 'The sword');
+    hits++;
+  }
+  if (hits > 0 && user.alive) struck(ctx, user);
+}
 
 // ─── Magus ───────────────────────────────────────────────────────────────────
 

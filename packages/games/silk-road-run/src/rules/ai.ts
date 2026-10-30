@@ -49,6 +49,7 @@ import {
   ridePlan,
   lungeEnd,
   lungeOf,
+  lungeCaught,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -526,9 +527,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         ? target!.hex!
         : endsElsewhere(input.action.ability) && target?.to
           ? target.to
-          : input.action.ability === 'swiftStrike' && target?.hex
-            ? lungeEnd(unit.hex!, target.hex)
-            : unit.hex!;
+          : input.action.ability === 'swiftStrike' && target?.to
+            ? target.to
+            : input.action.ability === 'swiftStrike' && target?.hex
+              ? lungeEnd(unit.hex!, target.hex)
+              : unit.hex!;
   const closing = -gapFrom(state, unit, end, hunting) * AI.perHexFromEnemy;
   if (input.move?.length || input.action.ability === 'hold') return closing;
   const ability = input.action.ability;
@@ -547,7 +550,9 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       ? hexNeighbors(target!.hex!)
       : ability === 'cleave' || ability === 'reave' || ability === 'leap'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!)
-        : plan?.caught.map((u) => u.hex!);
+        : ability === 'swiftStrike' && target?.to
+          ? lungeCaught(state, unit.hex!, target)
+          : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {
     let value = -1;
     // Leap's splash (`ABILITY.leap.splash`) on the spaces not in front.

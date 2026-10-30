@@ -79,8 +79,17 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     };
     if (has('snapShot') || has('boulder')) lanes(fq, fr, power);
     // Swift Strike's lunge: the first unit in line, `lunge` free spaces out.
-    if (has('swiftStrike') && lungeOf(e) > 0 && !isImmobilized(e))
-      lanes(fq, fr, power, lungeOf(e) + 1);
+    if (has('swiftStrike') && lungeOf(e) > 0 && !isImmobilized(e)) {
+      if (!ABILITY.swiftStrike.passThrough) lanes(fq, fr, power, lungeOf(e) + 1);
+      // Through units: its lines to `lunge` + 1, stopped only by yurts.
+      else
+        for (const [dq, dr] of AXIAL)
+          for (let i = 1; i <= lungeOf(e) + 1; i++) {
+            const tile = board.get(id(fq + dq * i, fr + dr * i));
+            if (tile === undefined || blocks(tile)) break;
+            mark(hexes, id(fq + dq * i, fr + dr * i), power);
+          }
+    }
     if (has('longshot') && ABILITY.longshot.first)
       lanes(fq, fr, power, ABILITY.longshot.range, ABILITY.longshot.minRange - 1);
     // Longshot built first (`first` off): its six lines to the map's edge,
