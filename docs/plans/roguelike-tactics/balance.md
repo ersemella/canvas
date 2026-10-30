@@ -5165,6 +5165,47 @@ Not changed in runs: the numbers are the owner's. Through units with no
 Haste is the version to play-test; a walk of 1 (the plain lunge's 47.2%
 at walk 1, from 56.4% at walk 2) would even the Haste 3 version instead.
 
+### The Duelist's jumps (2026-10-30)
+
+Asked for (owner): Swift Strike hitting a unit 2 away in line, stepping
+one space in, or jumping a unit next to it to the free space past it,
+hitting it, and from there jumping another next to it in the same turn,
+as a checkers king does. Built as a switch, **off**
+(`ABILITY.swiftStrike.jump`, with `lunge` 1): a strike next to it as
+before; a jump keeps the turn its own while another is open
+(`Unit.chaining`), with only another jump or Skip turn to choose, Skip
+ending it as a strike's turn, not a Wait; never the same unit twice in a
+turn. `experiments/duelist-jump.mjs`, the rows of "The Duelist's lunge
+and streak", on `7f2ae72`'s rules (as built in the Duelist's seat came out
+1.5–3.5 points from the runs before, the commits since in other heroes);
+the score over the Steppe's and Persia's seats only, as there. In a probe
+of 40 Steppe fights at walk 2 and no Haste, the AI jumped 26 times, 9 of
+them chained.
+
+| Swift Strike | In others' seats | Kept in its own | Score | Speed +1 | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| As built (walk 3, Haste 3) | 47.1% | 47.9% | 47.5% | 75.8% | 48.5% | 51.6% | 3.1 |
+| Jumps, walk 2, no Haste | 48.5% | 46.6% | 47.5% | 67.8% | 44.5% | 51.5% | 7 |
+| **Jumps, walk 3, no Haste** | 48% | 52% | **50%** | **66.3%** | 39% | 49.5% | **10.5** |
+| Jumps, walk 2, Haste 3 | 60.5% | 67.5% | **64%** | 74.8% | 41.5% | 53.8% | 12.3 |
+
+Byzantium's seat (left out): the Duelist in it 70.4%, 56.5%, 61.6% and
+78%, the Barbarian in China's 23.8%, 28.8%, 26.3% and 15.3%.
+
+- **Without the Haste the jumps are even**: 47.5% at walk 2, 50% at
+  walk 3, his speed +1 down to 66–68% (as the lunge through units without
+  it, 65.8%). With Haste 3 they are too strong (64%), as the lunge through
+  units was (62.3%).
+- **Less to play than the lunge through units** (span 7 at walk 2, 10.5
+  at walk 3, against 13.7): a chain needs units packed next to each other
+  with free spaces past them, which the board seldom offers.
+- **Walk 3 rather than 2**: the jump and the 2-space strike move him at
+  most a space or two, and with a walk of 2 he reaches fewer fights.
+
+Not changed: the numbers are the owner's. Jumps at walk 3 with no Haste
+is the even one of these; the lunge through units with no Haste
+(46%, span 13.7) gives more to play.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
