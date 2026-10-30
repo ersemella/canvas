@@ -276,7 +276,7 @@ tuning. This file has no combat-design section number.
   prompts for it are in [salt-flats.md](salt-flats.md).
 - **The Fairy Chimneys** (`tuff`, owner, 2026-10-28), the Byzantine's
   map: the owner's tuff (128 pixels, 7 colours, laid as one field) and
-  seven or eight fairy chimneys out to the edge (three at first; 30 × 55, cones of tuff under grey-brown basalt
+  four or five fairy chimneys out to the edge (three at first, seven or eight until 2026-10-30; 30 × 55, cones of tuff under grey-brown basalt
   caps), no mountains. The test stage's `"map"` shows it. Its look, how
   the art was cut and the prompts for it are in
   [cappadocia.md](cappadocia.md).

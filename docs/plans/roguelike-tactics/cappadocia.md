@@ -17,7 +17,7 @@ designing the map for Byzantine"), from setting.md's Byzantine biome:
 churches, underground cities such as Derinkuyu". **Built** the same day
 from the owner's art (see Built), **with the chimneys only** (owner,
 2026-10-28: "let's just stick with the chimneys for now"): the tuff and
-seven or eight fairy chimneys out to the edge (three at first), no cliff, shown on the test
+four or five fairy chimneys out to the edge (three at first, seven or eight until 2026-10-30), no cliff, shown on the test
 stage.
 
 ## The place
@@ -256,7 +256,7 @@ From the owner's tuff and fairy chimney (AI-assisted, from prompts 1 and
 2), cut by `scripts/cappadocia-art.py`:
 
 - **Rules** (map.ts): `TUFF`, the Steppe's board with no mountains
-  (`mountains: 'never'`) and **seven or eight fairy chimneys** a fight
+  (`mountains: 'never'`) and **four or five fairy chimneys** a fight
   (`obstacles.counts` `[7, 8]`, `reach` 4), anywhere out to the board's
   edge but the starting columns (owner, 2026-10-28: "never side by side,
   but they can appear on the edge"), placed as the Steppe's yurts are: no
@@ -277,7 +277,8 @@ From the owner's tuff and fairy chimney (AI-assisted, from prompts 1 and
   fading to the hex borders' colour at its foot. Its cap is the
   picture's grey-brown. One variant, unmirrored; the twin waits.
 - **The test stage** (`test-stage.json`) is on the Fairy Chimneys, its
-  units unchanged (the One-Eyed Giant and two wolves).
+  units unchanged (the One-Eyed Giant and two wolves); on the Cyclops's Cave, with
+  nothing on the board, from 2026-10-30).
 
 Still to do: the twin chimney, the pigeons if wanted, and the cliff if
 the owner brings it back.

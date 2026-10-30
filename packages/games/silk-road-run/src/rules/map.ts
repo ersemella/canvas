@@ -296,9 +296,9 @@ export const SALT: MapData = {
 
 /**
  * The Fairy Chimneys (owner, 2026-10-28), the Byzantine region's map:
- * Cappadocia's pale volcanic tuff, with no mountains and seven or eight
- * **fairy chimneys** (owner, 2026-10-28; three, then five or six within 3
- * of the centre, before), cones of tuff under basalt caps, as its
+ * Cappadocia's pale volcanic tuff, with no mountains and four or five
+ * **fairy chimneys** (owner, 2026-10-30; three, then five or six within 3
+ * of the centre, then seven or eight, before), cones of tuff under basalt caps, as its
  * obstacles, anywhere out to the board's edge but the starting columns,
  * no two side by side (cappadocia.md). The cliff with a rock-cut church designed
  * with it waits: only the chimneys for now (owner, 2026-10-28).
@@ -308,7 +308,7 @@ export const TUFF: MapData = {
   id: 'tuff',
   name: 'The Fairy Chimneys',
   mountains: 'never',
-  obstacles: {counts: [7, 8], reach: 4},
+  obstacles: {counts: [4, 5], reach: 4},
 };
 
 /**

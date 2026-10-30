@@ -665,15 +665,15 @@ describe('the board', () => {
     expect(Object.values(createFight(3, undefined, undefined, true).tiles)).toContain('mountain');
   });
 
-  it('scatters seven or eight fairy chimneys over the Fairy Chimneys, none side by side, with no mountains', () => {
+  it('scatters four or five fairy chimneys over the Fairy Chimneys, none side by side, with no mountains', () => {
     for (let seed = 0; seed < 40; seed++) {
       // Even a stage that asks for mountains gets none here.
       const s = createFight(seed, undefined, undefined, true, [], TUFF);
       expect(s.mapId).toBe('tuff');
       expect(mapOf(s).name).toBe('The Fairy Chimneys');
       const chimneys = Object.keys(s.tiles).filter((k) => s.tiles[k] === 'obstacle');
-      // Seven or eight (owner, 2026-10-28; three, then five or six, before).
-      expect([7, 8]).toContain(chimneys.length);
+      // Four or five (owner, 2026-10-30; three, then five or six, then seven or eight, before).
+      expect([4, 5]).toContain(chimneys.length);
       expect(Object.values(s.tiles).every((t) => t === 'obstacle')).toBe(true);
       const at = chimneys.map((k) => k.split(',').map(Number)).map(([q, r]) => ({q: q!, r: r!}));
       for (const h of at) {
