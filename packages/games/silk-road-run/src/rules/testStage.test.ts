@@ -6,6 +6,7 @@ import {HEROES} from './config';
 import {RuleError, refreshStats} from './fight';
 import {createRun, handleRunAction, runStatus, runView} from './run';
 import {createTestFight, parseTestStage} from './testStage';
+import {aimSlot, actionCost} from './track';
 
 const space = (col: number, row: number) => ({col, row});
 
@@ -35,6 +36,21 @@ describe('the test stage', () => {
     expect(() =>
       createTestFight(1, {...units, map: 'salt', player: [{hero: 'bokh', at: {col: 4, row: 4}}]})
     ).toThrow('No unit can start inside the salt dome');
+  });
+
+  it('plays with Wait when "wait" says so: true for two thirds of a turn, or a share', () => {
+    const units = {player: [{hero: 'bokh'}], enemy: [{hero: 'wolf'}]};
+    expect(createTestFight(1, units).waitShare).toBeUndefined();
+    expect(createTestFight(1, {...units, wait: false}).waitShare).toBeUndefined();
+    const on = createTestFight(1, {...units, wait: true});
+    expect(on.waitShare).toBeCloseTo(2 / 3);
+    const bokh = on.units.find((u) => u.hero === 'bokh')!;
+    // The Grappler, speed 2: a Hold goes 6 slots on, a turn that does something 9.
+    expect(aimSlot(on, bokh, 0, 'hold', true)).toBe(6);
+    expect(aimSlot(on, bokh, 0, 'hold')).toBe(actionCost(bokh));
+    expect(createTestFight(1, {...units, wait: 0.5}).waitShare).toBe(0.5);
+    for (const wait of [0, 1.5, 'yes'])
+      expect(() => parseTestStage({...units, wait})).toThrow('wait must be true');
   });
 
   it('brings the units listed, with their own stats and abilities and Hold always', () => {

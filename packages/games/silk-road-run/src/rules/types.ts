@@ -463,6 +463,12 @@ export interface FightState {
   events?: RecordedEvent[];
   /** The stopped decision's unit. Live play returns human decisions; search pauses for either side. */
   awaiting: string | null;
+  /**
+   * Wait's share for this fight (`RULES.waitShare`), set by the test
+   * stage's `wait` (test-stage.md); absent, the rule's own. On the state,
+   * not RULES, so the AI's Web Worker plays by it too.
+   */
+  waitShare?: number;
 }
 
 /**

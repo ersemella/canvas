@@ -15,13 +15,13 @@ export function actionCost(unit: Unit): number {
 }
 
 /**
- * How many slots a Wait sends `unit`'s card on (3.2): `RULES.waitShare` of
- * its action cost, rounded, at least 1; the whole cost for Temee, whose
- * walk is the fight's clock.
+ * How many slots a Wait sends `unit`'s card on (3.2): `share` of its
+ * action cost (the fight's `waitShare`, else `RULES.waitShare`), rounded,
+ * at least 1; the whole cost for Temee, whose walk is the fight's clock.
  */
-export function waitCost(unit: Unit): number {
+export function waitCost(unit: Unit, share = RULES.waitShare): number {
   if (HEROES[unit.hero].walksRoad) return actionCost(unit);
-  return Math.max(1, Math.round(actionCost(unit) * RULES.waitShare));
+  return Math.max(1, Math.round(actionCost(unit) * share));
 }
 
 /**
@@ -54,7 +54,7 @@ export function aimSlot(
   ability?: AbilityId,
   idle = false
 ): number {
-  if (idle) return now + waitCost(unit);
+  if (idle) return now + waitCost(unit, state.waitShare);
   const charge = ability ? chargeOf(unit, ability) : 0;
   return now + (charge > 0 ? charge : actionCost(unit));
 }

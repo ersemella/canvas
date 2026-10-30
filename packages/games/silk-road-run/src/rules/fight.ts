@@ -366,13 +366,7 @@ function landCharge(ctx: Ctx, unit: Unit): void {
  * `RULES.patientSlots` fewer with Patient (19.8); then the Haste it was
  * given during the turn, Momentum's included.
  */
-function endTurn(
-  ctx: Ctx,
-  unit: Unit,
-  idle: boolean,
-  ability?: AbilityId,
-  stunned = false
-): void {
+function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId, stunned = false): void {
   const {state} = ctx;
   if (unit.tookOff && hasPassive(unit, 'momentum')) {
     log(ctx, `${unitName(unit)} rides its momentum.`);

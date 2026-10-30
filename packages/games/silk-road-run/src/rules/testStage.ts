@@ -51,8 +51,12 @@ interface TestSetup {
   camel: UnitSetup | null;
   player: UnitSetup[];
   enemy: UnitSetup[];
+  /** Wait's share for this fight (`FightState.waitShare`), or null for the rule's own. */
+  wait: number | null;
 }
 
+/** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
+const WAIT_ON = 2 / 3;
 /** The most units a side may bring (those without an "at" must also fit its starting columns). */
 const MAX_SIDE = 9;
 /** Bounds on a stat, far past the game's own (0 to 9), to catch a typo rather than a test. */
@@ -144,7 +148,7 @@ function parseSide(where: string, v: unknown): UnitSetup[] {
 export function parseTestStage(raw: unknown): TestSetup {
   if (!isObject(raw)) fail('must be an object.');
   const v = raw as Record<string, unknown>;
-  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy']);
+  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy', 'wait']);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
   if (typeof map !== 'string' || MAPS[map]?.id !== map)
@@ -164,6 +168,13 @@ export function parseTestStage(raw: unknown): TestSetup {
       fail('yurts must be "random", "mountains", "none", "map" or a list of spaces.');
     yurts = v.yurts as 'random' | 'mountains' | 'none' | 'map';
   }
+  let wait: number | null = null;
+  if (v.wait === true) wait = WAIT_ON;
+  else if (typeof v.wait === 'number' && v.wait > 0 && v.wait <= 1) wait = v.wait;
+  else if (v.wait !== undefined && v.wait !== false && v.wait !== null)
+    fail(
+      'wait must be true (two thirds of a turn), false, or a share of the action cost above 0 and at most 1.'
+    );
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -173,6 +184,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     camel,
     player: parseSide('player', v.player),
     enemy: parseSide('enemy', v.enemy),
+    wait,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -234,6 +246,7 @@ export function createTestFight(runSeed: number, raw: unknown = TEST_STAGE): Fig
     effects: [],
     log: [],
     awaiting: null,
+    ...(setup.wait !== null ? {waitShare: setup.wait} : {}),
   };
   const camel = units.find((u) => u.hero === CAMEL);
   for (const [u, {at}] of placed) u.hex = at ?? (u === camel ? route.camelStart : null);

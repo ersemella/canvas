@@ -14,13 +14,14 @@ says what and where, e.g. `test-stage.json: enemy[1] has an unknown field
 
 ## Example
 
-The committed file (2026-10-29): China's three heroes against the
-Steppe's, on the Gobi.
+The committed file (2026-10-30): China's three heroes against the
+Steppe's, on the Gobi, with Wait on (`"wait": true`) for play-testing it.
 
 ```json
 {
   "seed": null,
   "map": "gobi",
+  "wait": true,
   "yurts": "random",
   "camel": {},
   "player": [
@@ -88,6 +89,7 @@ it, unhurt.
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
+| `wait` | **Wait** (proposed, timeline.md 3.2): `true` and a turn that does nothing (Skip turn, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) sends the card two thirds of its action cost on, rounded: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10, so Skip turn reads +6 beside an ability's +9. A number above 0 and at most 1 sets the share instead (`0.5`). Both sides play by it; the AI's search doesn't weigh the time a Wait saves, so it Waits only when that happens to look best, and an AI that does weigh it was measured Waiting in place of walking (balance.md, "Wait"). `false`: today's rule. | `false` |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 
