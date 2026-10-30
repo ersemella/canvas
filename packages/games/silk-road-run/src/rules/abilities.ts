@@ -1007,6 +1007,11 @@ function trackTakes(state: FightState, user: Unit, u: Unit | undefined): u is Un
   return u.side === user.side ? given.heal > 0 : ABILITY.blessing.trackSmite && given.hit > 0;
 }
 
+/** Whether `user`'s Blessing in a line blesses itself: its own setting, else `ABILITY.blessing.lineSelf`. */
+function blessesSelf(user: Unit): boolean {
+  return user.blessesSelf ?? ABILITY.blessing.lineSelf;
+}
+
 /**
  * Blessing's six lines from `from` (`ABILITY.blessing.shape` `line`): each
  * straight out to the map's edge through anything, for the page's lanes.
@@ -1044,7 +1049,7 @@ export function blessingCaught(
       .filter(
         (u): u is Unit => u !== undefined && u.alive && (ABILITY.blessing.camel || u.hero !== CAMEL)
       );
-    return ABILITY.blessing.lineSelf ? [user, ...caught] : caught;
+    return blessesSelf(user) ? [user, ...caught] : caught;
   }
   return state.units.filter(
     (u) =>
@@ -1089,8 +1094,9 @@ const blessing: AbilityDef = {
       (ABILITY.blessing.mode === 'track' && ABILITY.blessing.trackSmite)
     );
   },
+  // No reach to outline: an aura is around him, a line runs to the map's edge.
   get range() {
-    return ABILITY.blessing.shape === 'aura' ? 0 : ABILITY.blessing.range;
+    return ABILITY.blessing.shape === 'unit' ? ABILITY.blessing.range : 0;
   },
   summary(user) {
     const {range, self, overheal, shield: extra, shape, radius} = ABILITY.blessing;
@@ -1110,7 +1116,7 @@ const blessing: AbilityDef = {
     }
     const who =
       shape === 'line'
-        ? `Every unit in a straight line out from you, through anything, enemies too${ABILITY.blessing.lineSelf ? ', and yourself' : ''}`
+        ? `Every unit in a straight line out from you, through anything, enemies too${blessesSelf(user) ? ', and yourself' : ''}`
         : shape === 'aura'
           ? `Every ally within ${radius} of you${self ? ', yourself too' : ''}`
           : `An ally within ${range}${self ? ', yourself too' : ''}`;

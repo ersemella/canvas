@@ -65,6 +65,8 @@ interface TestSetup {
     streakResets?: boolean;
     streak?: number[];
   };
+  /** Every Priest's Blessing on himself (`Unit.blessesSelf`). */
+  blessing: {self?: boolean};
 }
 
 /** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
@@ -169,6 +171,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     'enemy',
     'wait',
     'swiftStrike',
+    'blessing',
   ]);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
@@ -234,6 +237,16 @@ export function parseTestStage(raw: unknown): TestSetup {
       swiftStrike.streak = s.streak as number[];
     }
   }
+  const blessing: TestSetup['blessing'] = {};
+  if (v.blessing !== undefined) {
+    if (!isObject(v.blessing)) fail('blessing must be an object.');
+    const b = v.blessing as Record<string, unknown>;
+    onlyKeys('blessing', b, ['self']);
+    if (b.self !== undefined) {
+      if (typeof b.self !== 'boolean') fail('blessing.self must be true or false.');
+      blessing.self = b.self as boolean;
+    }
+  }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -245,6 +258,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     enemy: parseSide('enemy', v.enemy),
     wait,
     swiftStrike,
+    blessing,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -310,6 +324,9 @@ export function createTestFight(
       if (streakResets !== undefined) u.streakResets = streakResets;
       if (streak !== undefined) u.streakHaste = streak;
     }
+  for (const u of units)
+    if (u.hero === 'priest' && setup.blessing.self !== undefined)
+      u.blessesSelf = setup.blessing.self;
   // The camel's road, at random (`ROUTES`), off any space a unit is set on.
   const setOn = (h: Hex) => placed.some(([u, {at}]) => at && hexEquals(at, h) && u.hero !== CAMEL);
   const roads = ROUTES.filter((r) => !setOn(r.camelStart));

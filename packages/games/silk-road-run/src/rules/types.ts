@@ -358,6 +358,8 @@ export interface Unit {
   swiftHaste?: number;
   streakHaste?: number[];
   moveCap?: number;
+  /** Its own Blessing on itself (`ABILITY.blessing.lineSelf`; the test stage's `"blessing"`). */
+  blessesSelf?: boolean;
   /**
    * It has lost health this fight, healed back or not: Humphrey unhurt all
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.

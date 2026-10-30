@@ -40,6 +40,24 @@ describe('the test stage', () => {
     ).toThrow('No unit can start inside the salt dome');
   });
 
+  it('leaves every Priest out of his own Blessing with "blessing": {"self": false}', () => {
+    const raw = {player: [{hero: 'priest'}], enemy: [{hero: 'wolf'}], blessing: {self: false}};
+    const s = createTestFight(1, raw);
+    const p = s.units.find((u) => u.hero === 'priest')!;
+    expect(p.blessesSelf).toBe(false);
+    expect(ABILITIES.blessing.summary(p)).not.toContain('yourself');
+    p.hp = 1;
+    p.slot = s.currentSlot;
+    s.awaiting = p.id;
+    const aim = ABILITIES.blessing.targets(s, mapOf(s), p, p.hex!)[0]!;
+    applyTurn(s, p, {action: {ability: 'blessing', target: aim}});
+    expect(p.hp).toBe(1);
+    expect(() => parseTestStage({...raw, blessing: {self: 'no'}})).toThrow(
+      'blessing.self must be true or false.'
+    );
+    expect(createTestFight(1, {...raw, blessing: undefined}).units[0]!.blessesSelf).toBeUndefined();
+  });
+
   it('gives every Duelist the Swift Strike and walk "swiftStrike" sets', () => {
     const raw = {
       player: [{hero: 'youxia'}],
