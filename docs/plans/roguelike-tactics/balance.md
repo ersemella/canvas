@@ -4754,6 +4754,44 @@ slots to its next turn, priced as a share of a turn
 re-run `wait.mjs`; Patient, Haste and Delay would be measured truer too.
 Or play it from the test stage, with `waitShare` 2/3.
 
+### The leaf counting the track, and Wait again (2026-10-30)
+
+Built as `AI.leafTrack`, **off** (0): the search's leaf
+(`evaluatePosition`) counts each living card's slots to its next turn
+as a share of its action cost × its turn's worth (`turnValue`, its
+power; Temee's `perCamelHex`), less for its side the later it is, a
+charging card left to `chargeCost`; and screening (`scoreOutcome`)
+counts the actor's own card against its action cost. So a Wait's 3
+slots are worth a third of the unit's turn, w × power ÷ 3.
+`experiments/wait-leaf.mjs`, 800 fights a row, on `02da6ee`.
+
+| Mirror | AI with the leaf, one side: w 0.5 | w 1 | Wait, both AIs with the leaf: w 0.5 | w 1 |
+|---|---:|---:|---:|---:|
+| Steppe | 49.6% | 47.6% | **40.6%** | **34.1%** |
+| China | 51.3% | 54.3% | **42.1%** | **37.8%** |
+| Persia | 51.2% | 50.3% | **39.6%** | **34.6%** |
+| Byzantium | 51.5% | 46.9% | 45.2% | **44.1%** |
+
+The leaf makes the AI no better (47–54%), and with it Wait goes from
+worth nothing to a heavy loss, the more the heavier the leaf. The AI now
+Waits where it should walk: in the Steppe's mirror at w 1 the Horse
+Archer Holds 40% of its turns (21% with Wait and no leaf) and walks 27%
+(40%), the Grappler Holds 16% (6%), the Vanguard in China's 40% (9%),
+and fights run longer (Steppe 51 → 55 actions, China 74 → 86). A walk
+is priced only by `AI.perHexFromEnemy`, 0.2 a space, a tiebreaker "small
+next to any hit": 0.4 for a walk of 2 against a Wait's 1 for a power-3
+hero at w 1, so with no hit in reach the Wait wins. What a walk sets up
+(the hits a turn later) is worth far more than that, and the search
+doesn't see it within its three decisions.
+
+**So Wait can't be judged by this AI.** Without the track in its leaf it
+can't see what a Wait gives up; with it, it can't see what a walk
+gains, and Waits instead. Pricing both needs a position term worth what
+a walk sets up (the damage the unit could reach a turn later, as
+`threatsTo` reckons it the other way), a larger change to the AI than
+the rule it would measure. Both switches stay off; the cheaper judge is
+play: Wait on the test stage (`waitShare` 2/3), the owner's call.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
