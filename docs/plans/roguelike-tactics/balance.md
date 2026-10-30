@@ -4873,6 +4873,58 @@ One side's Vanguard with it, China's mirror: **53.3%**.
 - Untried: Haste 5 or 6; the AI keeping allies next to it; Spearhead with
   a point of power, or with Cleave's Delay 8 back.
 
+### The Duelist's lunge and streak (2026-10-30)
+
+Asked for (owner): Swift Strike with a lunge, a walk of up to 2 spaces
+straight at the first unit in line, stopped by units and yurts, ending
+next to it, the Duelist's own walk cut; and its Haste starting smaller
+and growing on turns striking running. Built as two switches, **off**
+(`ABILITY.swiftStrike.lunge`, `.streak`; a turn without a strike, a walk
+or a Hold included, starts the streak again). `experiments/duelist-lunge.mjs`,
+`modWinPct`, 400 fights a row (about ±2.5 points), seeds from 1000,
+production AI: the Duelist in the damage seat of the Steppe's and
+Persia's mirrors, and their damage heroes in his seat of China's (as
+roles-twelve.mjs); his speed +1 in China's mirror; a novice and an expert
+playing him in a Steppe mirror (as skill-fights.mjs). Run on `dea19f5`'s
+rules, the first six rows before the Barbarian's Leap (`8894940`).
+
+| Swift Strike | In others' seats | Kept in its own | Score | Speed +1 | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| As built (Haste 3, walk 3) | 47.1% | 50.4% | 48.7% | 77.5% | 48.5% | 51.6% | 3.1 |
+| Streak 1, 2, 3 | 44% | 42.1% | 43.1% | 72.5% | 50.5% | 51.5% | 1 |
+| Lunge 2, walk 2 | 56.1% | 56.6% | **56.4%** | 78.5% | 38.8% | 53.5% | **14.7** |
+| **Lunge 2, walk 1** | 45.9% | 48.5% | **47.2%** | **70.5%** | 42.8% | 54% | **11.2** |
+| Lunge 2, walk 2, streak 1, 2, 3 | 48.5% | 48.5% | 48.5% | 74.8% | 43.3% | 51.5% | 8.2 |
+| Lunge 2, walk 1, streak 1, 2, 3 | 37.4% | 40.1% | 38.7% | 68.3% | 45.8% | 52.5% | 6.7 |
+| Lunge 2, walk 1, streak 2, 3 | 40.9% | 42.9% | 41.9% | 66.3% | 44.3% | 54.3% | 10 |
+| Lunge 2, walk 1, streak 2, 3, 4 | 41.9% | 45.1% | 43.5% | 68.8% | 43.3% | 56% | 12.7 |
+
+Byzantium's seat, measured too, is left out of the scores: with the
+Barbarian's Leap the Duelist in his seat wins 69.6% as built and any
+Duelist 67–73%, the Barbarian in China's 23–31%, which measures the
+Barbarian (before the Leap, 52% and 50.5%). On the Leap, Lunge 2 with
+walk 1 against as built there: 67.3% against 69.6%, 28.3% against 23.3%.
+
+- **The lunge gives the Duelist something to play**: the span between a
+  novice and an expert grows from 3.1 to 11–15, among the widest measured
+  (the Juggernaut's 13, the Magus's 12.8). A turn is a walk or an ability,
+  so a lunge closes and strikes in one turn, and lines and blockers decide
+  which units are in reach.
+- **With a walk of 2 it is too strong** (56.4%); **with a walk of 1 it is
+  even** (47.2%, as built 48.7%), and his speed +1 falls from 77.5% to
+  70.5%, the closest the speed point has come to the other heroes' (62.5%
+  the next best).
+- **Every streak is a loss**, even 2, 3, 4 (43.5% against a flat 3's
+  47.2%): he walks about half his turns, and a walk ends the streak, so he
+  seldom reaches its top. It does take speed's snowball down (66–69%).
+  The AI's leaf doesn't count how soon a card comes back (Wait, above),
+  so it plays for no streak; with people it may be worth more.
+
+Not changed: the numbers are the owner's. Likeliest to suit: Lunge 2 and
+a walk of 1, Haste 3 flat. If the streak is wanted, one a walk doesn't end
+(only a Hold, a skip or an ability that isn't Swift Strike) is the variant
+to measure next.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
