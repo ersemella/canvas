@@ -4909,6 +4909,40 @@ rules (the Duelist's switches since are off).
   The Vanguard's likelier fixes are still a point of power or Cleave's
   Delay 8, unmeasured on today's rules.
 
+**Spearhead at range 2 (2026-10-30).** Asked for: whether it's too strong
+with every ally within 2 Hastened (`SPEARHEAD.range`, 1 as built), Haste
+3, the AI's share 0. The same rows, the baseline run again on `9c410a6`
+(the switches since are off; Byzantium's row 45.5% to 44.8%).
+
+| Row | Without | Range 1 | Range 2 |
+|---|---:|---:|---:|
+| With it, China's mirror | | 53.3% | **59.3%** |
+| Vanguard in the Steppe's seat | 48.5% | 50.3% | 54% |
+| Vanguard in Persia's | 53% | 52.2% | 55.1% |
+| Vanguard in Byzantium's | 44.8% | 47.4% | 50.5% |
+| Grappler in China's | 60.9% | 57.5% | 54% |
+| Juggernaut in China's | 47.8% | 43.3% | **36.8%** |
+| Cataphract in China's | 64.3% | 66% | 62.8% |
+| In others' seats (mean) | 48.8% | 50% | 53.2% |
+| Kept in its own | 42.3% | 44.4% | 48.8% |
+| **Score** | **45.6%** | **47.2%** | **51%** |
+
+- **Not too strong for the Vanguard: it brings it to even.** 51% is
+  inside the tanks' spread (45.3–55.7% on 2026-10-29), under the
+  Cataphract's 55.7%; every row of it elsewhere is 50.5–55.1%, none over
+  the band. It is the first change measured that evens the Vanguard.
+- **Strong as a passive**: 59.3% for the side whose Vanguard has it, 9
+  points, more than a hero's other passives were worth one at a time
+  (Steady Gait 51%, the strongest offered ones 57% and Concussive's
+  67.8%, "A provision against a passive or an upgrade"). As the
+  Vanguard's own it's fine; it shouldn't be offered at the caravanserai at
+  range 2 without measuring it on other heroes.
+- **Still lost in its own seat** to the Cataphract (62.8%) and less to the
+  Grappler (54%); the Juggernaut there falls to 36.8%.
+- Range 2 doubles the spaces that count (18 to 6), so allies get the
+  Haste without gathering round the tank, which was what lost at range 1
+  with the AI's share (above). Not tried: range 2 at Haste 2.
+
 ### The Duelist's lunge and streak (2026-10-30)
 
 Asked for (owner): Swift Strike with a lunge, a walk of up to 2 spaces
