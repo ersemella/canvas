@@ -4995,6 +4995,32 @@ fights each (about ±2.5 points a cell). Unfinished fights 0–5.8%.
 - The damage by source wasn't counted: `ablate.ts` learnt the axe's and
   the splash's lines after the run started.
 
+**With a Shield (later 2026-10-30).** Asked for (the owner): a leap that
+hits enemies Shields him by the damage they take, until spent, at most 3
+(as Blessing's cap); one that hits no unit loses any Shield he has, one
+hitting only allies gains none (`ABILITY.leap.shield`, off;
+`.shieldCap` 3). `experiments/leap.mjs`'s `frontShield` and
+`splashShield`, rerun beside `front` and `splash` (the same numbers as
+above, now with the axe's damage counted), on `8de5716` before its rebase.
+
+| Barbarian with | Steppe | China | Persia | Kept in its own | Leap's share of his turns | He lives through | His damage to enemies a fight |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Leap, `front` | 32% | 24.3% | 24.9% | 42% / 29.6% / 36% | 9–16% | 42–54% | 2.7–4.2 |
+| `front` with Shield | 33.5% | 25% | 29.6% | 45.5% / 29.8% / 36.4% | 11–18% | 43–64% | 3.4–5 |
+| Leap, `splash` | 31.8% | 20.8% | 26.1% | 41.7% / 30.3% / 36% | 20–28% | 35–55% | 3.6–4.7 |
+| `splash` with Shield | **36.5%** | 25.1% | **34.9%** | 40.7% / 30.7% / 35.1% | 31–40% | 37–56% | 3.9–6.8 |
+
+- **The Shield helps a little, `splash` most** (5–9 points in the Steppe
+  and Persia, 4 in China), and he leaps more for it (31–40% of his
+  turns); every row is still 14–25 points under Axe Throw, and Byzantium's
+  party no better with him.
+- **He hardly hits**: 3–7 damage to enemies a fight, one or two leaps
+  that land on someone, so the Shield seldom comes; with `front` it lifts
+  his survival (to 57–64% in China and Persia) without lifting wins.
+- The fault is how seldom a leap reaches anyone, not what it does when it
+  does; a Leap whose landing can be next to an enemy, or more health,
+  untried.
+
 ### Blessing by the track with its excess as Shield (2026-10-30)
 
 Asked for (the owner), after "Blessing by the track": the heal still by
