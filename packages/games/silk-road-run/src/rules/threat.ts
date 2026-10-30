@@ -99,17 +99,35 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
           if (!board.has(k)) break;
           mark(hexes, k, power);
         }
-    // Leap: the two spaces in front of each free landing, unless it can't move.
-    if (has('leap') && !isImmobilized(e))
+    // Leap: the spaces it strikes round each free landing (`ABILITY.leap.shape`),
+    // unless it can't move.
+    if (has('leap') && !isImmobilized(e)) {
+      const shape = ABILITY.leap.shape;
+      const struck: [number, number][] = [
+        [0, power],
+        [1, power],
+        ...(shape === 'front'
+          ? []
+          : ([-1, 2] as const).map((o): [number, number] => [
+              o,
+              shape === 'splash' ? ABILITY.leap.splash : power,
+            ])),
+        ...(shape === 'splash'
+          ? ([3, 4] as const).map((o): [number, number] => [o, ABILITY.leap.splash])
+          : []),
+      ];
       AXIAL.forEach(([aq, ar], i) => {
         const [bq, br] = AXIAL[(i + 1) % 6]!;
         const lq = fq + aq + bq;
         const lr = fr + ar + br;
         const tile = board.get(id(lq, lr));
         if (tile === undefined || blocks(tile) || occupied.has(id(lq, lr))) return;
-        mark(hexes, id(lq + aq, lr + ar), power);
-        mark(hexes, id(lq + bq, lr + br), power);
+        for (const [o, d] of struck) {
+          const [sq, sr] = AXIAL[(i + o + 6) % 6]!;
+          mark(hexes, id(lq + sq, lr + sr), d);
+        }
       });
+    }
     // A charge (Stomp's first build, Gore): the spaces it walks into, `steps` each way.
     const charge = (steps: number) => {
       if (isImmobilized(e)) return;

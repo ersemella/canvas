@@ -1814,6 +1814,28 @@ describe('the Barbarian', () => {
     expect(s.events!.some((e) => e.kind === 'step' && e.how === 'leap')).toBe(true);
   });
 
+  it('Leap as `forward` hits four spaces for its power, as `splash` all six, the four behind the front for 1', () => {
+    onTestFinished(() => {
+      Object.assign(ABILITY.leap, {shape: 'front'});
+    });
+    // Next to the landing setting out along 0: in front (0, 1), either side (5, 2), flown over (3, 4).
+    const around = (d: number) => hexNeighbor(landing(0), d);
+    const placements = {
+      'e-modao': around(0),
+      'e-mangudai': around(5),
+      'p-mangudai': around(3),
+      'p-modao': around(2),
+    };
+    const hits = (shape: 'forward' | 'splash') => {
+      Object.assign(ABILITY.leap, {shape});
+      const {s, b} = leaping(placements);
+      applyTurn(s, b, {action: {ability: 'leap', target: {hex: landing(0)}}});
+      return ['e-modao', 'e-mangudai', 'p-mangudai', 'p-modao'].map((id) => hp(s, id));
+    };
+    expect(hits('forward')).toEqual([3, 3, 0, 3]);
+    expect(hits('splash')).toEqual([3, 1, 1, 1]);
+  });
+
   it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {
     const {s, b} = leaping({'p-modao': front(1)[0]!, 'p-mangudai': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';

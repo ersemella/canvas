@@ -42,6 +42,7 @@ import {
   grappling,
   chargePlan,
   longshotLanes,
+  leapStrikes,
   reaveThrows,
   stompPlan,
   ridePlan,
@@ -250,8 +251,9 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('reave') && inLine && d <= ABILITY.reave.throwRange) return true;
     // Axe Throw: a line of `range`, over everything.
     if (has('axeThrow') && inLine && d <= ABILITY.axeThrow.range) return true;
-    // Leap: the two spaces in front of a landing, 3 away off its lines.
-    if (has('leap') && d === 3 && !inLine) return true;
+    // Leap: the two spaces in front of a landing, 3 away off its lines;
+    // `forward` 2 away on them too, `splash` next to it as well.
+    if (has('leap') && leapGap(u.hex!, e.hex) === 0) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -531,10 +533,18 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
         : plan?.caught.map((u) => u.hex!);
   if (caughtBy) {
     let value = -1;
+    // Leap's splash (`ABILITY.leap.splash`) on the spaces not in front.
+    const splashed =
+      ability === 'leap'
+        ? leapStrikes(mapOf(state), unit.hex!, target!.hex!)
+            .filter((s) => !s.full)
+            .map((s) => s.hex)
+        : [];
     for (const h of caughtBy) {
       const u = unitAt(state, h);
       if (!u) continue;
-      const damage = Math.min(damageOf(unit), u.hp);
+      const power = splashed.some((x) => hexEquals(x, h)) ? ABILITY.leap.splash : damageOf(unit);
+      const damage = Math.min(power, u.hp);
       value += sided(u, damage + (damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0));
       // Cleave's Delay: the share of a turn its card loses.
       if (ability === 'cleave' && ABILITY.cleave.delay > 0 && damage < u.hp)
@@ -1193,17 +1203,22 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
 }
 
 /**
- * How far a Barbarian on `at` is from Leaping onto `target`: 0 three spaces
- * away off its six lines (in front of a landing), otherwise the spaces to
- * the nearest such.
+ * How far a Barbarian on `at` is from Leaping onto `target` (ignoring what
+ * blocks a landing): 0 where a leap's strike reaches it, three spaces away
+ * off its six lines (in front of a landing); `forward`, 2 away on them too;
+ * `splash`, next to it as well. Otherwise the spaces to the nearest such.
  */
 function leapGap(at: Hex, target: Hex): number {
   const d = hexDistance(at, target);
   const dq = target.q - at.q;
   const dr = target.r - at.r;
   const inLine = dq === 0 || dr === 0 || dq === -dr;
-  if (d === 3) return inLine ? 1 : 0;
-  return Math.abs(d - 3);
+  const shape = ABILITY.leap.shape;
+  if (d === 3 && !inLine) return 0;
+  if (shape !== 'front' && d === 2 && inLine) return 0;
+  if (shape === 'splash' && d === 1) return 0;
+  if (d === 3 || d === 2) return 1;
+  return d > 3 ? d - 3 : shape === 'splash' ? 0 : 1;
 }
 
 /** `quarryGap` were `me` standing on `at`. */

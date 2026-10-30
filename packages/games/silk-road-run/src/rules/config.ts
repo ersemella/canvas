@@ -830,6 +830,15 @@ export const ABILITY = {
    */
   axeThrow: {range: 3 as number, push: 1 as number},
   /**
+   * Leap (owner, 2026-10-30), the Barbarian's: the spaces next to where he
+   * lands that it hits, by `shape`. `front` (built): the two straight
+   * ahead, either side of the way he flew, for his power. `forward`: those
+   * and the one either side of them, 4 for his power (all but the two he
+   * flew over). `splash`: all six, the front two for his power and the
+   * rest for `splash`, from no one's power.
+   */
+  leap: {shape: 'front' as 'front' | 'forward' | 'splash', splash: 1 as number},
+  /**
    * Gore (owner, 2026-10-28), the Bull Demon King's: Stomp's charge
    * (`stomp.mode: 'charge'`, Trample as first built), a walk of up to
    * `steps` in a line, every unit in its way hit and the row Pushed back.

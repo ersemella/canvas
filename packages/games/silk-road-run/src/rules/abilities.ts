@@ -1805,13 +1805,48 @@ function leapDirection(from: Hex, landing: Hex): number | null {
 }
 
 /**
- * The two spaces Leap strikes landing on `landing` from `from`: the two
- * next to it straight ahead, either side of the way it flew, yurts left out.
+ * The directions from a Leap's landing, setting out along `dir`, to the
+ * spaces it strikes by `ABILITY.leap.shape`: the two straight ahead first
+ * (Leap's front), then for `forward` the one either side of them, and for
+ * `splash` the two it flew over too.
  */
-export function leapArea(map: MapData, from: Hex, landing: Hex): Hex[] {
+function leapDirections(dir: number): number[] {
+  const front = [dir, dir + 1];
+  if (ABILITY.leap.shape === 'front') return front;
+  const sides = [dir - 1, dir + 2];
+  return ABILITY.leap.shape === 'forward'
+    ? [...front, ...sides]
+    : [...front, ...sides, dir + 3, dir + 4];
+}
+
+/** Whether a Leap setting out along `dir` hits the space next to its landing in direction `d` for its user's full power. */
+const leapsFull = (dir: number, d: number): boolean =>
+  ABILITY.leap.shape !== 'splash' || (((d - dir) % 6) + 6) % 6 <= 1;
+
+/**
+ * The spaces Leap strikes landing on `landing` from `from`
+ * (`ABILITY.leap.shape`), the two straight ahead first, yurts left out,
+ * each with whether it takes its user's power (`full`) or `splash`.
+ */
+export function leapStrikes(map: MapData, from: Hex, landing: Hex): {hex: Hex; full: boolean}[] {
   const dir = leapDirection(from, landing);
   if (dir === null) return [];
-  return [dir, dir + 1].map((d) => hexNeighbor(landing, d)).filter((h) => walkable(map, h));
+  return leapDirections(dir)
+    .map((d) => ({hex: hexNeighbor(landing, d), full: leapsFull(dir, d)}))
+    .filter((s) => walkable(map, s.hex));
+}
+
+/** The spaces Leap strikes (`leapStrikes`). */
+export const leapArea = (map: MapData, from: Hex, landing: Hex): Hex[] =>
+  leapStrikes(map, from, landing).map((s) => s.hex);
+
+/** What Leap hits, by `ABILITY.leap.shape`. */
+function leapSays(): string {
+  if (ABILITY.leap.shape === 'forward')
+    return 'Hits every unit on the four spaces next to where you land, all but the two you flew over, allies included.';
+  if (ABILITY.leap.shape === 'splash')
+    return `Hits every unit on the two spaces in front of where you land, and every other unit next to it for ${ABILITY.leap.splash}, allies included.`;
+  return 'Hits every unit on the two spaces in front of where you land, allies included.';
 }
 
 /**
@@ -1827,7 +1862,7 @@ const leap: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: () =>
-    'Leap over anything to a free space 2 away, off your straight lines. Hits every unit on the two spaces in front of where you land, allies included.',
+    `Leap over anything to a free space 2 away, off your straight lines. ${leapSays()}`,
   area: leapArea,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
@@ -1839,13 +1874,18 @@ const leap: AbilityDef = {
     return out;
   },
   resolve(ctx, user, target) {
-    const area = leapArea(ctx.map, user.hex!, target.hex!);
+    const strikes = leapStrikes(ctx.map, user.hex!, target.hex!);
     log(ctx, `${unitName(user)} leaps.`);
     enterHex(ctx, user, target.hex!, 'leap');
     // Hail where it lands can fell it.
     if (!user.alive || !user.hex) return;
-    const caught = area.map((h) => unitAt(ctx.state, h)).filter((u): u is Unit => u !== undefined);
-    for (const u of caught) hit(ctx, user, u, 'The axe');
+    const caught = strikes.flatMap(({hex, full}) => {
+      const u = unitAt(ctx.state, hex);
+      return u ? [{u, full}] : [];
+    });
+    for (const {u, full} of caught)
+      if (full) hit(ctx, user, u, 'The axe');
+      else hitFor(ctx, user, u, 'The blow', ABILITY.leap.splash);
   },
 };
 

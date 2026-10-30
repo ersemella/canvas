@@ -67,9 +67,12 @@ const SOURCES: [RegExp, string][] = [
   [/^The cleave hits/, 'cleave'],
   [/^The (?:jian|sword) hits/, 'swiftStrike'],
   [/^The smiting hits/, 'blessing'],
+  // Axe Throw, Reave and Leap's axe; Leap's splash (`ABILITY.leap.splash`).
+  [/^The axe hits/, 'axe'],
+  [/^The blow hits/, 'leapSplash'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the (?:jian|sword)| gives .+ an elixir| smites| blesses)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the (?:jian|sword)| gives .+ an elixir| smites| blesses| leaps)/;
 
 /** Runs `choose` with `settings` in place of production's AI settings (`Mod.ai`). */
 function withAi<T>(settings: Record<string, unknown> | undefined, choose: () => T): T {
