@@ -204,6 +204,9 @@ lasting Shield, at `cap` 3 (built), 4 and 8. Blessing's built defaults
 changed then (`overheal`, `shield` 1, `lasts`, `cap` 3), so `priest.mjs`,
 `priest-buffs.mjs` and `priest-shield.mjs` reproduce only at their
 revision.
+`priest-track.mjs` (2026-10-30) Blessing by the track (`.mode: 'track'`,
+`.scale` `bands` and `cap`, range 3, no Shield) against Blessing as built,
+in the support seats, in his own and played by a novice and an expert.
 
 ## Ability and stat ablation
 

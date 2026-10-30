@@ -4792,6 +4792,47 @@ a walk sets up (the damage the unit could reach a turn later, as
 the rule it would measure. Both switches stay off; the cheaper judge is
 play: Wait on the test stage (`waitShare` 2/3), the owner's call.
 
+### Blessing by the track (2026-10-30)
+
+Asked for (the owner): Blessing healing or hitting by how far the unit's
+card lies on the track, with no Shield and a range of 3, power counting
+one of two ways. `ABILITY.blessing.mode` `track` (off): an ally whose card
+is under `split` (5) slots on is healed, an enemy's over 5 hit, the Priest
+himself (acting now) healed; `scale` `bands` gives his power at 2 or more
+slots from 5 and half of it (1) at 1, `cap` 1 a slot from 5, at most his
+power (Empower, Weaken and passives counted either way).
+`experiments/priest-track.mjs`, on `04c459d`: the Priest in the support
+seat of the three other regions' mirrors, each of their supports in his
+seat of Byzantium's (as "Each hero in its role"), and a novice and an
+expert Priest in a Steppe mirror (as "Skill on all twelve heroes"), 400
+fights each (about ±2.5 points a cell, ±3.5 a span). Unfinished fights
+0–1.5% by the track, 0–3.5% as built.
+
+| Priest | Steppe | China | Persia | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| As built | 42.7% | 40.3% | 50.9% | 50.4% | 47.5% | 47.9% | 51.3% | 3.4 |
+| Track, `bands` | **31%** | **20%** | 45.1% | 49.2% | **40.6%** | 49% | 51.3% | 2.3 |
+| Track, `cap` | **27%** | **19.5%** | 42.1% | 43.8% | **36.7%** | 48% | 54.8% | 6.8 |
+| Control: heals only (`bands`, `split` 14) | 30.1% | 22% | | | | | | |
+
+- **Much weaker in both scales**: 6–21 points down in others' seats,
+  China's the worst (about 20%). Kept in Byzantium's party he holds up
+  with `bands` (49.2%), not with `cap` (43.8%).
+- **The Shield's loss is the whole of it, the smite worth about
+  nothing**: with `split` past the track's end (every unit in the heal
+  band, no enemy hit) he wins 30.1% and 22%, the same as with the smite.
+  He smites 1.3–1.9 times a fight for 3–5 damage in all, and takes
+  Blessing on 51–63% of his turns, walking on the rest (81–85% Blessing as
+  built, since an ally always has a Shield to gain). He lives through 20–50%
+  of fights, 44–83% as built: the lasting Shield he gave himself and his
+  front line was what kept him standing.
+- **Skill**: `cap` 6.8 points, `bands` 2.3, as built 3.4 (1.1 on
+  2026-10-29, so the spans are within noise of each other; `cap`'s may be
+  real). Fights are shorter (median 105–122 slots, 128–137 as built).
+- Untried: the track with the overheal kept as a lasting Shield on the
+  heal side; the split moved (more of the track healing); more power or
+  defence for him.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
