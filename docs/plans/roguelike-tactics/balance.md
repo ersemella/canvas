@@ -4870,8 +4870,44 @@ One side's Vanguard with it, China's mirror: **53.3%**.
   before its allies act, Cleave's Delay is already its tempo, and the AI
   doesn't seek to stand next to it (no term for it), so the Haste lands
   where the fight puts allies.
-- Untried: Haste 5 or 6; the AI keeping allies next to it; Spearhead with
-  a point of power, or with Cleave's Delay 8 back.
+- Untried then: Haste 5 or 6; the AI keeping allies next to it (both
+  measured below); Spearhead with a point of power, or with Cleave's
+  Delay 8 back.
+
+**A bigger Haste, and allies seeking it (2026-10-30).** Asked for: both.
+Haste 5 and 6 (`SPEARHEAD.haste`), and the AI's allies valuing a space
+next to a Spearhead ally (`AI.spearheadShare`, built, 0 as built): that
+share × the Haste one hit on it gives them, as a share of their turn ×
+their turn's worth, in its screening (`scoreOutcome`) and the search's
+walk price (`actionCost`), both sides' AIs. The same rows, on `b9c78fc`'s
+rules (the Duelist's switches since are off).
+
+| Row | Without | Haste 3 | 5 | 6 | 3, AI 1 | 3, AI 2 | 6, AI 1 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| With it, China's mirror | | 53.3% | 53.5% | 54% | **44.8%** | **36.8%** | **41%** |
+| Vanguard in the Steppe's seat | 48.5% | 50.3% | 50% | 50.5% | 51% | 50.8% | 51.5% |
+| Vanguard in Persia's | 53% | 52.2% | 51.6% | 52.1% | 52.7% | 48.6% | 47.8% |
+| Vanguard in Byzantium's | 45.5% | 47.4% | 47.4% | 46.5% | 43.2% | 44.1% | 41.6% |
+| Grappler in China's | 60.9% | 57.5% | 58.4% | 59.1% | 59.5% | 56% | 56.5% |
+| Juggernaut in China's | 47.8% | 43.3% | 43% | 42.8% | 48.8% | 55.5% | 53.5% |
+| Cataphract in China's | 64.3% | 66% | 65% | 63.5% | 70.5% | 71.3% | 70% |
+| **Score** | **45.7%** | **47.2%** | **47.1%** | **47.3%** | **44.7%** | **43.5%** | **43.5%** |
+
+- **A bigger Haste adds nothing**: 5 and 6 score as 3 does (47.1–47.3%),
+  the mirror 53.5–54%. What the passive gives is capped by how often an
+  ally happens to stand next to the Vanguard when it's hit, not by the
+  Haste's size.
+- **Allies seeking it lose**, the more they seek it: the side with it in
+  China's mirror wins 44.8% at share 1 and 36.8% at 2, under the 50% of
+  no passive at all, and the Vanguard's score falls under its baseline
+  (43.5–44.7%). Gathering round the tank costs the damage and support
+  more than the Haste gives back. Why, a guess not traced: Cleave's line
+  catches allies too, and a support next to the tank is in the enemy's
+  reach (the threat term prices it, but against a fixed bonus).
+- **So Spearhead is worth about 1.5 points to the Vanguard at any
+  Haste**, too little to bring it even. Left off, `AI.spearheadShare` at 0.
+  The Vanguard's likelier fixes are still a point of power or Cleave's
+  Delay 8, unmeasured on today's rules.
 
 ### The Duelist's lunge and streak (2026-10-30)
 
