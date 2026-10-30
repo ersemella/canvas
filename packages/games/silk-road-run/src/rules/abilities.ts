@@ -1111,6 +1111,11 @@ export function lungeEnd(from: Hex, to: Hex): Hex {
   return at;
 }
 
+/** `u`'s Swift Strike lunge: its own (the test stage's), else `ABILITY.swiftStrike.lunge`. */
+export const lungeOf = (u: Unit): number => u.lunge ?? ABILITY.swiftStrike.lunge;
+/** `u`'s Swift Strike streak: its own, else `ABILITY.swiftStrike.streak`. */
+const streakOf = (u: Unit): number[] => u.streakHaste ?? ABILITY.swiftStrike.streak;
+
 /**
  * Swift Strike's targets from `from`: the units next to it, and with a
  * lunge (`ABILITY.swiftStrike.lunge`), the first unit straight out along
@@ -1119,8 +1124,13 @@ export function lungeEnd(from: Hex, to: Hex): Hex {
  * ends there (it Immobilizes), so only the space past it is still in reach.
  * An Immobilized Duelist strikes next to it only.
  */
-function swiftStrikeTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
-  const reach = isImmobilized(user) ? 0 : ABILITY.swiftStrike.lunge;
+function swiftStrikeTargets(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex
+): ActionTarget[] {
+  const reach = isImmobilized(user) ? 0 : lungeOf(user);
   if (reach === 0) return adjacentUnits(state, from, (u) => u !== user);
   const out: ActionTarget[] = [];
   for (const dir of DIRECTIONS) {
@@ -1141,12 +1151,12 @@ function swiftStrikeTargets(state: FightState, map: MapData, user: Unit, from: H
 }
 
 /**
- * Swift Strike's Haste for the `n`th hit of a streak (`ABILITY.swiftStrike.streak`),
- * or `haste` without one.
+ * Swift Strike's Haste on `u`'s `n`th hit of a streak (`streakOf`), or
+ * `ABILITY.swiftStrike.haste` without one.
  */
-export function swiftStrikeHaste(n: number): number {
-  const {haste: slots, streak} = ABILITY.swiftStrike;
-  return streak.length === 0 ? slots : streak[Math.min(n, streak.length) - 1]!;
+export function swiftStrikeHaste(u: Unit, n: number): number {
+  const streak = streakOf(u);
+  return streak.length === 0 ? ABILITY.swiftStrike.haste : streak[Math.min(n, streak.length) - 1]!;
 }
 
 /**
@@ -1164,8 +1174,9 @@ const swiftStrike: AbilityDef = {
   single: true,
   name: 'Swift Strike',
   kind: 'attack',
-  summary: () => {
-    const {lunge, streak} = ABILITY.swiftStrike;
+  summary: (user) => {
+    const lunge = lungeOf(user);
+    const streak = streakOf(user);
     const first = lunge > 0 ? `Lunge up to ${lunge} straight and strike the first unit.` : 'Melee.';
     const then =
       streak.length > 0
@@ -1193,7 +1204,7 @@ const swiftStrike: AbilityDef = {
     hit(ctx, user, u, 'The sword');
     if (!user.struck) user.streak = (user.streak ?? 0) + 1;
     user.struck = true;
-    haste(ctx, user, swiftStrikeHaste(user.streak ?? 1));
+    haste(ctx, user, swiftStrikeHaste(user, user.streak ?? 1));
   },
 };
 

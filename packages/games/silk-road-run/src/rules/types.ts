@@ -337,6 +337,14 @@ export interface Unit {
   streak?: number;
   struck?: boolean;
   /**
+   * This unit's own Swift Strike lunge and streak and its walk, in place of
+   * `ABILITY.swiftStrike`'s and its hero's `moveCap` (the test stage's
+   * `"swiftStrike"`).
+   */
+  lunge?: number;
+  streakHaste?: number[];
+  moveCap?: number;
+  /**
    * It has lost health this fight, healed back or not: Humphrey unhurt all
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
    */

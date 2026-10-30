@@ -255,7 +255,7 @@ export function addStatus(unit: Unit, status: Status): void {
 export function movementCap(unit: Unit): number {
   if (isImmobilized(unit)) return 0;
   if (HEROES[unit.hero].movesStraight) return Infinity;
-  return HEROES[unit.hero].moveCap ?? RULES.movementCap;
+  return unit.moveCap ?? HEROES[unit.hero].moveCap ?? RULES.movementCap;
 }
 
 /** Fire on `h` (Princess Iron Fan's Fan the Flames): entering it burns (`FireEffect`). */

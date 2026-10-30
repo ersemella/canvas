@@ -7,6 +7,7 @@ import {RuleError, refreshStats} from './fight';
 import {createRun, handleRunAction, runStatus, runView} from './run';
 import {createTestFight, parseTestStage} from './testStage';
 import {aimSlot, actionCost} from './track';
+import {movementCap} from './board';
 
 const space = (col: number, row: number) => ({col, row});
 
@@ -36,6 +37,29 @@ describe('the test stage', () => {
     expect(() =>
       createTestFight(1, {...units, map: 'salt', player: [{hero: 'bokh', at: {col: 4, row: 4}}]})
     ).toThrow('No unit can start inside the salt dome');
+  });
+
+  it('gives every Duelist the lunge, walk and streak "swiftStrike" sets', () => {
+    const raw = {
+      player: [{hero: 'youxia'}],
+      enemy: [{hero: 'youxia'}, {hero: 'wolf'}],
+      swiftStrike: {lunge: 2, walk: 2, streak: [2, 3, 4]},
+    };
+    const s = createTestFight(1, raw);
+    for (const u of s.units.filter((x) => x.hero === 'youxia')) {
+      expect([u.lunge, u.moveCap, u.streakHaste]).toEqual([2, 2, [2, 3, 4]]);
+      expect(movementCap(u)).toBe(2);
+      expect(ABILITIES.swiftStrike.summary(u)).toBe(
+        'Lunge up to 2 straight and strike the first unit. When it hits, its card is Hastened 2, then 3, then 4 on turns striking running.'
+      );
+    }
+    expect(s.units.find((u) => u.hero === 'wolf')!.lunge).toBeUndefined();
+    // Left out, Swift Strike is as built.
+    const built = createTestFight(1, {player: [{hero: 'youxia'}], enemy: [{hero: 'wolf'}]});
+    expect(movementCap(built.units.find((u) => u.hero === 'youxia')!)).toBe(3);
+    expect(() => parseTestStage({...raw, swiftStrike: {lunge: -1}})).toThrow(/lunge/);
+    expect(() => parseTestStage({...raw, swiftStrike: {streak: 3}})).toThrow(/streak/);
+    expect(() => parseTestStage({...raw, swiftStrike: {reach: 2}})).toThrow(/unknown field/);
   });
 
   it('plays with Wait when "wait" says so: true for two thirds of a turn, or a share', () => {

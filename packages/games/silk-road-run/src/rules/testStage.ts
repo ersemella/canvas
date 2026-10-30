@@ -54,6 +54,8 @@ interface TestSetup {
   enemy: UnitSetup[];
   /** Wait's share for this fight (`FightState.waitShare`), or null for the rule's own. */
   wait: number | null;
+  /** Every Duelist's Swift Strike lunge and streak and its walk (`Unit.lunge`, `.streakHaste`, `.moveCap`). */
+  swiftStrike: {lunge?: number; walk?: number; streak?: number[]};
 }
 
 /** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
@@ -149,7 +151,16 @@ function parseSide(where: string, v: unknown): UnitSetup[] {
 export function parseTestStage(raw: unknown): TestSetup {
   if (!isObject(raw)) fail('must be an object.');
   const v = raw as Record<string, unknown>;
-  onlyKeys('The file', v, ['seed', 'map', 'yurts', 'camel', 'player', 'enemy', 'wait']);
+  onlyKeys('The file', v, [
+    'seed',
+    'map',
+    'yurts',
+    'camel',
+    'player',
+    'enemy',
+    'wait',
+    'swiftStrike',
+  ]);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
   if (typeof map !== 'string' || MAPS[map]?.id !== map)
@@ -176,6 +187,29 @@ export function parseTestStage(raw: unknown): TestSetup {
     fail(
       'wait must be true (two thirds of a turn), false, or a share of the action cost above 0 and at most 1.'
     );
+  const swiftStrike: TestSetup['swiftStrike'] = {};
+  if (v.swiftStrike !== undefined) {
+    if (!isObject(v.swiftStrike)) fail('swiftStrike must be an object.');
+    const s = v.swiftStrike as Record<string, unknown>;
+    onlyKeys('swiftStrike', s, ['lunge', 'walk', 'streak']);
+    const small = (k: 'lunge' | 'walk') => {
+      if (s[k] === undefined) return;
+      if (!Number.isInteger(s[k]) || (s[k] as number) < 0 || (s[k] as number) > 8)
+        fail(`swiftStrike.${k} must be a whole number from 0 to 8.`);
+      swiftStrike[k] = s[k] as number;
+    };
+    small('lunge');
+    small('walk');
+    if (s.streak !== undefined) {
+      const ok =
+        Array.isArray(s.streak) &&
+        s.streak.every(
+          (n) => Number.isInteger(n) && (n as number) >= 0 && (n as number) <= MAX_STAT
+        );
+      if (!ok) fail('swiftStrike.streak must be a list of whole numbers of slots, e.g. [2, 3, 4].');
+      swiftStrike.streak = s.streak as number[];
+    }
+  }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -186,6 +220,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     player: parseSide('player', v.player),
     enemy: parseSide('enemy', v.enemy),
     wait,
+    swiftStrike,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -239,6 +274,13 @@ export function createTestFight(
     ]),
   ];
   const units = placed.map(([u]) => u);
+  const {lunge, walk, streak} = setup.swiftStrike;
+  for (const u of units)
+    if (u.hero === 'youxia') {
+      if (lunge !== undefined) u.lunge = lunge;
+      if (walk !== undefined) u.moveCap = walk;
+      if (streak !== undefined) u.streakHaste = streak;
+    }
   // The camel's road, at random (`ROUTES`), off any space a unit is set on.
   const setOn = (h: Hex) => placed.some(([u, {at}]) => at && hexEquals(at, h) && u.hero !== CAMEL);
   const roads = ROUTES.filter((r) => !setOn(r.camelStart));

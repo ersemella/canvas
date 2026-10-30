@@ -1,8 +1,9 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against the Steppe's, on the Fairy Chimneys, the Byzantine map, with Wait on (a Skip turn comes back after two thirds of a turn).",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against the Steppe's, on the Fairy Chimneys, the Byzantine map, with Wait on (a Skip turn comes back after two thirds of a turn), and every Duelist with the lunge (Swift Strike after up to 2 spaces straight at the first unit in line), a walk of 2 and a streak of Haste 2, 3, 4.",
   "seed": null,
   "map": "tuff",
   "wait": true,
+  "swiftStrike": {"lunge": 2, "walk": 2, "streak": [2, 3, 4]},
   "yurts": "random",
   "camel": {},
   "player": [{"hero": "modao"}, {"hero": "youxia"}, {"hero": "alchemist"}],

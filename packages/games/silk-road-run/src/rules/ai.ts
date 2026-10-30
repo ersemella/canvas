@@ -47,6 +47,7 @@ import {
   stompPlan,
   ridePlan,
   lungeEnd,
+  lungeOf,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -246,7 +247,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     const inLine = dq === 0 || dr === 0 || dq === -dr;
     if ((has('snapShot') || has('longshot') || has('boulder')) && inLine) return true;
     // Swift Strike's lunge: a line of `lunge` and the space past it.
-    if (has('swiftStrike') && inLine && d <= ABILITY.swiftStrike.lunge + 1) return true;
+    if (has('swiftStrike') && inLine && d <= lungeOf(u) + 1) return true;
     // Reave's throw: a line of `throwRange`.
     if (has('reave') && inLine && d <= ABILITY.reave.throwRange) return true;
     // Axe Throw: a line of `range`, over everything.

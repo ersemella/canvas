@@ -1703,7 +1703,10 @@ describe('the Duelist', () => {
 
   it('a unit in the way blocks the lunge: only the nearer one is a target', () => {
     withSwift({lunge: 2});
-    const s = setup({'p-youxia': c, 'e-modao': along(c, 0, 2), 'e-mangudai': along(c, 0, 3)}, party);
+    const s = setup(
+      {'p-youxia': c, 'e-modao': along(c, 0, 2), 'e-mangudai': along(c, 0, 3)},
+      party
+    );
     s.tiles = {};
     const y = unit(s, 'p-youxia');
     expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual([{hex: along(c, 0, 2)}]);
