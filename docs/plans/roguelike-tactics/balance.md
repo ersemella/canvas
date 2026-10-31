@@ -6209,6 +6209,45 @@ Byzantium's party, by a novice and an expert):
   is unmeasured. Above 7 he is weak whatever the skill; at 5 and under
   too strong, and a novice's party suffers for it.
 
+### Invocation at 6 slots, as built (2026-10-31)
+
+Built (the owner) after "Invocation's charge": the charge **0.6 of his
+action cost, 6 slots at speed 1** (`ABILITY.invocation.charge` 0.6), Wait
+on or off. `experiments/invocation-charge.mjs`'s `c6-` rows on `fb093cd`'s
+rules, the same seeds and rows; unfinished fights at most 0.3%.
+
+| Charge | Steppe | China | Persia | others' | Storm C. in his | Alchemist in his | Magus in his | kept | **score** |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 7 | 41.8 | 36.3 | 49.2 | 42.4 | 56.0 | 61.3 | 44.8 | 46.0 | 44.2 |
+| **6 (built)** | 51.0 | 43.5 | 53.1 | 49.2 | 47.3 | 63.5 | 44.8 | 48.1 | **48.7** |
+| 5 | 55.8 | 49.8 | 62.2 | 55.9 | 35.5 | 57.0 | 35.0 | 57.5 | 56.7 |
+
+| Charge | His turns | Casting | Hold | Lives through | Enemies hit | Damage | Healed |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| **6** | 2.7–3.0 | 45–63% | 3–8% | 38–50% | 1.5–2.4 | 4.3–7.2 | 4.3–8.0 |
+
+| Charge | Priest novice | expert | **span** | Party novice | expert | **span** |
+|---:|---:|---:|---:|---:|---:|---:|
+| 7 | 44.8% | 49.8% | 5.0 | 46% | 53.3% | 7.3 |
+| **6** | 41.5% | 50.5% | **9.0** | 35.1% | 57.4% | **22.3** |
+| 5 | 43.8% | 50.8% | 7.0 | 37.6% | 54.8% | 17.2 |
+
+- **Even as a score**: 48.7%, inside the band, between 7's 44.2% and 5's
+  56.7% as estimated. Even in the Steppe's and Persia's seats (51.0%,
+  53.1%) and against the Storm Caller and the Magus in his own; under in
+  China's (43.5%) and against the Alchemist in his (36.5% kept), the
+  Alchemist's Overdose being strong in Byzantium's party.
+- **The skill gap is large**: the Priest's own span 9.0 (3.3 at 10, 0.8
+  with Blessing), in the tanks' 5.3–13.7; Byzantium's party 22.3, the
+  largest measured (the Duelist's 16.7 the most for one hero), the novice
+  party losing most (35.1%). At ±3.5 a span, 6's and 5's party spans
+  (17.2) agree; what is clear is a jump from 7–10's 7.3–9.7 to 17–22 at 6
+  and under. A player who places the area and keeps allies in it gains a
+  lot; one who doesn't, or the shallow AI, loses a lot.
+- **Open**: whether a party span of about 20 is wanted (a hard support to
+  play well, and an enemy Priest much weaker in a novice AI's hands than an
+  expert's); and China's seat and the Alchemist's under even.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
