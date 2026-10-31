@@ -6706,6 +6706,49 @@ cell, ±3.5 a span), on `a1cb059`. Unfinished 0–1%.
 
 Not built into runs, where he keeps Fury. The test stage plays 3/3; 5/5
 is `BATTLE_CRY` `self` and `allies` 5 in config.ts.
+### The slam in place of the brace (later 2026-10-31)
+
+Asked for (the owner): the Cataphract has no walk and charges nearly every
+turn (91.5–95% of them, "The Cataphract braced after a charge"), and at
+speed 2 his turn is about 8.6 slots, so Armour 1 for 8 slots after each
+charge is on almost always; could a unit carried into ruins or the map's
+edge be **Delayed** in its place? That is the slam (`ABILITY.charge.slam`
+`delay`, measured for him as a tank on 2026-10-29, "The slam as a
+Delay"). `experiments/slam-damage.mjs`, on `73041dd` (the game as built,
+so *brace* matches the full check's 58.2%): `brace` as built; `slam6`
+and `slam9`, no Armour (`armour` 0), the slam's Delay 6 or 9. 400 fights
+a row (about ±2.5 a cell, ±3.5 a span), the same seeds. Unfinished 0–1%.
+
+| | Brace (built) | **Slam, Delay 6** | Slam, Delay 9 |
+|---|---:|---:|---:|
+| Byzantium against the Steppe | 32.5% | 33% | 39% |
+| against China | 39% | 52.3% | 66.8% |
+| against Persia | 60.9% | 60.3% | 61.3% |
+| Cataphract abroad: Steppe, China, Persia | 53.8, 51.5, 57% | 52.8, 61.4, 55.1% | 58.5, 72, 52.9% |
+| Others' (his mean abroad) | 54.1% | 56.4% | 61.1% |
+| Outrider, Duelist, Ranger in his seat | 36.3, 43.8, 32.8% | 30.3, 37, 27.5% | 19.8, 26, 21% |
+| Kept | 62.4% | 68.4% | 77.7% |
+| **Score** | **58.2%** | **62.4%** | **69.4%** |
+| Novice Cataphract | 44.8% | 41.5% | 46.8% |
+| Expert Cataphract | 54.3% | 55.3% | 58.3% |
+| **His skill span** | 9.5 | **13.8** | 11.5 |
+
+- **The slam can stand in for the brace, and is stronger**: Delay 6 with
+  no Armour scores 4.2 more (62.4% against 58.2%), Delay 9 11.2 more. He
+  was already the strongest damage seat (58.2%, "Full balance check"), so
+  a swap at 6 widens that.
+- **Most of the gain is against China** (his seat there 51.5 → 61.4%,
+  Byzantium 39 → 52.3%): the Duelist and the Alchemist have 4 health and
+  the Vanguard acts every 10 slots, as with the slam on 2026-10-29. In the
+  Steppe's and Persia's seats it is even with the brace (±2); the other
+  damage heroes do 5–7 points worse in his seat.
+- **Skill span 13.8 from 9.5**, near the edge of noise: where he aims a
+  charge, against ruins or the edge, matters more than with the brace,
+  which every charge earns.
+- **To bring him even**, untried: the slam at Delay 3–4 with no Armour,
+  or the slam only against ruins, not the map's edge.
+
+Not built into runs or on the test stage.
 
 ## Principles for re-tuning
 
