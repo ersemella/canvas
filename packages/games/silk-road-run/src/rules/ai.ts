@@ -277,11 +277,11 @@ function strikable(state: FightState, u: Unit): Unit[] {
     // Leap: the two spaces in front of a landing, 3 away off its lines;
     // `forward` 2 away on them too, `splash` next to it as well.
     if (has('leap') && leapGap(u.hex!, e.hex, leapShapeOf(u)) === 0) return true;
-    // Wade In: as `line`, a line of `reach`; as `funnel`, next to it or the tip, 2 away off its lines.
-    if (has('wadeIn')) {
+    // Lunge: as `line`, a line of `reach`; as `funnel`, next to it or the tip, 2 away off its lines.
+    if (has('lunge')) {
       if (
-        ABILITY.wadeIn.shape === 'line'
-          ? inLine && d <= ABILITY.wadeIn.reach
+        ABILITY.lunge.shape === 'line'
+          ? inLine && d <= ABILITY.lunge.reach
           : d === 1 || (d === 2 && !inLine)
       )
         return true;
@@ -670,7 +670,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const caughtBy =
     ability === 'gale'
       ? hexNeighbors(target!.hex!)
-      : ability === 'cleave' || ability === 'reave' || ability === 'leap' || ability === 'wadeIn'
+      : ability === 'cleave' || ability === 'reave' || ability === 'leap' || ability === 'lunge'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!, unit)
         : ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
           ? lungeCaught(state, unit.hex!, target, unit)

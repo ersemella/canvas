@@ -19,7 +19,7 @@ describe('the test stage', () => {
     // Byzantium's three as in a run: no override of the Barbarian left.
     expect(b.passives).toEqual(['fury']);
     expect(b.loadout).toBeUndefined();
-    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['wadeIn', 'hold']);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['lunge', 'hold']);
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 

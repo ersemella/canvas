@@ -284,7 +284,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * 2026-10-31 (owner; its damage hero before, the Cataphract its tank), a
    * Varangian guardsman with a great axe. Speed 1, defence 3 (health 8),
    * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before), Wade
-   * In (`ABILITY.wadeIn`; Hew on the test stage) and Fury (`FURY`, Haste 5)
+   * In (`ABILITY.lunge`; Hew on the test stage) and Fury (`FURY`, Haste 5)
    * as measured in balance.md, "Hew as a line, with Fury". Before that: Leap (owner,
    * 2026-10-30): over anything to a free space 2 away off his straight
    * lines, hitting the two spaces in front of where he lands. In place of
@@ -301,7 +301,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 3,
     power: 2,
-    abilities: ['wadeIn', 'hold'],
+    abilities: ['lunge', 'hold'],
     passives: ['fury'],
   },
   /**
@@ -945,7 +945,7 @@ export const ABILITY = {
    */
   reave: {throwRange: 3 as number},
   /**
-   * Wade In (owner, 2026-10-31; Hew on the test stage, renamed when the
+   * Lunge (owner, 2026-10-31; Hew on the test stage, Wade In when the
    * Barbarian took it in runs the same day), his: `shape` `line` as built,
    * below. First a funnel, the two spaces next to him either side of one way
    * and the space past them that touches both, every unit there hit for his
@@ -958,7 +958,7 @@ export const ABILITY = {
    * or enemy, hit for his power; one further than next to him, he steps
    * in until next to it first, as a lunge (stopped by hail).
    */
-  wadeIn: {
+  lunge: {
     shape: 'line' as 'funnel' | 'line',
     reach: 2 as number,
     shieldPerHit: 0 as number,

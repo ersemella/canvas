@@ -61,7 +61,7 @@ export type AbilityId =
   // The Priest's since 2026-10-31, in place of Blessing.
   | 'invocation'
   | 'reave'
-  | 'wadeIn'
+  | 'lunge'
   // The test stage's Magus's in place of Omen (owner, 2026-10-31).
   | 'alignment'
   | 'axeThrow'

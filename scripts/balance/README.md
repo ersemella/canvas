@@ -246,8 +246,8 @@ Shield (`ABILITY.hew.shieldPerHit`); every role-seat row and their skill.
 `byzantium-fury.mjs` (2026-10-31) Hew as a line of 2, stepping in
 (`ABILITY.hew.shape` `line`), with Fury (`FURY`) and without; on the
 Priest's Invocation.
-Since the Barbarian took it in runs (2026-10-31), Hew is Wade In
-(`wadeIn`, `ABILITY.wadeIn`), and the Barbarian and the Cataphract are
+Since the Barbarian took it in runs (2026-10-31), Hew is Lunge
+(`lunge`, `ABILITY.lunge`), and the Barbarian and the Cataphract are
 built as the swap; the four `byzantium-*.mjs` files reproduce only at
 their revision.
 
