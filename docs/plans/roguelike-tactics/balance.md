@@ -6704,8 +6704,9 @@ cell, ±3.5 a span), on `a1cb059`. Unfinished 0–1%.
 - **His partners are unchanged** (the Cataphract's and the Priest's seats
   kept within 2.5 of before), so the gain is his own seat's.
 
-Not built into runs, where he keeps Fury. The test stage plays 3/3; 5/5
-is `BATTLE_CRY` `self` and `allies` 5 in config.ts.
+Then built at 5/5 (owner, later 2026-10-31): Battle Cry the Barbarian's
+in runs and on the test stage, in place of Fury (kept, no hero's).
+
 ### The slam in place of the brace (later 2026-10-31)
 
 Asked for (the owner): the Cataphract has no walk and charges nearly every
