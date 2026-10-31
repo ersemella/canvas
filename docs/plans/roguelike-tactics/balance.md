@@ -5875,13 +5875,13 @@ and a Hold seldom survives screening to be searched where timing pays
 (item 4). Both switches stay off; switching reach on is the owner's
 call (the AI would get stronger, so every measurement here would move).
 
-## Syzygy in place of Omen (2026-10-31)
+## Alignment in place of Omen (2026-10-31; named Syzygy at first)
 
 Asked for (owner): the Magus's Omen replaced on the test stage by
-**Syzygy**: one of his six lines, any distance, through anything, and the
+**Alignment**: one of his six lines, any distance, through anything, and the
 cards of every unit on it, of either side, rearranged on the track, each on
-any blank card or swapped among themselves (`ABILITY.syzygy`, `"heroes":
-{"magus": {"abilities": ["syzygy"]}}` on the test stage). Then role
+any blank card or swapped among themselves (`ABILITY.alignment`, `"heroes":
+{"magus": {"abilities": ["alignment"]}}` on the test stage). Then role
 balance and skill measured. The deck it places on runs from the slot after
 his turn to 12 slots on, or the furthest card if further (the track as
 drawn). The AI tries three arrangements a line (its allies' cards on the
@@ -5889,13 +5889,13 @@ earliest open slots, its enemies' on the latest, or both, each side in its
 order) and weighs each card's move as the share of a turn gained or lost,
 as Omen's; a player may make any.
 
-`experiments/syzygy.mjs`, 400 fights a row, Syzygy a `patch` on both
+`experiments/alignment.mjs`, 400 fights a row, Alignment a `patch` on both
 sides, beside Omen as built. **Roles**, as `roles-twelve.mjs`: the Magus
 in the support seat of the three other regions' mirrors (his side's wins),
 and each other support in his seat of Persia's (shown as the Magus's side,
 100 less the other's):
 
-| Seat | Omen | Syzygy | Change |
+| Seat | Omen | Alignment | Change |
 |---|---:|---:|---:|
 | For the Storm Caller (Steppe) | 50.3% | 48.5% | −1.8 |
 | For the Alchemist (China) | 60% | 68.3% | +8.3 |
@@ -5909,20 +5909,20 @@ and each other support in his seat of Persia's (shown as the Magus's side,
 or an expert (depth 4, 4× the work) in the support seat of a Steppe mirror,
 against the same Magus at production's search:
 
-| Played by | Omen | Syzygy |
+| Played by | Omen | Alignment |
 |---|---:|---:|
 | Novice | 40.3% | 45.3% |
 | Expert | 57% | 56.5% |
 | Span | **16.7** | **11.2** |
 
 Unfinished fights: 0–1.5% in the seats (Omen 0–2%), but 6.3–6.8% with a
-Magus on each side (Omen 1.3–1.8%), over principle 12's 3%. Syzygy is
+Magus on each side (Omen 1.3–1.8%), over principle 12's 3%. Alignment is
 69–79% of his turns (Omen 64–74%). Measured on main as of 30d7cd8 (the
 Priest with Invocation, the Alchemist with Sedative); a first run on
 a754068 (Blessing, no Sedative) gave the same picture, 61.6% against
 55.0%.
 
-- **Syzygy is stronger than Omen by about 5 points**, 62.1% as a score
+- **Alignment is stronger than Omen by about 5 points**, 62.1% as a score
   against 57.5%: even in the Steppe's seat, 5–8 points over in China's
   and Byzantium's, and 4–7 over in Persia's own party. Omen, at 57.5% on
   today's rules, is itself over even here.
@@ -5935,8 +5935,8 @@ a754068 (Blessing, no Sedative) gave the same picture, 61.6% against
   the deck each turn, from both sides, is the likely cause of the
   unfinished fights with two Magi (a mirror; in the seats, with one, they
   stay under 2%); untried, a cap on how far back a card
-  may go (`ABILITY.syzygy.deck`, 12 now) or leaving Humphrey out.
-- **Not changed in runs**: Syzygy is the test stage's, for play-testing.
+  may go (`ABILITY.alignment.deck`, 12 now) or leaving Humphrey out.
+- **Not changed in runs**: Alignment is the test stage's, for play-testing.
   Untried tunings if it is to replace Omen: a shorter deck (as far back as
   his own next turn, Omen's reach), allies only forward and enemies only
   back, or a line of limited length.
@@ -6097,6 +6097,48 @@ and its skill. Unfinished fights at most 2.3%.
   Storm Caller hit him less, and from where Hew can't answer.
 - **No skill from it** (span 5.8 against 5.7): it fires on being hit.
 - Byzantium's own seats as before, bent by the Priest's Invocation.
+
+### Alignment before his next turn (later 2026-10-31)
+
+Asked for (owner): **no card Alignment moves may land after the Magus's
+next turn** (`ABILITY.alignment.beforeNext`, on), so he can't stun-lock an
+enemy by sending it back every turn; and the ability renamed Alignment
+(Syzygy before). Its deck now runs from the slot after his turn to the
+slot before his next (his action cost on, 9 at speed 2); a card already
+past it may still be brought in. The AI's enemies go to the latest slots
+before his next turn; enemies already past it stay. Same rows as above
+(`experiments/alignment.mjs`, 400 fights, on main as of the change):
+
+| Seat | Omen | Alignment, before his next turn |
+|---|---:|---:|
+| For the Storm Caller (Steppe) | 50.3% | 26% |
+| For the Alchemist (China) | 60% | 33% |
+| For the Priest (Byzantium) | 50.6% | 45.7% |
+| Against the Storm Caller in Persia's | 57.7% | 32.4% |
+| Against the Alchemist in Persia's | 59.9% | 33.2% |
+| Against the Priest in Persia's | 66.7% | 44.5% |
+| **Mean** | **57.5%** | **35.8%** |
+
+| Played by | Omen | Alignment, before his next turn |
+|---|---:|---:|
+| Novice | 40.3% | 45.9% |
+| Expert | 57% | 51% |
+| Span | 16.7 | 5.1 |
+
+- **Much too weak**: 35.8% as a score, 22 points under Omen and 26 under
+  Alignment as first built (62.1%). Its use fell from 69–79% of his turns
+  to 37–52%, the Magus walking more to find a line worth it.
+- **Why**: Omen sends an enemy to just *after* his next turn; this rule
+  stops every card *before* it, and the enemies in reach mostly act before
+  then already, so there is little delay left to give. The track's worth
+  of an enemy's turn is in making it wait past someone's turn; past his own
+  is what is now ruled out.
+- **The stun-lock is gone**: unfinished fights 0–0.5% (6.3–6.8% with a
+  Magus on each side as first built), and skill matters less (span 5.1).
+- **Untried, to keep the lock out without the loss**: Omen's reach (to just
+  after his next turn) with a guard (a card he has sent past his next turn
+  can't be again until it has acted, Omen's `once`); or the deck as first
+  built with that guard.
 
 ## Principles for re-tuning
 

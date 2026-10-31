@@ -13,7 +13,7 @@ export interface TacticsCardPayload {
 }
 
 /**
- * The track's deck while Syzygy arranges it (`BoardScene.arrange`), by slot,
+ * The track's deck while Alignment arranges it (`BoardScene.arrange`), by slot,
  * blank cards included: a press on a slot (`down`), a release on the slot
  * pressed (`tap`), or a release on another after dragging from `from`
  * (`drop`).
@@ -30,7 +30,7 @@ export interface TacticsHoverPayload {
 
 /**
  * The board's taps and hover. Taps on a map hex emit `tactics:tap`, taps on
- * a track card `tactics:card` (while Syzygy arranges the track, presses,
+ * a track card `tactics:card` (while Alignment arranges the track, presses,
  * taps and drags on any deck card `tactics:slot`); a mouse moving over either emits
  * `tactics:hover` when what's under it changes. Picks against the map's own
  * hexagon (which a `HexGrid` rectangle can't describe), and
@@ -64,7 +64,7 @@ export class TacticsInputSystem extends BaseSystem {
     const fight = this.scene?.fight;
     if (!fight) return;
     const tap = mouseService.justUp && !mouseService.upConsumed;
-    // Arranging the track (Syzygy): a press on a deck card, then a release
+    // Arranging the track (Alignment): a press on a deck card, then a release
     // on it (a tap) or on another (a drag and drop), blank cards included.
     const arrange = this.scene!.arrange;
     if (!arrange) trackDrag.from = null;

@@ -53,13 +53,16 @@ Cataphract Byzantium's damage hero, speed 2, defence 2 (health 6), power
 each charge (`"charge"`, below; owner, later 2026-10-31), where it leaves
 him in melee. The Steppe's three were the enemy
 until 2026-10-31.
-**The Magus has Syzygy in place of Omen** (`"heroes"`, below; owner,
-2026-10-31): one of his six lines, any distance, through anything (units,
-yurts), and the cards of every unit on it, of either side, Humphrey too,
-not Inevitable, rearranged on the track: each put on any blank card of the
-deck (from the slot after his turn to 12 slots on, or the furthest card if
-that is further), or several swapped among themselves in any order
-(`ABILITY.syzygy`). No Magus is in the committed line-up: take him on the
+**The Magus has Alignment in place of Omen** (`"heroes"`, below; owner,
+2026-10-31; named Syzygy at first): one of his six lines, any distance,
+through anything (units, yurts), and the cards of every unit on it, of
+either side, Humphrey too, not Inevitable, rearranged on the track: each
+put on any blank card before his next turn, or several swapped among
+themselves there, in any order (`ABILITY.alignment`). **No card it moves
+lands after his next turn** (`beforeNext`; owner, later 2026-10-31), so he
+can't hold an enemy back turn after turn; a card already past his next
+turn may still be brought in before it. As first built it reached 12
+slots on. No Magus is in the committed line-up: take him on the
 start menu to play it. Aim it by tapping a line, then arrange on the
 track: drag a card of the line (outlined in gold) onto a blank card (lit
 while one is picked up) to put it there, or onto another of the line's
@@ -76,7 +79,7 @@ a picked-up card down, then undoes the arrangement, then the line.
   "heroes": {
     "varangian": {"speed": 1, "defence": 3, "power": 2, "abilities": ["hew"], "passives": ["fury"], "caution": 0},
     "cataphract": {"speed": 2, "defence": 2, "power": 2, "passives": [], "caution": 1},
-    "magus": {"abilities": ["syzygy"]}
+    "magus": {"abilities": ["alignment"]}
   },
   "charge": {"armour": 1},
   "yurts": "none",
@@ -164,7 +167,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
-| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"syzygy"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"hew"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
+| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"alignment"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"hew"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
 | `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 3), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 

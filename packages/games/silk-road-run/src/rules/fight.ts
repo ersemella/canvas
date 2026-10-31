@@ -474,7 +474,7 @@ export function applyTurn(
     const {also, ...target} = input.action.target ?? {};
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
       throw new RuleError(`${def.name} can’t target that.`);
-    // What the targets list leaves open (Syzygy's arrangement of cards).
+    // What the targets list leaves open (Alignment's arrangement of cards).
     const problem = def.check?.(state, map, unit, target);
     if (problem) throw new RuleError(problem);
     // Forked (19.9): a second target, another of the ability's own.

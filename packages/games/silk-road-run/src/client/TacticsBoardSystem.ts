@@ -507,7 +507,7 @@ export class TacticsBoardSystem extends BaseSystem {
     }
 
     const cards = trackCards(fight, scene.previewSlot ?? null, scene.previewBumps);
-    // Syzygy: the card picked up follows the pointer while it's dragged from its slot.
+    // Alignment: the card picked up follows the pointer while it's dragged from its slot.
     const held = scene.arrange?.held;
     const dragging =
       held &&

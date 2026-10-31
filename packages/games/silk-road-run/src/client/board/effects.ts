@@ -52,7 +52,7 @@ export const ABILITY_EFFECT: Partial<
   elixir: drawElixir,
   sedative: drawSedative,
   omen: drawOmen,
-  syzygy: drawOmen,
+  alignment: drawOmen,
   blessing: drawBlessing,
   stomp: drawStomp,
   bite: drawBite,

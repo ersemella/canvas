@@ -874,9 +874,9 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
-  // Syzygy: the share of a turn each card it places loses (an enemy's, a
+  // Alignment: the share of a turn each card it places loses (an enemy's, a
   // gain) or gains (an ally's), as Omen's.
-  if (ability === 'syzygy') {
+  if (ability === 'alignment') {
     let value = 0;
     for (const c of target?.cards ?? []) {
       const u = unitAt(state, c.hex);

@@ -242,7 +242,7 @@ Shield (`ABILITY.hew.shieldPerHit`); every role-seat row and their skill.
 (`ABILITY.hew.shape` `line`), with Fury (`FURY`) and without; on the
 Priest's Invocation.
 
-`syzygy.mjs` (2026-10-31) the Magus's Syzygy (the test stage's in place
+`alignment.mjs` (2026-10-31) the Magus's Alignment (the test stage's in place
 of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
 support seat of the three other regions' mirrors, each other support in
 his seat of Persia's, and his skill as `skill-fights.mjs`.

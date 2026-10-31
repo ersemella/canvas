@@ -531,7 +531,7 @@ export function parseAction(raw: unknown): RunAction {
       const target: ActionTarget = {};
       if (action.target.hex !== undefined) target.hex = parseHex(action.target.hex);
       if (action.target.to !== undefined) target.to = parseHex(action.target.to);
-      // Syzygy's arrangement: each card's unit by its space, and its slot.
+      // Alignment's arrangement: each card's unit by its space, and its slot.
       const {cards} = action.target;
       if (cards !== undefined) {
         if (!Array.isArray(cards) || cards.length > 12) throw new RuleError('Malformed cards.');

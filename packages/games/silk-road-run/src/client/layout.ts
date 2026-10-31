@@ -141,7 +141,7 @@ export function trackCards(
 }
 
 /**
- * The deck card under a point, blank ones included, by slot (Syzygy's
+ * The deck card under a point, blank ones included, by slot (Alignment's
  * arranging, which places cards on blank ones): the front card whole, each
  * later one by the strip of it that shows. Null off the deck.
  */
@@ -163,7 +163,7 @@ export function slotAt(
 }
 
 /**
- * A card being dragged along the track while Syzygy arranges it: the slot
+ * A card being dragged along the track while Alignment arranges it: the slot
  * the press began on, or null. Set by the input system, read by the board
  * system to draw the picked-up card under the pointer.
  */
