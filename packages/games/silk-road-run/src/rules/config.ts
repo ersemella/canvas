@@ -193,15 +193,16 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir, on a unit within 2, heals an ally its power and Empowers it 2,
-   * or hits an enemy for its power and Weakens it 2 (`ABILITY.elixir`;
-   * 2026-10-27; an ally within 3 healed, Empowered 1 and Hastened 3 before
+   * Elixir, an overdose on any unit within 3, ally or enemy, Empowers its
+   * hits to 6 for 8 slots and hits it for his power (`ABILITY.elixir`;
+   * 2026-10-31; from 2026-10-27, on a unit within 2, an ally healed his
+   * power and Empowered 2, an enemy hit and Weakened 2; an ally within 3 healed, Empowered 1 and Hastened 3 before
    * that; earlier on 2026-10-26 a burst next to it of Haste 3
    * and Delay 3, before that of Empower 2 and Weaken 1). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
    * "Elixir's shape and Cleave's Delay": the Storm Caller's equal in its
    * seat, 49.2% from 40.6%); power 1 (owner, 2026-10-26; 0 with the
    * burst earlier that day, 1 before it, 2 before that; balance.md, "Two
-   * hails, hail on entry, and a melee Elixir"): the Elixir's heal and hit;
+   * hails, hail on entry, and a melee Elixir"): the overdose's hit;
    * defence 1 (health 4) the builder's first number.
    */
   alchemist: {
@@ -694,10 +695,14 @@ export const ABILITY = {
    */
   cleave: {reach: 2, delay: 6 as number, shape: 'built' as 'built' | 'arcs' | 'cones'},
   /**
-   * Elixir (owner, 2026-10-25; as built since 2026-10-27, as measured in
+   * Elixir (owner, 2026-10-25). As built since 2026-10-31, an overdose
+   * (`overdose` 6, below): a unit within `range` (3), the Alchemist itself
+   * too, no line of fire, ally or enemy, Empowered until its hits deal 6
+   * for 8 slots and hit for the Alchemist's power; nothing else.
+   * From 2026-10-27 until then (as measured in
    * balance.md, "The Elixir on one unit within 2, Empower 2 and Weaken
-   * 2"): a unit within `range` (2), the Alchemist itself too (`self`, owner,
-   * 2026-10-27), no line of fire. An ally is healed the Alchemist's power (1, `heal`: the camel
+   * 2"): a unit within 2, the Alchemist itself too (`self`, owner,
+   * 2026-10-27), no line of fire. An ally was healed the Alchemist's power (1, `heal`: the camel
    * too) and Empowered `empower` (2, a unit that hits, until the end of its
    * next turn); an enemy is hit for the Alchemist's power (`fixed` 1) and
    * Weakened `weaken` (2, a unit that hits, until the end of its next
@@ -748,7 +753,8 @@ export const ABILITY = {
    * Empower or Weaken; `poison`, any unit healed the Alchemist's power, then
    * losing 1 every `poisonEvery` slots until its power + `poisonExtra` is
    * lost (`Unit.poison`), no Empower, Weaken or hit.
-   * `overdose` (owner's idea, 2026-10-31; 0 as built): above 0, the unit
+   * `overdose` (owner, 2026-10-31; 6 as built, with `range` 3; balance.md,
+   * "The Elixir as an overdose"; 0 the Elixir before, below): above 0, the unit
    * given it, ally or enemy, is Empowered (one that hits) up to that
    * damage, its power + Empower `overdose` (at least 1), for
    * `RULES.durations.turn` slots, and takes the Alchemist's power (as
@@ -756,7 +762,7 @@ export const ABILITY = {
    * No heal, hit or Weaken.
    */
   elixir: {
-    range: 2 as number,
+    range: 3 as number,
     shape: 'unit' as 'unit' | 'burst' | 'aura',
     radius: 1 as number,
     fixed: 1 as number,
@@ -770,7 +776,7 @@ export const ABILITY = {
     mode: 'built' as 'built' | 'alternate' | 'poison',
     poisonEvery: 6 as number,
     poisonExtra: 1 as number,
-    overdose: 0 as number,
+    overdose: 6 as number,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

@@ -3364,8 +3364,59 @@ describe('the Priest', () => {
   });
 });
 
+describe('the built Elixir, an overdose (2026-10-31)', () => {
+  const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
+
+  it('a unit within 3, the Alchemist too, ally or enemy: Empowered until its hits deal 6 for 8 slots, then hit for 1', () => {
+    const s = setup(
+      {
+        'p-alchemist': at(1, 3),
+        'e-mangudai': at(2, 3),
+        'p-modao': at(4, 3),
+        'p-camel': at(1, 4),
+        'e-modao': at(8, 6),
+      },
+      party
+    );
+    const alchemist = unit(s, 'p-alchemist');
+    expect(alchemist.power).toBe(1);
+    expect(ABILITIES.elixir.range).toBe(3);
+    // Every unit within 3, the camel and himself too; not the Vanguard 7 away.
+    expect(
+      offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
+        .map((t) => hexKey(t.hex!))
+        .sort()
+    ).toEqual([at(1, 3), at(2, 3), at(4, 3), at(1, 4)].map(hexKey).sort());
+    expect(ABILITIES.elixir.summary(alchemist)).toBe(
+      'A unit within 3, yourself too, ally or enemy: Empowered until its hits deal 6, for 8 slots, and it takes 1.'
+    );
+    // The ally 3 away (power 2): Empowered 4, hit for 1, not healed.
+    const a = cloneFight(s);
+    applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(4, 3)}}});
+    const ally = unit(a, 'p-modao');
+    expect(ally.empower).toBe(4);
+    expect(ally.hp).toBe(ally.maxHp - 1);
+    expect(ally.empowerUntil).toBe(a.currentSlot + RULES.durations.turn);
+    // The enemy next to it (power 2): the same.
+    const e = cloneFight(s);
+    applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    expect(unit(e, 'e-mangudai').empower).toBe(4);
+    expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
+    // Himself (power 1): Empowered 5.
+    const self = cloneFight(s);
+    applyTurn(self, unit(self, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
+    expect(unit(self, 'p-alchemist').empower).toBe(5);
+    expect(unit(self, 'p-alchemist').hp).toBe(unit(self, 'p-alchemist').maxHp - 1);
+  });
+});
+
 describe('the Vanguard and the Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
+  // The Elixir before the overdose (2026-10-27 to 31), as these tests were
+  // written: one unit within 2, now a switch (`overdose` 0).
+  const builtElixir = {...ABILITY.elixir};
+  beforeEach(() => Object.assign(ABILITY.elixir, {overdose: 0, range: 2}));
+  afterEach(() => Object.assign(ABILITY.elixir, builtElixir));
 
   /** Runs `test` with the Elixir set by `settings` and the Alchemist's `power`, then restores them. */
   function withElixir(settings: Partial<typeof ABILITY.elixir>, power: number, test: () => void) {
@@ -3493,7 +3544,7 @@ describe('the Vanguard and the Alchemist', () => {
     expect(advanceToDecision(s)!.id).toBe(ally.id);
     expect(ally.empower).toBeUndefined();
   });
-  it('the built Elixir: a unit within 2, the Alchemist too; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
+  it('the Elixir before the overdose: a unit within 2, the Alchemist too; an ally healed 1 and Empowered 2, an enemy hit for 1 and Weakened 2', () => {
     const s = setup(
       {
         'p-alchemist': at(1, 3),

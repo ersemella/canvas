@@ -5589,6 +5589,10 @@ and himself.
   it pays to plan its hit.
 - Unfinished fights at most 0.5%.
 
+**Built (owner, 2026-10-31): the overdose to 6 on one unit within 3**
+(`overdose` 6, `range` 3), in runs and on the test stage, at 44.5% as
+measured above, with the widest skill span of any hero.
+
 ### The Barbarian and the Cataphract swapped (2026-10-31)
 
 Asked for (the owner): Byzantium's tank and damage hero swapped, as the

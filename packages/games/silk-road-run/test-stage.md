@@ -26,12 +26,9 @@ through a unit (aimed at the space he lands on); `"swiftStrike"`, below,
 tries other versions of him.
 Every Priest's Blessing leaves him out (`"blessing": {"self": false}`,
 below; owner, 2026-10-30): it blesses only the units on the line aimed.
-Every Elixir is an overdose (`"elixir": {"overdose": 6}`, below; owner,
-2026-10-31; balance.md, "The Elixir as an overdose"): its shape as built,
-one unit within 2, the Alchemist too, ally or enemy, Empowered until its
-hits deal 6 for 8 slots, then hit for the Alchemist's power; no heal, hit
-or Weaken besides. Aimed in lines to 3 until then (`"line": 3`, which
-still works, and with the overdose too).
+The Elixir plays as in a run since 2026-10-31, an overdose on one unit
+within 3 (balance.md, "The Elixir as an overdose"); `"elixir"`, below,
+aims it in lines or sets the overdose's damage.
 **Byzantium's tank and damage hero swapped** (`"heroes"` and `"leap"`,
 below; owner, 2026-10-31; balance.md, "The Barbarian and the Cataphract
 swapped"), on both sides, the party picked on the start menu too: the
@@ -49,7 +46,6 @@ until 2026-10-31.
   "map": "cave",
   "wait": true,
   "blessing": {"self": false},
-  "elixir": {"overdose": 6},
   "heroes": {
     "varangian": {"speed": 1, "defence": 3, "power": 2, "caution": 0},
     "cataphract": {"speed": 2, "defence": 2, "power": 2, "passives": [], "caution": 1}
@@ -125,7 +121,7 @@ it, unhurt.
 | `wait` | **Wait** (proposed, timeline.md 3.2): `true` and a turn that does nothing (Skip turn, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) sends the card two thirds of its action cost on, rounded: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10, so Skip turn reads +6 beside an ability's +9. A number above 0 and at most 1 sets the share instead (`0.5`). Both sides play by it; the AI's search doesn't weigh the time a Wait saves, so it Waits only when that happens to look best, and an AI that does weigh it was measured Waiting in place of walking (balance.md, "Wait"). `false`: today's rule. | `false` |
 | `swiftStrike` | Every Duelist's Swift Strike, both sides (the dash and the straight walk as in a run since 2026-10-31, the rest switches off there; balance.md, "The Duelist's lunge and streak"): `lunge`, up to that many spaces straight at the first unit in line before the strike, stopped by yurts, units and the map's edge, ending next to it; `passThrough`, `true` and the lunge may also pass through the units on its way, each hit, to a free space past them (aimed at that space), striking the unit in front of it too; `jump`, `true` and it may also jump a unit next to it to the free space past it (aimed at that space), hitting it, and from there jump another unit next to it in the same turn, never the same one twice, the turn going on until no jump is left or Skip turn ends it (with `lunge` 1, the unit 2 away in line is hit stepping one space in); `chain`, `false` and a jump ends the turn; `dash`, Swift Strike only a dash of up to that many spaces straight, through the units on the spaces before the last, each hit, to the free space it lands on (aimed at), from `dashMin` out (`2`; `0`, exactly `dash`, or with yurts or the map's edge on that space one fewer); no strike in place (`3`; `0`, the strike next to him, with `lunge` and `jump`); `walk`, the Duelist's own walk; `straight`, `true` and it walks straight along one of the six directions, as the Outrider does, at most `walk` spaces; `haste`, the slots his card is Hastened when he hits (`0`: none); `streak`, the Haste on turns striking running, the first strike's, the second's and so on, the last held while it lasts (`[2, 3, 4]`), a turn without a strike, a walk included, starting it again. `streakResets`, `false` and it isn't started again, each hit of the fight raising the Haste. Each part left out keeps its own rule. | Swift Strike as in a run: a dash of 2 or 3 through a unit (`dash` 3, `dashMin` 2), Haste 3, a straight walk of 3; `"dash": 0` for the strikes next to him (a lunge, jumps) |
 | `blessing` | Every Priest's Blessing, both sides: `self`, `false` and it leaves him out, blessing only the units on the line aimed (an empty line then does nothing). | Blessing as built: he is blessed too, whatever line he aims |
-| `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. `overdose`, a number from 0 to 20: above 0, the unit given it, ally or enemy, is Empowered until its hits deal that much, for 8 slots, then hit for its user's power, no heal, hit or Weaken besides; `0`, as built. | Elixir as built: any unit within 2, himself too |
+| `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. `overdose`, a number from 0 to 20: above 0, the unit given it, ally or enemy, is Empowered until its hits deal that much, for 8 slots, then hit for its user's power, no heal, hit or Weaken besides (6 as built); `0`, the Elixir before it (an ally healed his power and Empowered 2, an enemy hit and Weakened 2), at the built range of 3. | Elixir as built: an overdose to 6, any unit within 3, himself too |
 | `heroes` | Every unit of a hero, both sides, the party picked on the start menu too, by the hero's id: `speed`, `defence`, `power`, `abilities` as a unit's (below), each under a unit's own; `passives`, its hero's own in place of config.ts's (`[]`: none, the Cataphract without Armoured; a unit's `passives` are added beside them); `caution`, how much the AI shies from enemy reach with it, 0 (a tank's: it walks into reach) to 5, 1 the other heroes'. E.g. `{"cataphract": {"power": 2, "passives": []}}`. | each hero as config.ts has it |
 | `leap` | Every Leap, both sides, a hero's or one given in `abilities`: `shape`, the spaces its axe strikes next to where he lands, `"front"` (the two ahead), `"forward"` (four, all but the two he flew over) or `"splash"` (the front two for his power, the other four for 1); `shieldPerHit`, 0 to 8, the Shield he gains for each enemy hit, Humphrey and allies not counted, for 8 slots, added to any he has. | Leap as built: `"front"`, no Shield |
 
