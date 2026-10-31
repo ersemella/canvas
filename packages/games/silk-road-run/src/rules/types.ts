@@ -134,6 +134,8 @@ export type PassiveId =
   | 'fury'
   // The test stage's Barbarian's beside Fury (owner, later 2026-10-31).
   | 'bloodlust'
+  // The test stage's Barbarian's in their place (owner, later 2026-10-31).
+  | 'battleCry'
   // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
   // drafted with the passives. Track
   | 'wearying'

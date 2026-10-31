@@ -16,10 +16,10 @@ describe('the test stage', () => {
   it('accepts the committed test-stage.json', () => {
     expect(() => createTestFight(1)).not.toThrow();
     const b = createTestFight(1).units.find((u) => u.hero === 'varangian')!;
-    // Byzantium's three as in a run, but Bloodlust beside the Barbarian's Fury and Lunge's Push 1.
-    expect(b.passives).toEqual(['fury', 'bloodlust']);
+    // Byzantium's three as in a run, but the Barbarian's Battle Cry in place of Fury, and Lunge's Push 1.
+    expect(b.passives).toEqual(['battleCry']);
     expect(b.lungePush).toBe(1);
-    expect(b.loadout).toEqual({heroPassives: ['fury', 'bloodlust']});
+    expect(b.loadout).toEqual({heroPassives: ['battleCry']});
     expect(abilitiesOf(b).map((d) => d.id)).toEqual(['lunge', 'hold']);
     expect(() => createRun(1, {test: true})).not.toThrow();
   });

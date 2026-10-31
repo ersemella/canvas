@@ -535,6 +535,15 @@ export const FURY = {haste: 5 as number};
  * it lasts to his next turn). `stacks` off: Empowered at least `empower`,
  * the time renewed; on: `empower` more for each such hit, at most `max`.
  */
+/**
+ * Battle Cry (owner, later 2026-10-31; the test stage's Barbarian's in
+ * place of Fury and Bloodlust, no hero's in runs, not offered): whenever
+ * it is hit (any damage coming at it, a Shield's or not, as Fury and
+ * Spearhead), its own card is Hastened `self` and each ally's within
+ * `range`, Humphrey too, `allies`.
+ */
+export const BATTLE_CRY = {self: 3 as number, allies: 3 as number, range: 2 as number};
+
 export const BLOODLUST = {
   empower: 1 as number,
   slots: 10 as number,

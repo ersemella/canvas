@@ -42,11 +42,12 @@ his power, stepping in next to it first when it is 2 away, as a lunge
 (hail stops him short, and then he doesn't strike); and **Fury**: whenever
 he is hit, his card is Hastened 5. **Here his Lunge also Pushes 1**
 (`"lunge": {"push": 1}`, below; owner, later 2026-10-31; 0 in runs): the
-unit he strikes is Pushed 1 straight away from him. **And Bloodlust
-beside Fury** (`"heroes"`, below; owner, later 2026-10-31; no hero's in
-runs): whenever his hit damages an enemy (a Shield taking it too), he is
-Empowered 1 for 10 slots, to his next turn (`BLOODLUST` in config.ts;
-`stacks` there adds 1 a hit, up to 3, in place). The Cataphract its damage hero, speed
+unit he strikes is Pushed 1 straight away from him. **And Battle Cry in
+place of Fury** (`"heroes"`, below; owner, later 2026-10-31; no hero's in
+runs, where he keeps Fury): whenever he is hit, his card and each ally's
+within 2, Humphrey too, are Hastened 3 (`BATTLE_CRY` in config.ts sets
+his own and the allies' apart). Bloodlust, beside Fury here before (his
+hit damaging an enemy Empowering him 1 for 10 slots), is off. The Cataphract its damage hero, speed
 2, defence 2 (health 6), power 2, without Armoured, Armour 1 for 8 slots
 after each charge. The Steppe's three were the enemy until 2026-10-31.
 **The Magus has Alignment in place of Omen** (`"heroes"`, below; owner,
@@ -79,7 +80,7 @@ a picked-up card down, then undoes the arrangement, then the line.
   "wait": true,
   "heroes": {
     "magus": {"abilities": ["alignment"]},
-    "varangian": {"passives": ["fury", "bloodlust"]}
+    "varangian": {"passives": ["battleCry"]}
   },
   "lunge": {"push": 1},
   "yurts": "none",
@@ -169,7 +170,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
 | `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"alignment"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"lunge"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
-| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 5; the Barbarian's own), `"bloodlust"` (whenever its hit damages an enemy, it is Empowered 1 for 10 slots; the test stage's Barbarian's), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
+| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 5; the Barbarian's own), `"bloodlust"` (whenever its hit damages an enemy, it is Empowered 1 for 10 slots), `"battleCry"` (whenever it is hit, its card and each ally's within 2 are Hastened 3; the test stage's Barbarian's), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 
 The heroes' own numbers and starting kits are `HEROES` in

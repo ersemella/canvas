@@ -13,6 +13,7 @@ import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
   ARMOURED,
+  BATTLE_CRY,
   BLOODLUST,
   FURY,
   CAMEL,
@@ -680,6 +681,7 @@ export function applyDamage(
   if (!target.alive || amount <= 0) return;
   devotion(ctx, target);
   spearhead(ctx, target);
+  battleCry(ctx, target);
   if (hasPassive(target, 'fury')) {
     log(ctx, `${unitName(target)}’s fury rises.`);
     haste(ctx, target, FURY.haste);
@@ -765,6 +767,21 @@ function spearhead(ctx: Ctx, target: Unit): void {
     if (hexDistance(a.hex, target.hex) > SPEARHEAD.range) continue;
     log(ctx, `${unitName(target)} leads ${unitName(a)} on.`);
     haste(ctx, a, SPEARHEAD.haste);
+  }
+}
+
+/**
+ * Battle Cry (`BATTLE_CRY`): `target` is hit, so its own card is Hastened,
+ * and each ally's within `range` of it.
+ */
+function battleCry(ctx: Ctx, target: Unit): void {
+  if (!target.alive || !hasPassive(target, 'battleCry') || !target.hex) return;
+  log(ctx, `${unitName(target)} roars.`);
+  haste(ctx, target, BATTLE_CRY.self);
+  for (const a of ctx.state.units) {
+    if (a === target || !a.alive || !a.hex || a.side !== target.side) continue;
+    if (hexDistance(a.hex, target.hex) > BATTLE_CRY.range) continue;
+    haste(ctx, a, BATTLE_CRY.allies);
   }
 }
 

@@ -9,7 +9,7 @@
  * caravanserai drafts them with the stat provisions (19.3): the party's
  * picks, and the rival's for the enemy (`fitRank`).
  */
-import {ARMOURED, BLOODLUST, DEVOTED, FURY, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
+import {ARMOURED, BATTLE_CRY, BLOODLUST, DEVOTED, FURY, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 
@@ -214,6 +214,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     `Armour ${ARMOURED.armour} against every hit, unless it Pierces.`
   ),
   fury: def('fury', 'Fury', 'damage', `Whenever it is hit, its card is Hastened ${FURY.haste}.`),
+  battleCry: def(
+    'battleCry',
+    'Battle Cry',
+    'allies',
+    BATTLE_CRY.self === BATTLE_CRY.allies
+      ? `Whenever it is hit, its card and each ally's within ${BATTLE_CRY.range} are Hastened ${BATTLE_CRY.self}.`
+      : `Whenever it is hit, its card is Hastened ${BATTLE_CRY.self} and each ally's within ${BATTLE_CRY.range} ${BATTLE_CRY.allies}.`
+  ),
   bloodlust: def(
     'bloodlust',
     'Bloodlust',
@@ -403,6 +411,7 @@ export const NOT_OFFERED: readonly PassiveId[] = [
   'spearhead',
   'fury',
   'bloodlust',
+  'battleCry',
 ];
 
 /** Whether `unit` carries the passive `id`. */

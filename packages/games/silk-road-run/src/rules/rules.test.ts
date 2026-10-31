@@ -14,6 +14,7 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
+  BATTLE_CRY,
   BLOODLUST,
   AI,
   HEROES,
@@ -2152,6 +2153,27 @@ describe('the Barbarian', () => {
     } finally {
       BLOODLUST.stacks = false;
     }
+  });
+
+  it('with Battle Cry (the test stage\'s) is Hastened 3 when hit, and each ally within 2', () => {
+    const {s, b} = lunging({
+      'e-modao': hexNeighbor(c, 0),
+      'p-modao': along(c, 3, 2),
+      'p-mangudai': along(c, 3, 3),
+    });
+    b.passives = ['battleCry'];
+    expect(BATTLE_CRY).toEqual({self: 3, allies: 3, range: 2});
+    const [near, far] = [unit(s, 'p-modao'), unit(s, 'p-mangudai')];
+    b.slot = s.currentSlot + 10;
+    // Apart, so no two Hastened cards collide.
+    for (const u of [near, far]) u.slot = s.currentSlot + 12;
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    hit(ctx, unit(s, 'e-modao'), b, 'A test hit');
+    expect([b.slot, near.slot, far.slot]).toEqual([
+      s.currentSlot + 7,
+      s.currentSlot + 9,
+      s.currentSlot + 12,
+    ]);
   });
 
   it('Fury Hastens him 5 whenever he is hit', () => {
