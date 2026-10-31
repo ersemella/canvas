@@ -30,7 +30,13 @@ const regions = {
 };
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
 export const experiments = {};
-for (const [variant, patch] of [['fury', swap(true)], ['line', swap(false)]]) {
+// `fury5` (owner, later 2026-10-31): Fury's Haste 5 (`FURY.haste`), its
+// Byzantium rows only (the rest as `fury`'s), and its skill.
+const fury5 = (c) => {
+  swap(true)(c);
+  c.FURY.haste = 5;
+};
+for (const [variant, patch] of [['fury', swap(true)], ['line', swap(false)], ['fury5', fury5]]) {
   for (const [name, party] of Object.entries(regions))
     for (const [other, theirs] of Object.entries(regions))
       if (other !== name && (variant === 'fury' || name === 'byzantium' || other === 'byzantium'))
