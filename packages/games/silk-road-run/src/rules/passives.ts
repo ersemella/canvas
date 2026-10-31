@@ -9,7 +9,7 @@
  * caravanserai drafts them with the stat provisions (19.3): the party's
  * picks, and the rival's for the enemy (`fitRank`).
  */
-import {ARMOURED, DEVOTED, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
+import {ARMOURED, DEVOTED, FURY, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 
@@ -213,6 +213,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'damage',
     `Armour ${ARMOURED.armour} against every hit, unless it Pierces.`
   ),
+  fury: def('fury', 'Fury', 'damage', `Whenever it is hit, its card is Hastened ${FURY.haste}.`),
   spearhead: def(
     'spearhead',
     'Spearhead',
@@ -392,6 +393,7 @@ export const NOT_OFFERED: readonly PassiveId[] = [
   'serpentKing',
   'regrow',
   'spearhead',
+  'fury',
 ];
 
 /** Whether `unit` carries the passive `id`. */

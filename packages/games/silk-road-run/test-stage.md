@@ -38,12 +38,14 @@ below; owner, 2026-10-31; balance.md, "The Barbarian and the Cataphract
 swapped"), on both sides, the party picked on the start menu too: the
 Barbarian a tank, speed 1, defence 3 (health 8), power 2, the AI playing
 him as one (`"caution": 0`), with **Hew** in place of Leap (later
-2026-10-31): his axe through a funnel, the two spaces next to him either
-side of one way and the space past them that touches both (2 away, off
-his lines; where Hew is aimed), every unit there hit for his power,
-allies too, and he gains Shield 1 for each enemy hit, added to any he
-has, for 10 slots (his turn's at speed 1, so it lasts to his next;
-`ABILITY.hew`; an Empower of 1 each until later 2026-10-31). Leap with
+2026-10-31; `ABILITY.hew`): the first unit up to 2 away along one of his
+six straight lines, ally or enemy, struck for his power; one 2 away, he
+steps in next to it first, as a lunge (hail stops him short, and then
+he doesn't strike). And **Fury** (`"passives": ["fury"]`): whenever he
+is hit, his card is Hastened 3. Hew was a funnel before (the two spaces
+next to him either side of one way and the space past them), with an
+Empower, then a Shield, of 1 an enemy hit (`ABILITY.hew.shape`
+`funnel`, `.shieldPerHit`). Leap with
 the four spaces in front and Shield 1 an enemy hit for 8 slots
 (`"leap"`, below) until then. The
 Cataphract Byzantium's damage hero, speed 2, defence 2 (health 6), power
@@ -58,7 +60,7 @@ until 2026-10-31.
   "map": "cave",
   "wait": true,
   "heroes": {
-    "varangian": {"speed": 1, "defence": 3, "power": 2, "abilities": ["hew"], "caution": 0},
+    "varangian": {"speed": 1, "defence": 3, "power": 2, "abilities": ["hew"], "passives": ["fury"], "caution": 0},
     "cataphract": {"speed": 2, "defence": 2, "power": 2, "passives": [], "caution": 1}
   },
   "charge": {"armour": 1},
@@ -148,7 +150,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
 | `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"hew"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
-| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
+| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 3), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 
 The heroes' own numbers and starting kits are `HEROES` in

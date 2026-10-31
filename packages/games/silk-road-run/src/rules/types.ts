@@ -129,6 +129,7 @@ export type PassiveId =
   | 'armoured'
   // The Vanguard's (owner, 2026-10-30).
   | 'spearhead'
+  | 'fury'
   // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
   // drafted with the passives. Track
   | 'wearying'

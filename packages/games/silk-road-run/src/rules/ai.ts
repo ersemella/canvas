@@ -277,8 +277,15 @@ function strikable(state: FightState, u: Unit): Unit[] {
     // Leap: the two spaces in front of a landing, 3 away off its lines;
     // `forward` 2 away on them too, `splash` next to it as well.
     if (has('leap') && leapGap(u.hex!, e.hex, leapShapeOf(u)) === 0) return true;
-    // Hew: next to it, or the funnel's tip, 2 away off its lines.
-    if (has('hew') && (d === 1 || (d === 2 && !inLine))) return true;
+    // Hew: as `line`, a line of `reach`; as `funnel`, next to it or the tip, 2 away off its lines.
+    if (has('hew')) {
+      if (
+        ABILITY.hew.shape === 'line'
+          ? inLine && d <= ABILITY.hew.reach
+          : d === 1 || (d === 2 && !inLine)
+      )
+        return true;
+    }
     // Cleave: any space of its lines.
     if (
       has('cleave') &&

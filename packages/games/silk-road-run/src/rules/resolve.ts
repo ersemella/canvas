@@ -13,6 +13,7 @@ import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
   ARMOURED,
+  FURY,
   CAMEL,
   DEVOTED,
   HEROES,
@@ -664,6 +665,10 @@ export function applyDamage(
   if (!target.alive || amount <= 0) return;
   devotion(ctx, target);
   spearhead(ctx, target);
+  if (hasPassive(target, 'fury')) {
+    log(ctx, `${unitName(target)}’s fury rises.`);
+    haste(ctx, target, FURY.haste);
+  }
   if (target.shield) {
     const absorbed = Math.min(target.shield, amount);
     target.shield -= absorbed;

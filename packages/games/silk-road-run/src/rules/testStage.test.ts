@@ -15,6 +15,9 @@ const space = (col: number, row: number) => ({col, row});
 describe('the test stage', () => {
   it('accepts the committed test-stage.json', () => {
     expect(() => createTestFight(1)).not.toThrow();
+    const b = createTestFight(1).units.find((u) => u.hero === 'varangian')!;
+    expect(b.passives).toEqual(['fury']);
+    expect(b.loadout?.abilities).toEqual(['hew', 'hold']);
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 

@@ -304,6 +304,7 @@ describe('rarity (19.3b)', () => {
           'serpentKing',
           'regrow',
           'spearhead',
+          'fury',
         ].includes(def.id)
       )
         expect(def.rarity, def.id).toBeDefined();

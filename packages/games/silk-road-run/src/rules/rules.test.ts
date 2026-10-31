@@ -2067,7 +2067,11 @@ describe('the Barbarian', () => {
     expect(b2.shield).toBeUndefined();
   });
 
-  it('Hew hits a funnel, two spaces next to him and the one past them, and Shields him 1 an enemy hit for 10 slots', () => {
+  it('Hew as `funnel` hits two spaces next to him and the one past them, and with `shieldPerHit` Shields him 1 an enemy hit for 10 slots', () => {
+    onTestFinished(() => {
+      Object.assign(ABILITY.hew, {shape: 'line', shieldPerHit: 0});
+    });
+    Object.assign(ABILITY.hew, {shape: 'funnel', shieldPerHit: 1});
     // Set toward 0: the spaces along 0 and 1, and the one past both (Leap's landing along 0).
     const funnel = [hexNeighbor(c, 0), hexNeighbor(c, 1), landing(0)];
     const {s, b} = leaping({
@@ -2084,6 +2088,33 @@ describe('the Barbarian', () => {
     // Power 3 here (the hero's own): the ally is hit too, only enemies Shield him.
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), hp(s, 'p-modao')]).toEqual([3, 3, 3]);
     expect([b.shield, b.shieldUntil, b.empower]).toEqual([2, slot + 10, undefined]);
+  });
+
+  it('Hew strikes the first unit up to 2 away in a straight line, stepping in next to it first', () => {
+    const {s, b} = leaping({
+      'e-modao': along(c, 0, 2),
+      'e-mangudai': along(c, 0, 3),
+      'p-modao': hexNeighbor(c, 2),
+      'e-storm': along(c, 4, 3),
+    });
+    b.loadout = {abilities: ['hew', 'hold']};
+    expect(ABILITY.hew).toMatchObject({shape: 'line', reach: 2, shieldPerHit: 0});
+    const aims = ABILITIES.hew.targets(s, mapOf(s), b, c).map((t) => hexKey(t.hex!));
+    // The Vanguard 2 away (not the Outrider behind it), the ally next to him; not the Storm Caller 3 away.
+    expect(aims.sort()).toEqual([hexKey(along(c, 0, 2)), hexKey(hexNeighbor(c, 2))].sort());
+    applyTurn(s, b, {action: {ability: 'hew', target: {hex: along(c, 0, 2)}}});
+    expect(b.hex).toEqual(hexNeighbor(c, 0));
+    expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), b.shield]).toEqual([3, 0, undefined]);
+  });
+
+  it('Fury Hastens him 3 whenever he is hit', () => {
+    const {s, b} = leaping({'e-modao': hexNeighbor(c, 0)});
+    b.passives = ['fury'];
+    b.slot = s.currentSlot + 10;
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    hit(ctx, unit(s, 'e-modao'), b, 'A test hit');
+    expect(b.slot).toBe(s.currentSlot + 7);
+    expect(PASSIVES.fury.rule).toContain('Hastened 3');
   });
 
   it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {

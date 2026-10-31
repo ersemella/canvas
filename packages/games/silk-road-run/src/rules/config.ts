@@ -514,6 +514,14 @@ export const ARMOURED = {armour: 1 as number};
 export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 
 /**
+ * Fury (owner, 2026-10-31; the test stage's Barbarian as a tank, no hero's
+ * in runs, not offered): whenever it is hit (any damage coming at it, a
+ * Shield's or not, as Spearhead), its own card is Hastened `haste`,
+ * Devoted's and Spearhead's number.
+ */
+export const FURY = {haste: 3 as number};
+
+/**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,
  * 2026-10-29): the builder's first readings, marked TBD there. Each Delay,
  * Haste, Weaken, Empower, Armour and Shield is the keyword's own (17.3,
@@ -935,8 +943,17 @@ export const ABILITY = {
    * enemy hit (owner, later 2026-10-31, in place of an Empower of 1 each),
    * added to any he has, for `slots` slots: 10, his own turn's at speed 1,
    * so it lasts to his next turn (8, `RULES.durations.turn`, ends before it).
+   * `shape` `line` (owner, later 2026-10-31, the funnel and its Shield off):
+   * the first unit up to `reach` (2) away along one of his six lines, ally
+   * or enemy, hit for his power; one further than next to him, he steps
+   * in until next to it first, as a lunge (stopped by hail).
    */
-  hew: {shieldPerHit: 1 as number, slots: 10 as number},
+  hew: {
+    shape: 'line' as 'funnel' | 'line',
+    reach: 2 as number,
+    shieldPerHit: 0 as number,
+    slots: 10 as number,
+  },
   /**
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the

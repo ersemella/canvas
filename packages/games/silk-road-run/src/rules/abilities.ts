@@ -2265,26 +2265,64 @@ function hewFunnel(map: MapData, from: Hex, dir: number): Hex[] {
 /** Hew's funnel's tip set toward `dir` (its aim). */
 const hewTip = (from: Hex, dir: number): Hex => hexNeighbor(hexNeighbor(from, dir), dir + 1);
 
-/** The spaces Hew covers aimed at `target`, its funnel's tip. */
-export function hewArea(map: MapData, from: Hex, target: Hex): Hex[] {
+/** The spaces Hew's funnel covers aimed at `target`, its tip. */
+function hewFunnelArea(map: MapData, from: Hex, target: Hex): Hex[] {
   const dir = DIRECTIONS.find((d) => hexEquals(hewTip(from, d), target));
   return dir === undefined ? [] : hewFunnel(map, from, dir);
 }
 
+/** The spaces Hew covers aimed at `target`: its funnel, or as `line` the unit aimed at alone. */
+export function hewArea(map: MapData, from: Hex, target: Hex): Hex[] {
+  return ABILITY.hew.shape === 'line' ? [target] : hewFunnelArea(map, from, target);
+}
+
 /**
- * Hew (owner, 2026-10-31): the Barbarian's great axe through a funnel, two
- * spaces next to him and the one past them (`hewFunnel`), every unit there
- * hit for his power, allies too; then he gains Shield for each enemy hit
- * (`ABILITY.hew`), for slots, not turns.
+ * Hew as `line`: the first unit along each of the six lines from `from`,
+ * up to `reach` away, past free spaces only; one further than next to him
+ * only if he can step in (not Immobilized, hail ending the lane where it
+ * lies, the space before it his to end on).
+ */
+function hewLineTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
+  const reach = isImmobilized(user) ? 1 : ABILITY.hew.reach;
+  const out: ActionTarget[] = [];
+  for (const dir of DIRECTIONS) {
+    const way = laneFrom(map, from, dir);
+    let limit = reach;
+    for (let i = 0; i < limit && i < way.length; i++) {
+      const h = way[i]!;
+      const u = unitAt(state, h);
+      if (u && u !== user) {
+        if (i === 0 || mayEndOn(map, user, way[i - 1]!)) out.push({hex: h});
+        break;
+      }
+      if (stopsWalk(state, user, h)) limit = Math.min(limit, i + 1);
+    }
+  }
+  return out;
+}
+
+/**
+ * Hew (owner, 2026-10-31): the Barbarian's great axe. As `line` (later
+ * 2026-10-31): the first unit up to 2 away in a straight line, stepping
+ * in next to it first. As `funnel`: two spaces next to him and the one
+ * past them (`hewFunnel`), every unit there hit; with `shieldPerHit`, then
+ * Shield for each enemy hit (`ABILITY.hew`), for slots, not turns.
  */
 const hew: AbilityDef = {
   id: 'hew',
   name: 'Hew',
   kind: 'attack',
   summary: () =>
-    `Hits every unit on two spaces next to you and the space past them, allies included. Gain Shield ${ABILITY.hew.shieldPerHit} for each enemy hit, for ${ABILITY.hew.slots} slots.`,
+    ABILITY.hew.shape === 'line'
+      ? `Strike the first unit up to ${ABILITY.hew.reach} away in a straight line, stepping in next to it first.`
+      : `Hits every unit on two spaces next to you and the space past them, allies included.${
+          ABILITY.hew.shieldPerHit > 0
+            ? ` Gain Shield ${ABILITY.hew.shieldPerHit} for each enemy hit, for ${ABILITY.hew.slots} slots.`
+            : ''
+        }`,
   area: hewArea,
   targets(state, map, user, from) {
+    if (ABILITY.hew.shape === 'line') return hewLineTargets(state, map, user, from);
     const out: ActionTarget[] = [];
     for (const dir of DIRECTIONS) {
       const caught = hewFunnel(map, from, dir).some((h) => {
@@ -2296,7 +2334,25 @@ const hew: AbilityDef = {
     return out;
   },
   resolve(ctx, user, target) {
-    const caught = hewArea(ctx.map, user.hex!, target.hex!)
+    if (ABILITY.hew.shape === 'line') {
+      const goal = target.hex!;
+      const dir = hexDirectionTo(user.hex!, goal)!;
+      if (hexDistance(user.hex!, goal) > 1) {
+        log(ctx, `${unitName(user)} steps in.`);
+        while (user.alive && user.hex && hexDistance(user.hex, goal) > 1 && !isImmobilized(user)) {
+          const next = hexNeighbor(user.hex, dir);
+          if (!walkable(ctx.map, next) || unitAt(ctx.state, next)) break;
+          enterHex(ctx, user, next, 'walk', true);
+        }
+        if (user.alive) endGrapplesApart(ctx, user);
+      }
+      const u = unitAt(ctx.state, goal);
+      if (!user.alive || !user.hex || !u || hexDistance(user.hex, goal) !== 1) return;
+      log(ctx, `${unitName(user)} hews.`);
+      hit(ctx, user, u, 'The axe');
+      return;
+    }
+    const caught = hewFunnelArea(ctx.map, user.hex!, target.hex!)
       .map((h) => unitAt(ctx.state, h))
       .filter((u): u is Unit => u !== undefined);
     log(ctx, `${unitName(user)} hews.`);
