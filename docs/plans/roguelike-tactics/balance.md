@@ -5417,6 +5417,44 @@ jumps stays the one with the span; the straight walk is even (47.2%) at
 half of it; the dash would need a shorter, freer shape (2, or landing on
 any free space up to 3) to be worth measuring again.
 
+### Spearhead off, Cleave's Delay raised in its place (2026-10-31)
+
+Asked for: whether Spearhead could come off the Vanguard if Cleave's
+Delay went up instead. `experiments/cleave-for-spearhead.mjs`: the
+Vanguard's six rows of "Each hero in its role" (as in `spearhead.mjs`),
+every Vanguard with Spearhead at range 2 as built at Delay 6, or without
+it at Cleave's Delay 6 to 10 (`ABILITY.cleave.delay`, both sides). 400
+fights a row (about ±2.5 points), seeds from 1000, production AI. The
+four rows without a Cataphract on `dab3646`, its two rows on `deb3834`
+(after `12bd9fc` took its Charge's slam off; the other rows don't use
+it). Unfinished fights at most 4%.
+
+| Row | Spearhead, 6 | None, 6 | 7 | 8 | 9 | 10 |
+|---|---:|---:|---:|---:|---:|---:|
+| Vanguard in the Steppe's seat | 54% | 48.5% | 52.3% | 54% | 55.5% | 62% |
+| Vanguard in Persia's | 55.1% | 53% | 57.7% | 57.2% | 58.2% | 58.8% |
+| Vanguard in Byzantium's | 51.9% | 53.6% | 56.8% | 58.9% | 62.4% | 68% |
+| Grappler in China's | 54% | 60.9% | 55.8% | 51.3% | 41.5% | 35.3% |
+| Juggernaut in China's | 36.8% | 47.8% | 41.3% | 37.8% | 32.8% | 26.8% |
+| Cataphract in China's | 41% | 44% | 38.8% | 36.1% | 27.5% | 23.5% |
+| In others' seats (mean) | 53.7% | 51.7% | 55.6% | 56.7% | 58.7% | 62.9% |
+| Kept in its own | 56.1% | 49.1% | 54.7% | 58.3% | 66.1% | 71.5% |
+| **Score** | **54.9%** | **50.4%** | **55.2%** | **57.5%** | **62.4%** | **67.2%** |
+
+- **Delay 7 replaces Spearhead**: 55.2% against 54.9%, the rows within
+  about 5 points of each other (Byzantium's seat and the Juggernaut in
+  China's the furthest apart, 4.5–4.9 points); Spearhead does a little better in its own seat
+  against the Juggernaut, Delay 7 a little better elsewhere.
+- **With the Cataphract's slam gone the Vanguard is even with neither**:
+  50.4% at Delay 6 and no Spearhead (45.6% on 2026-10-30, 46.5% on
+  `dab3646`'s Cataphract). The Cataphract in China's seat fell from
+  62–64% to 41–44%, so Spearhead (and Delay 7) now put the Vanguard
+  at 55%, at the top of the tanks' spread (45.3–55.7% on 2026-10-29).
+- **8 and up too strong** (57.5–67.2%): every other tank loses China's
+  seat, the Juggernaut and the Cataphract to 24–38%.
+- Each point of Delay is worth about 3–5 points of the Vanguard's score.
+  Not changed: the numbers are the owner's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

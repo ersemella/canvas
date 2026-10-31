@@ -217,6 +217,8 @@ Blessing's Shield, as a heal alone, and with the Priest himself too
 (`.lineSelf`).
 `priest-line-any.mjs` (2026-10-30) Blessing as built then: any line aimed,
 the Priest always blessed.
+`cleave-for-spearhead.mjs` (2026-10-31) the Vanguard without Spearhead
+at Cleave's Delay 6–10 (`ABILITY.cleave.delay`), beside Spearhead as built.
 
 ## Ability and stat ablation
 
