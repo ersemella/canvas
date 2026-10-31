@@ -283,8 +283,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's tank since
    * 2026-10-31 (owner; its damage hero before, the Cataphract its tank), a
    * Varangian guardsman with a great axe. Speed 1, defence 3 (health 8),
-   * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before), Wade
-   * In (`ABILITY.lunge`; Hew on the test stage) and Fury (`FURY`, Haste 5)
+   * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before),
+   * Lunge (`ABILITY.lunge`; Hew on the test stage, then Wade In) and Fury (`FURY`, Haste 5)
    * as measured in balance.md, "Hew as a line, with Fury". Before that: Leap (owner,
    * 2026-10-30): over anything to a free space 2 away off his straight
    * lines, hitting the two spaces in front of where he lands. In place of
