@@ -5510,6 +5510,52 @@ seat of a Steppe mirror, 400 fights a row (about ±3.5 a span), seeds from
 - **Built (owner, 2026-10-31):** the Vanguard without Spearhead, Cleave's
   Delay 6; Spearhead kept in the code, no hero's and not offered.
 
+### The Elixir as an overdose (2026-10-31)
+
+Asked for (the owner): the Elixir's shape kept (one unit within 2, the
+Alchemist too), on any unit, ally or enemy, an Empower big enough to fell
+most heroes in one hit for a turn's slots (8), and the unit hit for the
+Alchemist's power. `ABILITY.elixir.overdose` (0, off): above 0, the unit
+is Empowered until its hits deal that much (its power + Empower, at least
+1), and takes the Alchemist's power as hail's damage (a Shield takes it,
+Armour not; it can fell the unit); no heal, hit or Weaken besides. 6
+fells every hero of defence 1 or 2 (8 of the 12, the wolves and foxes),
+4 those of defence 1. The AI weighs it on either side, the Empower's
+guess less the damage. `experiments/elixir-overdose.mjs`, the seats and
+fights of "The Elixir in lines, by turns or as poison", on `09a8f46`.
+Score the mean of the six seats; the as-built row rerun on today's rules
+(kept 55.8%, score 53% since Cleave's Delay 6). Unfinished fights at
+most 0.3%.
+
+| Alchemist | Steppe | Persia | Byzantium | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| As built | 53.8% | 48.7% | 48.1% | 55.8% | 53% | 47% | 52.8% | 5.8 |
+| **Overdose to 6** | 37.8% | 31.3% | 50.3% | 31.6% | **35.7%** | 45.5% | 59.3% | **13.8** |
+| Overdose to 4 | 31.8% | 28.3% | 45.8% | 25.9% | **30.6%** | 43.8% | 52.8% | 9 |
+| Overdose to 6, power 2 | 43% | 37% | 49.1% | 42.9% | **43%** | 43.5% | 53% | 9.5 |
+
+- **Too weak as the AI plays it**, 17 points under the Elixir as built
+  at 6 and power 1: China with any other support in his seat wins 64–73%.
+  Only Byzantium's seat holds (50.3%), where the Cataphract's Charge and
+  the Priest's Blessing make the hit back affordable.
+- **Cast on 31–46% of his turns** (61–75% as built): with no heal, an
+  ally pays 1 for an Empower it can only use if it has a hit this turn,
+  and on an enemy it is a hit of 1 that may hand it a kill, so most turns
+  he walks instead. He lives through 35–74% of fights (52–88% as built),
+  standing closer with nothing to heal him.
+- **The biggest skill span measured on him, 13.8** (5.8 as built): the
+  expert AI, looking 4 deep, wins 59.3%, above the Elixir as built; the
+  production AI can't line up the Elixir with the hit that spends it.
+  A player who can should find it strong, so play-testing is the truer
+  test than these seats.
+- **4 is worse than 6** (30.6%): the one-hit threshold is the point.
+  **Power 2** (a hit of 2) gains 7 points (43%), the hit on an enemy
+  worth more, the cost on an ally more too.
+
+Not built. To be even for the AI it would need more on each cast (its
+power 2 and the old heal on an ally, or the hit on an enemy only), or the
+AI planning the hit that follows it.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
