@@ -228,6 +228,9 @@ their new and old seats, the other damage heroes and Byzantium's party.
 `byzantium-hew.mjs` (2026-10-31) the swap with Hew in place of Leap
 (`ABILITY.hew`), the Cataphract without and with Armoured; only the rows
 with Byzantium in them, the rest from `byzantium-swap.mjs`.
+`byzantium-brace.mjs` (2026-10-31) the swap as the test stage has it: the
+Cataphract with Armour after a charge (`ABILITY.charge.armour`), Hew's
+Shield (`ABILITY.hew.shieldPerHit`); every role-seat row and their skill.
 
 ## Ability and stat ablation
 

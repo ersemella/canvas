@@ -5770,6 +5770,55 @@ production AI. Unfinished fights at most 0.8%.
 - **Not changed in runs**; the test stage has Hew, and the Cataphract
   without Armoured.
 
+### The Cataphract braced after a charge, and Hew's Shield (later 2026-10-31)
+
+Asked for (the owner), after "The swap with Hew": the Cataphract without
+Armoured but with **Armour 1 for 8 slots after each charge**
+(`ABILITY.charge.armour`, the test stage's `"charge"`), and Hew's Empower
+replaced by **Shield 1 for each enemy hit**, added to any he has, for 10
+slots (`ABILITY.hew.shieldPerHit`). `experiments/byzantium-brace.mjs`: all
+36 rows of `roles-twelve.mjs` (today's Elixir, the overdose, in runs since
+`83f760a`, so China's rows differ from the sections before), Byzantium's
+party tank, damage, support; 400 fights a row (about ±2.5), production AI.
+Unfinished fights at most 6.5%.
+
+| Hero (role) | Others' seats | Kept in its own | **Score** | Before (Hew's Empower; Armoured or not) |
+|---|---:|---:|---:|---|
+| Grappler (tank) | 55.2 | 45.3 | 50.3 | 52.4 / 50.4 |
+| Vanguard (tank) | 53.0 | 53.1 | 53.0 | 53.6 / 53.4 |
+| Juggernaut (tank) | 58.2 | 53.7 | 56.0 | 55.5 / 54.6 |
+| **Barbarian (tank)** | 43.8 (49 / 40.5 / 42) | 37.6 | **40.7** | 38.5 / 41.6 |
+| Outrider (damage) | 47.9 | 51.1 | 49.5 | 51.5 / 47.9 |
+| Duelist (damage) | 50.9 | 51.4 | 51.1 | 50.8 / 47.0 |
+| Ranger (damage) | 50.0 | 50.2 | 50.1 | 51.9 / 50.0 |
+| **Cataphract (damage)** | 50.2 (43.8 / 50 / 56.8) | 48.2 | **49.2** | 45.8 none / 55.2 Armoured |
+| Storm Caller | 53.3 | 52.7 | 53.0 | |
+| Alchemist | 48.1 | 47.4 | 47.8 | |
+| Magus | 52.3 | 55.0 | 53.7 | |
+| Priest | 47.7 | 43.5 | 45.6 | |
+
+| Row (his own role seats) | Wins | Hew or Charge, share of turns | Turns a fight | Lives through | Axe damage to enemies a fight |
+|---|---:|---:|---:|---:|---:|
+| Barbarian, Hew's Shield | 40.5–49% | 31–37% | 3.0–3.4 | 33–36% (24–25% with its Empower) | 4–5.5 |
+| Cataphract, braced | 43.8–56.8% | 91.5–95% | 2.6–4.0 | 27–60.5% (21–53.5% without, 55–68.5% Armoured) | |
+
+- **The brace evens the Cataphract**: 49.2%, within 2 points of the
+  other damage heroes (49.5–51.1%), between none (45.8%) and Armoured
+  always (55.2%). Still weakest in the Steppe's seat (43.8%, living
+  through 27% of fights): the Outrider and the Storm Caller hit him on
+  the way in, before a charge braces him.
+- **Hew's Shield is a little better than its Empower** (40.7% against
+  38.5%, at the edge of noise), and keeps him up a little longer (33–36%
+  of fights against 24–25%); still 10–15 points under the other tanks.
+  Even with the Steppe (49% in its tank seat), 40.5–42% in China's and
+  Persia's.
+- **Skill** (as `skill-fights.mjs`, ±3.5): the Cataphract braced 44% to
+  54.5%, **span 10.5** (10.8 with no Armour, 5.6 Armoured: the brace,
+  earned by charging, keeps where he charges mattering); the Barbarian
+  with Hew's Shield 48% to 52.8%, **span 4.8** (7.2 with its Empower),
+  as low as the Grappler (5.3).
+- **Not changed in runs**; the test stage has both.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
