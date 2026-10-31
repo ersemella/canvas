@@ -9,7 +9,7 @@
 import {ABILITY, AI, ARMOURED} from './config';
 import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
-import {lungeOf, passesThrough} from './abilities';
+import {dashOf, lungeOf, passesThrough} from './abilities';
 import {blocks, tileAt} from './map';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
@@ -79,7 +79,15 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     };
     if (has('snapShot') || has('boulder')) lanes(fq, fr, power);
     // Swift Strike's lunge: the first unit in line, `lunge` free spaces out.
-    if (has('swiftStrike') && lungeOf(e) > 0 && !isImmobilized(e)) {
+    // A dash: through units, its lines to `dash` - 1, stopped only by yurts.
+    if (has('swiftStrike') && dashOf(e) > 0 && !isImmobilized(e))
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i < dashOf(e); i++) {
+          const tile = board.get(id(fq + dq * i, fr + dr * i));
+          if (tile === undefined || blocks(tile)) break;
+          mark(hexes, id(fq + dq * i, fr + dr * i), power);
+        }
+    else if (has('swiftStrike') && lungeOf(e) > 0 && !isImmobilized(e)) {
       if (!passesThrough(e)) lanes(fq, fr, power, lungeOf(e) + 1);
       // Through units: its lines to `lunge` + 1, stopped only by yurts.
       else

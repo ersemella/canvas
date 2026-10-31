@@ -788,6 +788,14 @@ export const ABILITY = {
      * unit 2 away in line, stepping one space in. Off as built.
      */
     jump: false as boolean,
+    /**
+     * A dash (owner's idea, 2026-10-31): Swift Strike is only a move of
+     * exactly `dash` spaces straight along one of the six directions,
+     * through the units on the spaces before the last, each hit, to the free
+     * space it lands on; with yurts or the map's edge on that space, one
+     * fewer, through a unit next to it. No strike in place. 0 as built.
+     */
+    dash: 0 as number,
     /** With `jump`, a jump may be followed by another in the same turn. On (owner, 2026-10-30). */
     chain: true as boolean,
     /**

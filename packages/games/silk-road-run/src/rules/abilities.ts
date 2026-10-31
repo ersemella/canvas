@@ -1258,6 +1258,59 @@ export const lungeOf = (u: Unit): number => u.lunge ?? ABILITY.swiftStrike.lunge
 /** Whether `u`'s Swift Strike jumps: its own (the test stage's), else `ABILITY.swiftStrike.jump`. */
 export const jumps = (u: Unit): boolean => u.jump ?? ABILITY.swiftStrike.jump;
 
+/** `u`'s Swift Strike dash, in spaces (`ABILITY.swiftStrike.dash`), its own first; 0: none. */
+export const dashOf = (u: Unit): number => u.dash ?? ABILITY.swiftStrike.dash;
+
+/**
+ * Swift Strike's dashes from `from` (`dashOf`), aimed at the space it lands
+ * on: along each of the six directions, exactly `dash` spaces out when that
+ * space is free, or, with yurts or the map's edge on it, one fewer; with at
+ * least one unit on the spaces before the landing. Not Immobilized.
+ */
+function dashTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
+  const n = dashOf(user);
+  if (isImmobilized(user) || n < 2) return [];
+  const out: ActionTarget[] = [];
+  for (const dir of DIRECTIONS) {
+    const way = laneFrom(map, from, dir);
+    // Yurts or the edge on the last space: one fewer.
+    const len = way.length >= n ? n : way.length === n - 1 ? n - 1 : 0;
+    if (len === 0) continue;
+    const land = way[len - 1]!;
+    const other = unitAt(state, land);
+    if (other && other !== user) continue;
+    if (!mayEndOn(map, user, land)) continue;
+    if (way.slice(0, len - 1).some((h) => unitAt(state, h))) out.push({hex: land});
+  }
+  return sortByHex(out, (t) => t.hex!);
+}
+
+/**
+ * A dash to `to` (`dashTargets`): each unit on the way hit as it goes by,
+ * hail on a free space ending it there; Hastened once if it hit.
+ */
+function dash(ctx: Ctx, user: Unit, to: Hex): void {
+  const dir = hexDirectionTo(user.hex!, to)!;
+  log(ctx, `${unitName(user)} dashes.`);
+  let hits = 0;
+  let at = user.hex!;
+  while (user.alive && !hexEquals(at, to)) {
+    at = hexNeighbor(at, dir);
+    const u = unitAt(ctx.state, at);
+    if (u && u !== user) {
+      log(ctx, `${unitName(user)} cuts ${unitName(u)} passing.`);
+      hit(ctx, user, u, 'The sword');
+      hits++;
+      continue;
+    }
+    if (!walkable(ctx.map, at)) break;
+    enterHex(ctx, user, at, 'walk', !hexEquals(at, to));
+    if (isImmobilized(user)) break;
+  }
+  if (user.alive) endGrapplesApart(ctx, user);
+  if (hits > 0 && user.alive) struck(ctx, user);
+}
+
 /**
  * Swift Strike's jumps from `from` (`jumps`): over a unit next to it, not
  * one it has jumped this turn, to the free space straight past it, which a
@@ -1327,6 +1380,7 @@ function swiftStrikeTargets(
   user: Unit,
   from: Hex
 ): ActionTarget[] {
+  if (dashOf(user) > 0) return dashTargets(state, map, user, from);
   if (jumps(user)) {
     const out = jumpTargets(state, map, user, from);
     if (user.chaining) return out;
@@ -1400,6 +1454,14 @@ export function lungeCaught(
   user?: Unit
 ): Hex[] {
   const to = target.hex!;
+  // A dash (`dashTargets`): the units on the way, none past it.
+  if (user && dashOf(user) > 0) {
+    const dir = hexDirectionTo(from, to)!;
+    const out: Hex[] = [];
+    for (let at = hexNeighbor(from, dir); !hexEquals(at, to); at = hexNeighbor(at, dir))
+      if (unitAt(state, at)) out.push(at);
+    return out;
+  }
   if (unitAt(state, to)) return [to];
   // A jump (`jumpTargets`): the unit jumped only.
   if (user && isJump(state, {...user, hex: from}, target))
@@ -1440,13 +1502,16 @@ const swiftStrike: AbilityDef = {
   summary: (user) => {
     const lunge = lungeOf(user);
     const streak = streakOf(user);
-    const first = jumps(user)
-      ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it${(user.chain ?? ABILITY.swiftStrike.chain) ? ', and jump again from there' : ''}.`
-      : lunge === 0
-        ? 'Melee.'
-        : passesThrough(user)
-          ? `Lunge up to ${lunge} straight and strike the first unit, or through units to a free space, hitting each passed and the one in front.`
-          : `Lunge up to ${lunge} straight and strike the first unit.`;
+    const first =
+      dashOf(user) > 0
+        ? `Dash exactly ${dashOf(user)} straight, through units, hitting each passed (${dashOf(user) - 1} if yurts or the edge are in the way).`
+        : jumps(user)
+          ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it${(user.chain ?? ABILITY.swiftStrike.chain) ? ', and jump again from there' : ''}.`
+          : lunge === 0
+            ? 'Melee.'
+            : passesThrough(user)
+              ? `Lunge up to ${lunge} straight and strike the first unit, or through units to a free space, hitting each passed and the one in front.`
+              : `Lunge up to ${lunge} straight and strike the first unit.`;
     const then =
       streak.length > 0
         ? ` When it hits, its card is Hastened ${streak.join(', then ')} on turns striking running.`
@@ -1463,6 +1528,7 @@ const swiftStrike: AbilityDef = {
   targetsUnit: true,
   targets: swiftStrikeTargets,
   resolve(ctx, user, target) {
+    if (dashOf(user) > 0) return dash(ctx, user, target.hex!);
     if (isJump(ctx.state, user, target)) return jump(ctx, user, target.hex!);
     if (!unitAt(ctx.state, target.hex!)) return lungeThrough(ctx, user, target.hex!);
     const goal = target.hex!;

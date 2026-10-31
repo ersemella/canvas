@@ -1773,6 +1773,42 @@ describe('the Duelist', () => {
     expect([t.awaiting, z.slot]).toEqual([null, actionCost(z)]);
   });
 
+  it('dashing, it goes exactly 3 straight through the units on the way, hitting each', () => {
+    withSwift({dash: 3, haste: 3});
+    const s = setup(
+      {'p-youxia': c, 'e-modao': along(c, 0, 1), 'e-mangudai': along(c, 0, 2), 'e-storm': at(0, 0)},
+      party
+    );
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    const targets = ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!);
+    // Only the space 3 out past them; no strike in place, no stop short.
+    expect(targets).toEqual([{hex: along(c, 0, 3)}]);
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: along(c, 0, 3)}}});
+    expect(y.hex).toEqual(along(c, 0, 3));
+    for (const id of ['e-modao', 'e-mangudai'])
+      expect(unit(s, id).hp).toBe(unit(s, id).maxHp - y.power);
+    expect(y.slot).toBe(actionCost(y) - 3);
+  });
+
+  it('dashing, yurts 3 out make it 2, through a unit next to it; a unit 3 out blocks it', () => {
+    withSwift({dash: 3});
+    const s = setup({'p-youxia': c, 'e-modao': along(c, 0, 1), 'e-storm': at(0, 0)}, party);
+    s.tiles = {[hexKey(along(c, 0, 3))]: 'obstacle'};
+    const y = unit(s, 'p-youxia');
+    expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual([{hex: along(c, 0, 2)}]);
+    // A unit on the space 3 out, in place of the yurts: nowhere to land.
+    s.tiles = {};
+    const t = setup(
+      {'p-youxia': c, 'e-modao': along(c, 0, 1), 'e-mangudai': along(c, 0, 3), 'e-storm': at(0, 0)},
+      party
+    );
+    t.tiles = {};
+    const z = unit(t, 'p-youxia');
+    expect(ABILITIES.swiftStrike.targets(t, mapOf(t), z, z.hex!)).toEqual([]);
+  });
+
   it('passing through, it hits the unit next to it and the one in front of where it lands', () => {
     withSwift({lunge: 2, passThrough: true});
     const s = setup(
