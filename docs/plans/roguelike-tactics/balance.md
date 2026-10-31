@@ -6097,6 +6097,9 @@ and its skill. Unfinished fights at most 2.3%.
   Storm Caller hit him less, and from where Hew can't answer.
 - **No skill from it** (span 5.8 against 5.7): it fires on being hit.
 - Byzantium's own seats as before, bent by the Priest's Invocation.
+- **Built (owner, 2026-10-31)**, in runs: the Barbarian Byzantium's tank
+  with Wade In (Hew renamed) and Fury at Haste 5; the Cataphract its
+  damage hero, braced after each charge (roster.md).
 
 ## Principles for re-tuning
 

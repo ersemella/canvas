@@ -16,8 +16,10 @@ describe('the test stage', () => {
   it('accepts the committed test-stage.json', () => {
     expect(() => createTestFight(1)).not.toThrow();
     const b = createTestFight(1).units.find((u) => u.hero === 'varangian')!;
+    // Byzantium's three as in a run: no override of the Barbarian left.
     expect(b.passives).toEqual(['fury']);
-    expect(b.loadout?.abilities).toEqual(['hew', 'hold']);
+    expect(b.loadout).toBeUndefined();
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['wadeIn', 'hold']);
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 

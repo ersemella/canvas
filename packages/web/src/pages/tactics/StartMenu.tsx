@@ -47,11 +47,11 @@ const LORE: Partial<Record<HeroId, string>> = {
   archer:
     'A foot archer of the royal army, whose heavy arrows punch through armour. The Ranger hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
   varangian:
-    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow, but it leaps over anything in its way, foes and rocks alike, and brings its great axe down on the two spaces in front of where it lands, harder than anyone, friend or foe.',
+    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow and hard to fell: it wades in on the first foe up to two spaces away in a straight line and brings its great axe down, and every blow it takes only quickens its fury.',
   priest:
     'A priest of the imperial city, who walks with the army to tend the wounded. The Priest is slow to pray, but his prayers are answered: he calls on heaven over a patch of ground, and when his prayer is done, it mends every friend there, himself too, and smites every foe who has not got out of the way.',
   cataphract:
-    'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying everyone in its way before it, as far as there is room, and whoever it slams into rock or the edge is left reeling, losing time; its iron takes 1 off every blow.',
+    'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying everyone in its way before it, as far as there is room, and braces in its iron where the charge ends, taking 1 less from every blow for a while.',
   magus:
     'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but reads an omen for one unit: an ally acts at once, an enemy must wait until the Magus has acted again, while its own course is fixed and cannot be hurried or held back.',
 };
@@ -74,7 +74,7 @@ const GRID: [HeroId, HeroId, HeroId][] = [
   ['bokh', 'mangudai', 'storm'],
   ['modao', 'youxia', 'alchemist'],
   ['mahout', 'archer', 'magus'],
-  ['cataphract', 'varangian', 'priest'],
+  ['varangian', 'cataphract', 'priest'],
 ];
 
 /** Each hero's role, from its row. */

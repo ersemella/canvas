@@ -33,26 +33,16 @@ below, applies only to a Priest given Blessing with `"abilities"`.
 The Elixir (named Overdose since 2026-10-31) plays as in a run since
 2026-10-31, an overdose on one unit within 3 (balance.md, "The Elixir as an overdose"); `"elixir"`, below,
 aims it in lines or sets the overdose's damage.
-**Byzantium's tank and damage hero swapped** (`"heroes"` and `"leap"`,
-below; owner, 2026-10-31; balance.md, "The Barbarian and the Cataphract
-swapped"), on both sides, the party picked on the start menu too: the
-Barbarian a tank, speed 1, defence 3 (health 8), power 2, the AI playing
-him as one (`"caution": 0`), with **Hew** in place of Leap (later
-2026-10-31; `ABILITY.hew`): the first unit up to 2 away along one of his
-six straight lines, ally or enemy, struck for his power; one 2 away, he
-steps in next to it first, as a lunge (hail stops him short, and then
-he doesn't strike). And **Fury** (`"passives": ["fury"]`): whenever he
-is hit, his card is Hastened 3. Hew was a funnel before (the two spaces
-next to him either side of one way and the space past them), with an
-Empower, then a Shield, of 1 an enemy hit (`ABILITY.hew.shape`
-`funnel`, `.shieldPerHit`). Leap with
-the four spaces in front and Shield 1 an enemy hit for 8 slots
-(`"leap"`, below) until then. The
-Cataphract Byzantium's damage hero, speed 2, defence 2 (health 6), power
-2, without Armoured, Charge as built, and Armour 1 for 8 slots after
-each charge (`"charge"`, below; owner, later 2026-10-31), where it leaves
-him in melee. The Steppe's three were the enemy
-until 2026-10-31.
+**Byzantium's three as in a run** since 2026-10-31 (owner; balance.md,
+"Hew as a line, with Fury"), set here by `"heroes"`, `"charge"` and
+`"leap"` until they were built: the Barbarian its tank, speed 1, defence 3
+(health 8), power 2, with **Wade In** (Hew here first): the first unit up
+to 2 away along one of his six straight lines, ally or enemy, struck for
+his power, stepping in next to it first when it is 2 away, as a lunge
+(hail stops him short, and then he doesn't strike); and **Fury**: whenever
+he is hit, his card is Hastened 5. The Cataphract its damage hero, speed
+2, defence 2 (health 6), power 2, without Armoured, Armour 1 for 8 slots
+after each charge. The Steppe's three were the enemy until 2026-10-31.
 **The Magus has Syzygy in place of Omen** (`"heroes"`, below; owner,
 2026-10-31): one of his six lines, any distance, through anything (units,
 yurts), and the cards of every unit on it, of either side, Humphrey too,
@@ -74,11 +64,8 @@ a picked-up card down, then undoes the arrangement, then the line.
   "map": "cave",
   "wait": true,
   "heroes": {
-    "varangian": {"speed": 1, "defence": 3, "power": 2, "abilities": ["hew"], "passives": ["fury"], "caution": 0},
-    "cataphract": {"speed": 2, "defence": 2, "power": 2, "passives": [], "caution": 1},
     "magus": {"abilities": ["syzygy"]}
   },
-  "charge": {"armour": 1},
   "yurts": "none",
   "camel": {},
   "player": [
@@ -164,8 +151,8 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
-| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"syzygy"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"hew"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
-| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 3), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
+| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"syzygy"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"wadeIn"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
+| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 5; the Barbarian's own), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 
 The heroes' own numbers and starting kits are `HEROES` in

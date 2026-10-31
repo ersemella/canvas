@@ -69,8 +69,8 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple') || has('swiftStrike') || has('smash') || has('reave'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
-    // Hew: next to it, and each funnel's tip, 2 away off its lines; as `line`, its lines to `reach`.
-    if (has('hew') && ABILITY.hew.shape === 'funnel')
+    // Wade In: next to it, and each funnel's tip, 2 away off its lines; as `line`, its lines to `reach`.
+    if (has('wadeIn') && ABILITY.wadeIn.shape === 'funnel')
       AXIAL.forEach(([aq, ar], i) => {
         const [bq, br] = AXIAL[(i + 1) % 6]!;
         mark(hexes, id(fq + aq, fr + ar), power);
@@ -91,7 +91,8 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
       }
     };
     if (has('snapShot') || has('boulder')) lanes(fq, fr, power);
-    if (has('hew') && ABILITY.hew.shape === 'line') lanes(fq, fr, power, ABILITY.hew.reach);
+    if (has('wadeIn') && ABILITY.wadeIn.shape === 'line')
+      lanes(fq, fr, power, ABILITY.wadeIn.reach);
     // Swift Strike's lunge: the first unit in line, `lunge` free spaces out.
     // A dash: through units, its lines to `dash` - 1, stopped only by yurts.
     if (has('swiftStrike') && dashOf(e) > 0 && !isImmobilized(e))

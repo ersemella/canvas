@@ -280,9 +280,12 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['longshot', 'hold'],
   },
   /**
-   * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's damage hero,
-   * a Varangian guardsman with a great axe, slow and hard-hitting. Speed 1,
-   * defence 2 (health 6) and power 3 are the owner's. Leap (owner,
+   * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's tank since
+   * 2026-10-31 (owner; its damage hero before, the Cataphract its tank), a
+   * Varangian guardsman with a great axe. Speed 1, defence 3 (health 8),
+   * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before), Wade
+   * In (`ABILITY.wadeIn`; Hew on the test stage) and Fury (`FURY`, Haste 5)
+   * as measured in balance.md, "Hew as a line, with Fury". Before that: Leap (owner,
    * 2026-10-30): over anything to a free space 2 away off his straight
    * lines, hitting the two spaces in front of where he lands. In place of
    * Axe Throw (owner, later 2026-10-28; `ABILITY.axeThrow`: any unit within
@@ -296,9 +299,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     name: 'Barbarian',
     letter: 'B',
     speed: 1,
-    defence: 2,
-    power: 3,
-    abilities: ['leap', 'hold'],
+    defence: 3,
+    power: 2,
+    abilities: ['wadeIn', 'hold'],
+    passives: ['fury'],
   },
   /**
    * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
@@ -318,9 +322,11 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['invocation', 'hold'],
   },
   /**
-   * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's tank,
-   * armoured heavy cavalry. Speed 2, defence 3 (health 8) and power 1 are
-   * the owner's. It has no walk of its own (`moveCap` 0): it moves only by
+   * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's damage hero
+   * since 2026-10-31 (owner; its tank before), armoured heavy cavalry.
+   * Speed 2, defence 2 (health 6), power 2 (owner, 2026-10-31; speed 2,
+   * defence 3, power 1 before), Armour after each charge in place of
+   * Armoured (`ABILITY.charge.armour`). It has no walk of its own (`moveCap` 0): it moves only by
    * Charge, any distance straight, carrying every unit in its way ahead of
    * it while there is room (`charge` in abilities.ts; owner, later
    * 2026-10-28: the first unit only before, a second it met stopping it).
@@ -329,14 +335,13 @@ export const HEROES: Record<HeroId, HeroStats> = {
     name: 'Cataphract',
     letter: 'K',
     speed: 2,
-    defence: 3,
-    power: 1,
+    defence: 2,
+    power: 2,
     abilities: ['charge', 'hold'],
-    // Armoured (owner, 2026-10-29), off while the slam Stunned and back
-    // with its Delay 6 (balance.md, "The slam's Delay 6 with Armoured
-    // back": 57–72% in the other tank seats, even in its own); the slam
-    // off since 2026-10-31, Armoured kept.
-    passives: ['armoured'],
+    // Armoured (owner, 2026-10-29) until 2026-10-31, when he became the
+    // damage hero: Armour 1 for 8 slots after each charge in its place
+    // (balance.md, "The Cataphract braced after a charge"; Armoured always
+    // 3-8 points over the other damage heroes).
     moveCap: 0,
   },
   /**
@@ -514,12 +519,12 @@ export const ARMOURED = {armour: 1 as number};
 export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 
 /**
- * Fury (owner, 2026-10-31; the test stage's Barbarian as a tank, no hero's
- * in runs, not offered): whenever it is hit (any damage coming at it, a
- * Shield's or not, as Spearhead), its own card is Hastened `haste`,
- * Devoted's and Spearhead's number.
+ * Fury (owner, 2026-10-31), the Barbarian's, not offered: whenever it is
+ * hit (any damage coming at it, a Shield's or not, as Spearhead), its own
+ * card is Hastened `haste`: 5 (owner, 2026-10-31, as measured: balance.md,
+ * "Fury's Haste 5"; 3, Devoted's and Spearhead's, on the test stage first).
  */
-export const FURY = {haste: 3 as number};
+export const FURY = {haste: 5 as number};
 
 /**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,
@@ -939,8 +944,9 @@ export const ABILITY = {
    */
   reave: {throwRange: 3 as number},
   /**
-   * Hew (owner, 2026-10-31; the test stage's Barbarian as a tank, no hero's
-   * in runs): a funnel, the two spaces next to him either side of one way
+   * Wade In (owner, 2026-10-31; Hew on the test stage, renamed when the
+   * Barbarian took it in runs the same day), his: `shape` `line` as built,
+   * below. First a funnel, the two spaces next to him either side of one way
    * and the space past them that touches both, every unit there hit for his
    * power, allies and Humphrey too. He gains Shield `shieldPerHit` for each
    * enemy hit (owner, later 2026-10-31, in place of an Empower of 1 each),
@@ -951,7 +957,7 @@ export const ABILITY = {
    * or enemy, hit for his power; one further than next to him, he steps
    * in until next to it first, as a lunge (stopped by hail).
    */
-  hew: {
+  wadeIn: {
     shape: 'line' as 'funnel' | 'line',
     reach: 2 as number,
     shieldPerHit: 0 as number,
@@ -979,15 +985,15 @@ export const ABILITY = {
    * (owner, 2026-10-31: the slam's Delay taken off).
    */
   /**
-   * `armour` (owner, later 2026-10-31; the test stage's Cataphract as damage,
-   * 0 in runs): Armour that many after every charge, for `armourSlots` (8)
+   * `armour` (owner, later 2026-10-31; the Cataphract as damage, in runs
+   * since 2026-10-31): Armour that many after every charge, for `armourSlots` (8)
    * slots, so he holds out where it leaves him in melee. A unit's own
    * (`Unit.chargeArmour`, the test stage's `charge`) comes first.
    */
   charge: {
     slam: 'none' as 'delay' | 'stun' | 'none',
     delay: 6 as number,
-    armour: 0 as number,
+    armour: 1 as number,
     armourSlots: 8 as number,
   },
   /**
@@ -1153,10 +1159,11 @@ export const AI = {
     // A tank, as the Grappler and the Vanguard.
     mahout: 0,
     archer: 1,
-    varangian: 1,
+    // A tank since 2026-10-31.
+    varangian: 0,
     priest: 1,
-    // A tank, as the Grappler and the Vanguard.
-    cataphract: 0,
+    // Byzantium's damage hero since 2026-10-31.
+    cataphract: 1,
     camel: 0,
     wolf: 1,
     fox: 1,
