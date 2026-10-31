@@ -1123,6 +1123,14 @@ export const AI = {
    */
   horizonSlots: 0 as number,
   /**
+   * A switch for measuring (2026-10-31; balance.md, "A Wait always
+   * searched"): a Hold in place that brings the card back sooner than its
+   * action cost (a Wait) joins the options a decision searches on, played
+   * if it wasn't tried: the root's at 1, every decision's at 2. 0 as
+   * built: a Hold is searched only if it screens among the best.
+   */
+  keepWait: 0 as number,
+  /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
    * × the share of its health that is, and this share of `kill` if it

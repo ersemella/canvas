@@ -1266,6 +1266,31 @@ export function chooseAiTurn(
           scoreOutcome(node.state, o.after, node.actor!, threats) -
           chargeCost(node.actor!, o.input);
   };
+  // `AI.keepWait`: a Wait among the options a decision searches on (the
+  // root's at 1, every decision's at 2), played if it wasn't tried, when a
+  // Hold in place would bring the card back sooner than its action cost.
+  const withWait = (node: SearchNode, options: SearchOption[], ply: number): SearchOption[] => {
+    if (AI.keepWait < (ply === 0 ? 1 : 2) || !node.actor) return options;
+    const holds = (o: ScoredOption) => o.input.action.ability === 'hold' && !o.input.move?.length;
+    let wait = node.scored.find(holds);
+    if (!wait) {
+      spend();
+      const input: TurnInput = {action: {ability: 'hold'}};
+      const after = simulate(node.state, node.actor.id, input, true);
+      if (!after) return options;
+      const option = {input, after, score: NaN};
+      wait = {...option, cost: actionCost(node.state, node.actor, option)};
+      wait.score = scoreOutcome(node.state, after, node.actor, []);
+      node.scored.push(wait);
+    }
+    if (options.includes(wait)) return options;
+    const card = wait.after.units.find((u) => u.id === node.actor!.id);
+    const sooner =
+      card?.slot !== null &&
+      card?.slot !== undefined &&
+      card.slot < node.state.currentSlot + cardCost(node.actor);
+    return sooner ? [...options, wait] : options;
+  };
   const childOf = (node: SearchNode, option: SearchOption): SearchNode => {
     let child = node.children.get(option);
     if (!child) {
@@ -1328,7 +1353,7 @@ export function chooseAiTurn(
     if (!node.options) {
       while (tryNext(node, AI.replySimulations));
       scoreAll(node);
-      node.options = shortlist(node.scored, widths, ply);
+      node.options = withWait(node, shortlist(node.scored, widths, ply), ply);
       if (node.options.length === 0) throw exhausted;
     }
     for (const option of node.options) {
@@ -1349,7 +1374,7 @@ export function chooseAiTurn(
     const rootLimit = Math.min(AI.rootSimulations, local.left);
     while (tryNext(root, rootLimit));
     scoreAll(root, threatsFor(state, unit, true));
-    const options = shortlist(root.scored, widths, 0);
+    const options = withWait(root, shortlist(root.scored, widths, 0), 0);
     root.options = options;
     if (!options.length) return {action: {ability: 'hold'}};
     completed = options[0]!;

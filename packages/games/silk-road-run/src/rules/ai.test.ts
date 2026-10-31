@@ -346,6 +346,44 @@ describe('a horizon of slots (AI.horizonSlots)', () => {
   });
 });
 
+describe('a Wait always searched (AI.keepWait)', () => {
+  it('searches a Hold in place only when it would come back sooner', () => {
+    // The Outrider with shots on three enemies: a Hold doesn't screen among its best two.
+    const s = setup({
+      'p-mangudai': hex(0, 0),
+      'p-bokh': hex(0, -2),
+      'e-bokh': hex(3, 0),
+      'e-storm': hex(0, 3),
+      'e-mangudai': hex(-3, 3),
+    });
+    s.tiles = Object.fromEntries(Object.keys(STEPPE.tiles).map((k) => [k, 'sand']));
+    s.awaiting = 'p-mangudai';
+    unit(s, 'p-mangudai').slot = 0;
+    const work = (keep: number, share?: number) => {
+      const ai = AI as {keepWait: number};
+      const saved = ai.keepWait;
+      ai.keepWait = keep;
+      const fight = cloneFight(s);
+      if (share !== undefined) fight.waitShare = share;
+      try {
+        const st = stats();
+        chooseAiTurn(fight, unit(fight, 'p-mangudai'), {left: 100_000}, st, {
+          depth: 2,
+          work: 100_000,
+          widths: [2],
+        });
+        return st.work;
+      } finally {
+        ai.keepWait = saved;
+      }
+    };
+    // Without Wait a Hold is no sooner: nothing changes.
+    expect(work(1)).toBe(work(0));
+    // With it, the Wait is searched on as well.
+    expect(work(1, 2 / 3)).toBeGreaterThan(work(0, 2 / 3));
+  });
+});
+
 describe('the leaf counting reach (AI.reachShare)', () => {
   const ai = AI as {reachShare: number};
   /** The player's side's leaf with the term at `share`, less without it. */
