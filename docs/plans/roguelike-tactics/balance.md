@@ -6530,6 +6530,76 @@ Sedative was measured at, before Wait in runs); Byzantium's tank seat
 (the Barbarian and the Cataphract together, not either alone); a choice
 for the Outrider and the Barbarian (Lunge). Whole runs not measured here.
 
+### Lunge with Push 1, on the test stage (later 2026-10-31)
+
+Asked for: Push 1 on the Barbarian's Lunge on the test stage, then its
+balance and skill gap. Built as a switch (`ABILITY.lunge.push`, 0 in
+runs; the test stage's `"lunge": {"push": 1}`, `Unit.lungePush`): the unit
+he strikes is Pushed 1 straight away from him after the hit, its own Push
+(Forceful adds none). `experiments/lunge-push.mjs` patches it on and runs
+every row of "Full balance check, the game as built" the Barbarian plays
+in, on the same seeds and code (`0c4b179`, the switch off there), 400
+fights a row (about ±2.5 a cell, ±3.5 a span), `modWinPct`. Unfinished
+fights 0–0.8%. The rows without him are unchanged, so the full check's
+stand for them.
+
+Byzantium's party against each region's (Byzantium's wins):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| Built | 32.5% | 39% | 60.9% |
+| **Push 1** | 33.8% | 40.3% | 60.8% |
+
+The Barbarian in the other regions' tank seats, and the other tanks in
+his (the side with the swap wins; *kept* his side's wins):
+
+| Tank seat | Steppe | China | Persia | Others' | Byzantium's, by Grappler, Vanguard, Juggernaut | Kept | Score |
+|---|---:|---:|---:|---:|---|---:|---:|
+| Built | 39.8% | 59.5% | 51.6% | 50.3% | 81%, 72.5%, 64.8% | 27.2% | 38.8% |
+| **Push 1** | 37.5% | 57.5% | 49.4% | 48.1% | 77.5%, 69.3%, 59.8% | 31.1% | **39.6%** |
+
+His partners' seats beside him (other heroes in them; *kept* as above):
+
+| Byzantine seat | Built, others in it | Kept | Push 1, others in it | Kept |
+|---|---|---:|---|---:|
+| Damage (Cataphract) | 36.3%, 43.8%, 32.8% | 62.4% | 34.5%, 47.3%, 34.8% | 61.1% |
+| Support (Priest) | 51.5%, 61%, 43.3% | 48.1% | 52.3%, 62.8%, 45.8% | 46.4% |
+
+Skill, as in the full check (a novice at depth 1, an expert at depth 4
+with 4x work, the rest production):
+
+| | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Barbarian (Steppe's tank seat), built | 46.8% | 51% | 4.2 |
+| **Barbarian, Push 1** | 46% | 50.8% | **4.8** |
+| Byzantium's party, built | 34.8% | 55.8% | 21 |
+| **Byzantium's party, Push 1** | 27.8% | 55.3% | **27.5** |
+
+- **Push 1 changes almost nothing**: his score 39.6% against 38.8%, inside
+  noise, still about 13 under the other tanks (52.2–54.8%). Abroad he is
+  2 points weaker in every seat (48.1% from 50.3%); in his own seat the
+  other tanks win 4 points less (kept 31.1% from 27.2%), so the Push helps
+  him only beside the Cataphract and the Priest. Byzantium's party is
+  even with before against every region (±1.3).
+- **Why it likely does little** (not measured): a tank's hit pushed away undoes the step he took
+  in, leaving the unit out of his reach, often out of the Cataphract's
+  line too, and the Barbarian no longer in its way; he trades a unit kept
+  next to him for one sent a space off. At power 2 the hit, not the
+  space, is most of Lunge's worth.
+- **His own skill gap is unchanged**: 4.8 from 4.2, inside noise; a
+  novice still nearly an expert's equal. Pushing is a choice of where, and
+  every Lunge has only one way to push, so it adds no decision.
+- **The party's gap widens**: 27.5 from 21, all of it the novices', who
+  lose 7 points (27.8% from 34.8%) while experts are unchanged. A shallow
+  search pushes units out of the Cataphract's charge lanes and the
+  Priest's Invocation without seeing it; this is the one row clearly over
+  noise.
+
+Not built into runs: it is the test stage's to play-test. If the owner
+wants a Push on Lunge, the likelier shapes are untried: a Push only when he
+didn't step in (a struck unit 1 away sent back, so it never undoes his
+step), or a Pull (the unit 2 away drawn in, in place of his stepping in).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
