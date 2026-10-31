@@ -104,6 +104,8 @@ export interface HeroStats {
    * Moves the way Snap Shot flies: any number of spaces straight along one of
    * the six directions, up to the first unit, yurts or the map's edge (the
    * Outrider; owner, 2026-10-25). Hail still ends the move where it enters.
+   * With a `moveCap`, at most that many (the Duelist's straight walk,
+   * owner's idea, 2026-10-31).
    */
   movesStraight?: boolean;
   /** Its card starts the fight last, at RULES.camelStartSlot, whatever its speed (the camel). */

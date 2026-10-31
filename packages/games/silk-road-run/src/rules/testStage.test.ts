@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {hexKey} from '@canvas/engine/server';
+import {hexDirectionTo, hexKey} from '@canvas/engine/server';
 import {DOME, spaceAt, spaceOf} from './map';
 import {abilitiesOf, unusableReason, ABILITIES} from './abilities';
 import {HEROES} from './config';
@@ -8,7 +8,7 @@ import {previewTurn} from './preview';
 import {createRun, handleRunAction, runStatus, runView} from './run';
 import {createTestFight, parseTestStage} from './testStage';
 import {aimSlot, actionCost} from './track';
-import {movementCap} from './board';
+import {movementCap, reachableHexes} from './board';
 
 const space = (col: number, row: number) => ({col, row});
 
@@ -85,6 +85,19 @@ describe('the test stage', () => {
     );
     expect(() => parseTestStage({...raw, swiftStrike: {passThrough: 1}})).toThrow(/passThrough/);
     expect(() => parseTestStage({...raw, swiftStrike: {jump: 'yes'}})).toThrow(/jump/);
+    // A straight walk of 3: every space it reaches on one of its six lines, none farther.
+    const lines = createTestFight(1, {
+      ...raw,
+      yurts: 'none',
+      swiftStrike: {walk: 3, straight: true},
+    });
+    const w = lines.units.find((u) => u.hero === 'youxia' && u.side === 'player')!;
+    const reach = reachableHexes(lines, mapOf(lines), w).filter((r) => r.path.length > 0);
+    expect(reach.length).toBeGreaterThan(0);
+    for (const r of reach) {
+      expect(r.path.length).toBeLessThanOrEqual(3);
+      expect(hexDirectionTo(w.hex!, r.hex)).not.toBeNull();
+    }
     // One jump a turn, Haste 1, 2, 3 on turns striking running.
     const one = createTestFight(1, {
       ...raw,

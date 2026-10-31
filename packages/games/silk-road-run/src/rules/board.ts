@@ -254,8 +254,14 @@ export function addStatus(unit: Unit, status: Status): void {
 
 export function movementCap(unit: Unit): number {
   if (isImmobilized(unit) || unit.chaining) return 0;
-  if (HEROES[unit.hero].movesStraight) return Infinity;
+  // A straight walk goes any distance (the Outrider's) unless it has a cap.
+  if (movesStraight(unit)) return unit.moveCap ?? HEROES[unit.hero].moveCap ?? Infinity;
   return unit.moveCap ?? HEROES[unit.hero].moveCap ?? RULES.movementCap;
+}
+
+/** Whether `unit` walks straight (`HeroDef.movesStraight`), its own (the test stage's) first. */
+export function movesStraight(unit: Unit): boolean {
+  return unit.movesStraight ?? Boolean(HEROES[unit.hero].movesStraight);
 }
 
 /** Fire on `h` (Princess Iron Fan's Fan the Flames): entering it burns (`FireEffect`). */
@@ -300,7 +306,7 @@ export function passesAllies(unit: Unit): boolean {
 export function reachableHexes(state: FightState, map: MapData, unit: Unit): Reach[] {
   if (!unit.hex) return [];
   const cap = movementCap(unit);
-  if (HEROES[unit.hero].movesStraight) return straightReaches(state, map, unit, cap);
+  if (movesStraight(unit)) return straightReaches(state, map, unit, cap);
   const through = passesAllies(unit);
   // unitAt for every hex at once: the first living unit standing there.
   const occupant = new Map<number, Unit>();
@@ -412,7 +418,7 @@ export function invalidPath(
       : 'That move is longer than the unit can go.';
   }
   let from = unit.hex;
-  const straightDir = HEROES[unit.hero].movesStraight
+  const straightDir = movesStraight(unit)
     ? hexNeighbors(unit.hex).findIndex((n) => hexEquals(n, path[0]!))
     : -1;
   const other = (h: Hex) =>

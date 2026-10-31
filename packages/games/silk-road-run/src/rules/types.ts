@@ -356,6 +356,8 @@ export interface Unit {
   passThrough?: boolean;
   /** Its own Swift Strike jumps (`ABILITY.swiftStrike.jump`; the test stage's). */
   jump?: boolean;
+  /** Its own straight walk (`HeroDef.movesStraight`; the test stage's). */
+  movesStraight?: boolean;
   /** Its own `ABILITY.swiftStrike.chain` and `.streakResets` (the test stage's). */
   chain?: boolean;
   streakResets?: boolean;
