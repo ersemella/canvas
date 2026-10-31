@@ -5,7 +5,7 @@ import {chooseAiTurn, evaluatePosition, scoreOptions, simulate} from './ai';
 import type {SearchStats} from './ai';
 import {AI, HEROES, RULES, SPEARHEAD} from './config';
 import {actionCost} from './track';
-import {advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
+import {actingUnit, advance, advanceToDecision, applyTurn, cloneFight, createFight} from './fight';
 import {createRun} from './run';
 import {STEPPE} from './map';
 import type {FightState, HeroId, TurnInput} from './types';
@@ -320,6 +320,29 @@ describe('allies seeking Spearhead (AI.spearheadShare)', () => {
       expect(o.score - off.get(key)!.score, key).toBeCloseTo(beside ? bonus : 0);
     }
     expect(next).toBeGreaterThan(0);
+  });
+});
+
+describe('a horizon of slots (AI.horizonSlots)', () => {
+  it('ends every line once the track passes it, so a deep search does less work', () => {
+    const s = opening();
+    const u = actingUnit(s)!;
+    const work = (slots: number) => {
+      const ai = AI as {horizonSlots: number};
+      const saved = ai.horizonSlots;
+      ai.horizonSlots = slots;
+      try {
+        const st = stats();
+        chooseAiTurn(s, u, {left: 100_000}, st, {depth: 5, work: 100_000});
+        return st.work;
+      } finally {
+        ai.horizonSlots = saved;
+      }
+    };
+    const [off, near] = [work(0), work(1)];
+    expect(near).toBeLessThan(off);
+    // A horizon past anything five decisions reach changes nothing.
+    expect(work(1000)).toBe(off);
   });
 });
 

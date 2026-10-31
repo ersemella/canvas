@@ -1112,6 +1112,14 @@ export const AI = {
    */
   reachShare: 0 as number,
   /**
+   * A switch for measuring (2026-10-31; balance.md, "A horizon of
+   * slots"): a line of the search ends once the track is this many slots
+   * past the turn being chosen, as well as at its depth in decisions, so
+   * a line that Waits sees as much of the track as one that acts (the
+   * depth must be deep enough to reach it). 0 as built: decisions only.
+   */
+  horizonSlots: 0 as number,
+  /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
    * × the share of its health that is, and this share of `kill` if it

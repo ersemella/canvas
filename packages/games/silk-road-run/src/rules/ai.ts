@@ -1278,6 +1278,8 @@ export function chooseAiTurn(
     }
     return child;
   };
+  const horizon = AI.horizonSlots > 0 ? state.currentSlot + AI.horizonSlots : Infinity;
+  const pastHorizon = (at: FightState) => at.currentSlot >= horizon;
   const search = (
     node: SearchNode,
     ply: number,
@@ -1291,7 +1293,10 @@ export function chooseAiTurn(
       return (
         evaluatePosition(node.state, unit.side) * (1 + (depth - (node.endedLater ? 1 : 0)) / 100)
       );
-    if (depth === 0 || !node.actor) return evaluatePosition(node.state, unit.side);
+    // `AI.horizonSlots`: a line ends once the track is that far past the
+    // root, so a Wait's line sees as much of the track as an action's.
+    if (depth === 0 || !node.actor || pastHorizon(node.state))
+      return evaluatePosition(node.state, unit.side);
     const maximize = node.actor.side === unit.side;
     let value = maximize ? -Infinity : Infinity;
     const consider = (option: SearchOption, next: number): boolean => {
