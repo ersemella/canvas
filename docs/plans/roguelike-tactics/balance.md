@@ -6377,6 +6377,44 @@ Alignment on 88–96% of them.
   own card ends with his card at least his action cost on; or his own card
   out, Humphrey's in, swaps only.
 
+### Alignment as swaps, without his own card (later 2026-10-31)
+
+Asked for (owner), after "Alignment as swaps only": the same swaps without
+the Magus's own card (`ABILITY.alignment.self`, off): the line's cards and
+Humphrey's, on the line or not, only; a line needs two cards to trade. Same
+rows, 400 fights, on main with Wait in runs (392841c), Omen measured again
+beside it:
+
+| Seat | Omen | Alignment, swaps without his card |
+|---|---:|---:|
+| For the Storm Caller (Steppe) | 46.7% | 20.3% |
+| For the Alchemist (China) | 64.3% | 33% |
+| For the Priest (Byzantium) | 43.8% | 23% |
+| Against the Storm Caller in Persia's | 57.7% | 32.1% |
+| Against the Alchemist in Persia's | 56.1% | 35.7% |
+| Against the Priest in Persia's | 45.7% | 29% |
+| **Mean** | **52.4%** | **28.9%** |
+
+| Played by | Omen | Alignment, swaps without his card |
+|---|---:|---:|
+| Novice | 27.3% | 39.3% |
+| Expert | 55.8% | 54% |
+| Span | 28.5 | 14.7 |
+
+Unfinished 0–0.3%. Alignment is 13–21% of his turns (6–10% in the skill
+rows), Hold (a Wait, in runs now) 29–39%, against Omen's 58–74%.
+
+- **Far too weak**: 28.9% as a score, 23 points under Omen. The lock is
+  gone (his turns a fight 5–6, as Omen's), but so is most of its use.
+- **Why**: a swap is worth something only when a card of the other side
+  acts before one of its own on the same line, or Humphrey's (his card a
+  turn of the slowest away, the trade most often on offer). Every trade
+  gives back what it takes, so he spends a turn on the difference between
+  two cards; mostly there is none worth a turn, and he Waits or walks.
+- Untried: his own card in, but only to go later (a swap with him brings a
+  card forward, never sends one back), which leaves him the one trade that
+  is always on offer without the extra turns.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
