@@ -2,8 +2,9 @@
 // Barbarian's Fury, Bloodlust off: whenever he is hit, his card Hastened
 // `self` and each ally's within 2, Humphrey too, `allies`. `bc3`: 3 and 3
 // (as built, Spearhead's); `bc53`: 5 (Fury's) and 3; `bc5`: 5 and 5. On
-// the test stage's Lunge with Push 1, so beside lunge-push.mjs's rows
-// (Fury's; same seeds, same rows):
+// Lunge as built, no Push (the owner's, later 2026-10-31), so beside
+// full-check.mjs's rows of the same names (Fury's; same seeds), the rows
+// lunge-push.mjs runs:
 // - `${tag}-byzantium-vs-R`: Byzantium's party against each region's.
 // - `${tag}-H-for-O-R`: the Barbarian in the other regions' tank seats, and
 //   every other hero in a Byzantine seat beside him (its tank seat by the
@@ -12,7 +13,6 @@
 //   Steppe's tank seat; `${tag}-L-byzantium-party` the whole party's.
 // `modWinPct` throughout.
 const variant = (self, allies) => (c) => {
-  c.ABILITY.lunge.push = 1;
   c.HEROES.varangian.passives = ['battleCry'];
   Object.assign(c.BATTLE_CRY, {self, allies, range: 2});
 };

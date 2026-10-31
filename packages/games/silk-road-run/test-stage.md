@@ -40,9 +40,8 @@ aims it in lines or sets the overdose's damage.
 to 2 away along one of his six straight lines, ally or enemy, struck for
 his power, stepping in next to it first when it is 2 away, as a lunge
 (hail stops him short, and then he doesn't strike); and **Fury**: whenever
-he is hit, his card is Hastened 5. **Here his Lunge also Pushes 1**
-(`"lunge": {"push": 1}`, below; owner, later 2026-10-31; 0 in runs): the
-unit he strikes is Pushed 1 straight away from him. **And Battle Cry in
+he is hit, his card is Hastened 5. Lunge's Push 1 (`"lunge": {"push": 1}`, below), here from later
+2026-10-31, is off again (owner). **And Battle Cry in
 place of Fury** (`"heroes"`, below; owner, later 2026-10-31; no hero's in
 runs, where he keeps Fury): whenever he is hit, his card and each ally's
 within 2, Humphrey too, are Hastened 3 (`BATTLE_CRY` in config.ts sets
@@ -82,7 +81,6 @@ a picked-up card down, then undoes the arrangement, then the line.
     "magus": {"abilities": ["alignment"]},
     "varangian": {"passives": ["battleCry"]}
   },
-  "lunge": {"push": 1},
   "yurts": "none",
   "camel": {},
   "player": [
