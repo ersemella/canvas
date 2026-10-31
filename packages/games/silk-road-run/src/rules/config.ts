@@ -330,8 +330,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's damage hero
    * since 2026-10-31 (owner; its tank before), armoured heavy cavalry.
    * Speed 2, defence 2 (health 6), power 2 (owner, 2026-10-31; speed 2,
-   * defence 3, power 1 before), Armour after each charge in place of
-   * Armoured (`ABILITY.charge.armour`). It has no walk of its own (`moveCap` 0): it moves only by
+   * defence 3, power 1 before), with neither Armour nor a slam since later
+   * 2026-10-31 (owner; balance.md, "The Cataphract with neither slam nor
+   * brace": 50.9%, even). It has no walk of its own (`moveCap` 0): it moves only by
    * Charge, any distance straight, carrying every unit in its way ahead of
    * it while there is room (`charge` in abilities.ts; owner, later
    * 2026-10-28: the first unit only before, a second it met stopping it).
@@ -346,7 +347,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     // Armoured (owner, 2026-10-29) until 2026-10-31, when he became the
     // damage hero: Armour 1 for 8 slots after each charge in its place
     // (balance.md, "The Cataphract braced after a charge"; Armoured always
-    // 3-8 points over the other damage heroes).
+    // 3-8 points over the other damage heroes), until later that day, when
+    // the owner took the brace off too (`ABILITY.charge.armour` 0).
     moveCap: 0,
   },
   /**
@@ -1047,15 +1049,17 @@ export const ABILITY = {
    * (owner, 2026-10-31: the slam's Delay taken off).
    */
   /**
-   * `armour` (owner, later 2026-10-31; the Cataphract as damage, in runs
-   * since 2026-10-31): Armour that many after every charge, for `armourSlots` (8)
-   * slots, so he holds out where it leaves him in melee. A unit's own
+   * `armour` (owner, later 2026-10-31; the Cataphract as damage): Armour
+   * that many after every charge, for `armourSlots` (8) slots, so he holds
+   * out where it leaves him in melee. 1 in runs until later the same day,
+   * then 0, kept as a switch (owner; balance.md, "The Cataphract with
+   * neither slam nor brace": 50.9% without it, 58.2% with it). A unit's own
    * (`Unit.chargeArmour`, the test stage's `charge`) comes first.
    */
   charge: {
     slam: 'none' as 'delay' | 'stun' | 'none',
     delay: 6 as number,
-    armour: 1 as number,
+    armour: 0 as number,
     armourSlots: 8 as number,
   },
   /**

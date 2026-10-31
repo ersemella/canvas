@@ -3439,7 +3439,7 @@ describe('the Cataphract', () => {
   };
 
   it('slams no one (owner, 2026-10-31): a unit carried into yurts or the edge isn’t Delayed', () => {
-    expect(ABILITY.charge).toEqual({slam: 'none', delay: 6, armour: 1, armourSlots: 8});
+    expect(ABILITY.charge).toEqual({slam: 'none', delay: 6, armour: 0, armourSlots: 8});
     const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 2)});
     s.tiles[hexKey(along(c, dir, 4))] = 'obstacle';
     const [b, st] = [unit(s, 'e-bokh'), unit(s, 'e-storm')];

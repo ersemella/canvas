@@ -45,8 +45,8 @@ when hit; balance.md, "Battle Cry in place of Fury"): whenever he is hit,
 his card and each ally's within 2, Humphrey too, are Hastened 5. Here
 first at 3, set by `"heroes"`; Bloodlust beside Fury, and Lunge's Push 1
 (`"lunge"`, below), on the test stage before it, are off. The Cataphract its damage hero, speed
-2, defence 2 (health 6), power 2, without Armoured, Armour 1 for 8 slots
-after each charge. The Steppe's three were the enemy until 2026-10-31.
+2, defence 2 (health 6), power 2, with neither Armour nor a slam (owner,
+later 2026-10-31; Armour 1 for 8 slots after each charge before). The Steppe's three were the enemy until 2026-10-31.
 **The Magus has Eclipse, as in a run** since 2026-10-31 (owner; Omen
 before, in runs; here, Alignment): a space within 3 of him and the six
 spaces next to it; **every unit there Delayed 6, or every one Hastened 6**,

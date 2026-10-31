@@ -6782,7 +6782,10 @@ fights a row. Unfinished 0–1.3%.
 - **Skill span 11.0**, between the brace's 9.5 and the slam's 13.8,
   inside noise of both: Charge alone keeps where he aims mattering.
 
-Not built into runs or on the test stage.
+**Built** (the owner, later 2026-10-31): neither, in runs and on the
+test stage (`ABILITY.charge.armour` 0, `slam` `none`; both kept as
+switches). Measured on `73041dd`, before Battle Cry and Eclipse came into
+runs.
 
 ## Eclipse (2026-10-31)
 
