@@ -13,6 +13,8 @@ import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
   ARMOURED,
+  BATTLE_CRY,
+  BLOODLUST,
   FURY,
   CAMEL,
   DEVOTED,
@@ -484,6 +486,20 @@ export function shotEmpower(user: Unit, shot: ShotInAir): number {
 }
 
 /**
+ * Bloodlust (`BLOODLUST`): `u`, carrying it, has damaged an enemy, so is
+ * Empowered for Bloodlust's slots: at least its Empower, or that much more
+ * up to its most when it stacks.
+ */
+function bloodlust(ctx: Ctx, u: Unit): void {
+  if (!u.alive || !hasPassive(u, 'bloodlust')) return;
+  const {empower: step, slots, stacks, max} = BLOODLUST;
+  const amount = stacks ? Math.min(max, (u.empower ?? 0) + step) : Math.max(u.empower ?? 0, step);
+  u.empower = amount;
+  u.empowerUntil = Math.max(u.empowerUntil ?? 0, lastsThrough(ctx.state, slots));
+  log(ctx, `${unitName(u)}’s bloodlust rises: Empowered ${amount}.`);
+}
+
+/**
  * Empowers `u` by `amount` for `RULES.durations.turn` slots, replacing any
  * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
  * its Inspire (19.9).
@@ -665,10 +681,12 @@ export function applyDamage(
   if (!target.alive || amount <= 0) return;
   devotion(ctx, target);
   spearhead(ctx, target);
+  battleCry(ctx, target);
   if (hasPassive(target, 'fury')) {
     log(ctx, `${unitName(target)}’s fury rises.`);
     haste(ctx, target, FURY.haste);
   }
+  if (source && hostile(source, target)) bloodlust(ctx, source);
   if (target.shield) {
     const absorbed = Math.min(target.shield, amount);
     target.shield -= absorbed;
@@ -749,6 +767,21 @@ function spearhead(ctx: Ctx, target: Unit): void {
     if (hexDistance(a.hex, target.hex) > SPEARHEAD.range) continue;
     log(ctx, `${unitName(target)} leads ${unitName(a)} on.`);
     haste(ctx, a, SPEARHEAD.haste);
+  }
+}
+
+/**
+ * Battle Cry (`BATTLE_CRY`): `target` is hit, so its own card is Hastened,
+ * and each ally's within `range` of it.
+ */
+function battleCry(ctx: Ctx, target: Unit): void {
+  if (!target.alive || !hasPassive(target, 'battleCry') || !target.hex) return;
+  log(ctx, `${unitName(target)} roars.`);
+  haste(ctx, target, BATTLE_CRY.self);
+  for (const a of ctx.state.units) {
+    if (a === target || !a.alive || !a.hex || a.side !== target.side) continue;
+    if (hexDistance(a.hex, target.hex) > BATTLE_CRY.range) continue;
+    haste(ctx, a, BATTLE_CRY.allies);
   }
 }
 

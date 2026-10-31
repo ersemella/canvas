@@ -6415,6 +6415,244 @@ rows), Hold (a Wait, in runs now) 29–39%, against Omen's 58–74%.
   card forward, never sends one back), which leaves him the one trade that
   is always on offer without the extra turns.
 
+### Full balance check, the game as built (later 2026-10-31)
+
+Asked for: a full balance check on the game as built, with each hero in
+its role and the skill gap. As built: Wait in runs (2/3) with the AI that
+plays it and the kept Wait; the Barbarian Byzantium's tank (Lunge, Fury
+5), the Cataphract its damage hero (braced after a charge, no Armoured);
+the Priest's Invocation at 6 slots; the Alchemist's Overdose and
+Sedative; the Duelist's dash; Longshot without Pierce; the Magus's Omen.
+`experiments/full-check.mjs` (no patch): region against region,
+`roles-twelve.mjs`'s role seats (Byzantium's party ordered tank, damage,
+support since the swap) and `skill-fights.mjs`'s skill rows, `modWinPct`,
+400 fights a row (about ±2.5 a cell, ±3.5 a span), seeds from 1000, on
+`9ccc0fa`. Unfinished fights 0–1.3%, 2.3% with an expert's Magus.
+
+Party against party (the second side's wins):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| China | **25.8%** | | |
+| Persia | 60.8% | **71.3%** | |
+| Byzantium | 32.5% | 39% | 60.9% |
+
+Each region's mean against the other three: the Steppe 60.3%, Persia
+57.1%, Byzantium 44.1%, **China 38.5%**.
+
+Each hero in its role's seat of the other regions' mirrors (the side with
+the swap wins); *others'* its mean there, *kept* its side's wins when the
+other three of its role take its seat, *score* the two together:
+
+| Tank seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Grappler | | 50.1% | 48% | 81% | 59.7% | 50% | 54.8% |
+| Vanguard | 45.3% | | 57.4% | 72.5% | 58.4% | 46% | 52.2% |
+| Juggernaut | 65% | 52.3% | | 64.8% | 60.7% | 47.7% | 54.2% |
+| **Barbarian** | 39.8% | 59.5% | 51.6% | | 50.3% | **27.2%** | **38.8%** |
+
+| Damage seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Outrider | | 56.6% | 46.2% | 36.3% | 46.4% | 48% | 47.2% |
+| Duelist | 46.8% | | 46.7% | 43.8% | 45.8% | 48.3% | 47% |
+| Ranger | 55.4% | 47% | | 32.8% | 45.1% | 50% | 47.5% |
+| **Cataphract** | 53.8% | 51.5% | 57% | | 54.1% | **62.4%** | **58.2%** |
+
+| Support seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Storm Caller | | 62.8% | 42.3% | 51.5% | 52.2% | 56.9% | 54.5% |
+| **Alchemist** | 35.3% | | 43.9% | 61% | 46.7% | **40.3%** | **43.5%** |
+| Magus | 46.7% | 64.3% | | 43.3% | 51.4% | 53.2% | 52.3% |
+| Priest | 47.3% | 52% | 54.3% | | 51.2% | 48.1% | 49.6% |
+
+Skill: one hero played by a novice (depth 1) or an expert (depth 4, 4x
+work) in its role's seat of a Steppe mirror, the rest of both sides by
+production; and each region's whole party so (in brackets, "Skill on all
+twelve heroes and whole runs", 2026-10-29, on other kits for many):
+
+| Hero | Novice | Expert | Span |
+|---|---:|---:|---:|
+| **Magus (Omen)** | 27.3% | 55.8% | **28.5** (12.8) |
+| **Alchemist (Overdose, Sedative)** | 31.8% | 54.3% | **22.5** (4.8) |
+| Duelist (dash) | 40.3% | 58% | 17.7 (4.7) |
+| Grappler | 39.3% | 53.8% | 14.5 (6.7) |
+| Juggernaut (Stomp) | 41% | 52.3% | 11.3 (13) |
+| Storm Caller | 44.5% | 55.3% | 10.8 (10.5) |
+| Vanguard | 39.5% | 49.5% | 10 (8) |
+| Cataphract (damage) | 44.8% | 54.3% | 9.5 (6.8 as a tank) |
+| Ranger | 45.3% | 53.3% | 8 (7.1) |
+| Priest (Invocation) | 45.3% | 52.5% | 7.2 (1.1 with Blessing) |
+| **Barbarian (tank, Lunge)** | 46.8% | 51% | **4.2** (3.5, Axe Throw) |
+| **Outrider** | 47.3% | 51.3% | **4** (4.2) |
+
+| Whole party | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Persia | 17.2% | 58.7% | **41.5** (31.4) |
+| Steppe | 28.5% | 61.3% | 32.8 (24.3) |
+| China | 27.3% | 56.5% | 29.2 (19.4) |
+| Byzantium | 34.8% | 55.8% | 21 (18.9) |
+
+- **China is the weak region**: 25.8% against the Steppe (30.6% in
+  "Wait in runs"), 28.7% against Persia, 61% against Byzantium only. Its
+  loss is mostly **the Alchemist's**: the weakest support (43.5%), 35.3%
+  in the Steppe's seat, and the Storm Caller (62.8%) and the Magus (64.3%)
+  both win in China's. China's tank and damage seats are nearer even
+  (other tanks 50.1–59.5% in them, other damage heroes 47–56.6%).
+- **Byzantium's party is lopsided**: its tank seat is the weakest seat in
+  the game (other tanks win 64.8–81% in it; the Barbarian 27.2% kept),
+  its damage seat the strongest (other damage heroes 32.8–43.8% in it;
+  the Cataphract 62.4% kept). Abroad both are about even or a little over
+  (the Barbarian 50.3%, the Cataphract 54.1%), so the trouble is the pair
+  together: two melee heroes beside a slow Priest, and the Cataphract
+  doing the work a tank's seat there would.
+- **The Priest is even on Invocation** (49.6%, 47–54% in every support
+  seat), as "Invocation at 6 slots, as built" found (48.7%); the 24–33%
+  of "Hew as a line, with Fury" was Invocation's charge of 10.
+- **The rest are within about 5 points**: tanks 52.2–54.8% but the
+  Barbarian; damage 47–47.5% but the Cataphract (+8.2); supports 49.6–54.5%
+  but the Alchemist (−6.5). The Ranger without Pierce is even (47.5%), but
+  32.8% in Byzantium's seat, where the Cataphract out-does every other
+  damage hero.
+- **Play is worth more than ever**: 21–41.5 points a party (19–31 on
+  2026-10-29), Persia's novices winning only 17.2%. The Magus (28.5) and
+  the Alchemist (22.5) reward play most, both a lot more than before, and
+  both by their novices playing badly (27.3%, 31.8%) more than their
+  experts well (55.8%, 54.3%). The Duelist's dash (17.7, from 4.7) and the
+  Grappler (14.5, from 6.7) rose too; Wait in runs and the AI's reach
+  are likely part of every rise (a novice, one decision deep, prices
+  neither).
+- **Least skill: the Outrider (4.0) and the Barbarian (4.2)**, a novice
+  nearly an expert's equal; the Priest (7.2) is no longer the lowest.
+
+Not changed: the numbers are the owner's. Likeliest to help, in order:
+the Alchemist (China's loss; his score, 43.5%, is 3.9 under the 47.4%
+Sedative was measured at, before Wait in runs); Byzantium's tank seat
+(the Barbarian and the Cataphract together, not either alone); a choice
+for the Outrider and the Barbarian (Lunge). Whole runs not measured here.
+
+### Lunge with Push 1, on the test stage (later 2026-10-31)
+
+Asked for: Push 1 on the Barbarian's Lunge on the test stage, then its
+balance and skill gap. Built as a switch (`ABILITY.lunge.push`, 0 in
+runs; the test stage's `"lunge": {"push": 1}`, `Unit.lungePush`): the unit
+he strikes is Pushed 1 straight away from him after the hit, its own Push
+(Forceful adds none). `experiments/lunge-push.mjs` patches it on and runs
+every row of "Full balance check, the game as built" the Barbarian plays
+in, on the same seeds and code (`0c4b179`, the switch off there), 400
+fights a row (about ±2.5 a cell, ±3.5 a span), `modWinPct`. Unfinished
+fights 0–0.8%. The rows without him are unchanged, so the full check's
+stand for them.
+
+Byzantium's party against each region's (Byzantium's wins):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| Built | 32.5% | 39% | 60.9% |
+| **Push 1** | 33.8% | 40.3% | 60.8% |
+
+The Barbarian in the other regions' tank seats, and the other tanks in
+his (the side with the swap wins; *kept* his side's wins):
+
+| Tank seat | Steppe | China | Persia | Others' | Byzantium's, by Grappler, Vanguard, Juggernaut | Kept | Score |
+|---|---:|---:|---:|---:|---|---:|---:|
+| Built | 39.8% | 59.5% | 51.6% | 50.3% | 81%, 72.5%, 64.8% | 27.2% | 38.8% |
+| **Push 1** | 37.5% | 57.5% | 49.4% | 48.1% | 77.5%, 69.3%, 59.8% | 31.1% | **39.6%** |
+
+His partners' seats beside him (other heroes in them; *kept* as above):
+
+| Byzantine seat | Built, others in it | Kept | Push 1, others in it | Kept |
+|---|---|---:|---|---:|
+| Damage (Cataphract) | 36.3%, 43.8%, 32.8% | 62.4% | 34.5%, 47.3%, 34.8% | 61.1% |
+| Support (Priest) | 51.5%, 61%, 43.3% | 48.1% | 52.3%, 62.8%, 45.8% | 46.4% |
+
+Skill, as in the full check (a novice at depth 1, an expert at depth 4
+with 4x work, the rest production):
+
+| | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Barbarian (Steppe's tank seat), built | 46.8% | 51% | 4.2 |
+| **Barbarian, Push 1** | 46% | 50.8% | **4.8** |
+| Byzantium's party, built | 34.8% | 55.8% | 21 |
+| **Byzantium's party, Push 1** | 27.8% | 55.3% | **27.5** |
+
+- **Push 1 changes almost nothing**: his score 39.6% against 38.8%, inside
+  noise, still about 13 under the other tanks (52.2–54.8%). Abroad he is
+  2 points weaker in every seat (48.1% from 50.3%); in his own seat the
+  other tanks win 4 points less (kept 31.1% from 27.2%), so the Push helps
+  him only beside the Cataphract and the Priest. Byzantium's party is
+  even with before against every region (±1.3).
+- **Why it likely does little** (not measured): a tank's hit pushed away undoes the step he took
+  in, leaving the unit out of his reach, often out of the Cataphract's
+  line too, and the Barbarian no longer in its way; he trades a unit kept
+  next to him for one sent a space off. At power 2 the hit, not the
+  space, is most of Lunge's worth.
+- **His own skill gap is unchanged**: 4.8 from 4.2, inside noise; a
+  novice still nearly an expert's equal. Pushing is a choice of where, and
+  every Lunge has only one way to push, so it adds no decision.
+- **The party's gap widens**: 27.5 from 21, all of it the novices', who
+  lose 7 points (27.8% from 34.8%) while experts are unchanged. Likely (not measured), a shallow
+  search pushes units out of the Cataphract's charge lanes and the
+  Priest's Invocation without seeing it; this is the one row clearly over
+  noise.
+
+Not built into runs: it is the test stage's to play-test. If the owner
+wants a Push on Lunge, the likelier shapes are untried: a Push only when he
+didn't step in (a struck unit 1 away sent back, so it never undoes his
+step), or a Pull (the unit 2 away drawn in, in place of his stepping in).
+
+### Bloodlust beside Fury, on the test stage (later 2026-10-31)
+
+Asked for: another passive for the Barbarian, his hits landing
+Empowering him, in addition to Fury. Built as **Bloodlust** (`BLOODLUST`,
+a passive no hero has in runs, not offered): whenever his hit damages an
+enemy (a Shield taking it too; Armour stopping all of it not), he is
+Empowered 1 for 10 slots, his own turn at speed 1, so to his next turn.
+Two versions: `bl`, refreshed, never above 1 (as built); `bls`, stacking,
+1 more a hit, at most 3 (`BLOODLUST.stacks`). The test stage gives him
+Fury and Bloodlust (`bl`). `experiments/bloodlust.mjs`: the rows of
+"Lunge with Push 1" above, on top of the test stage's Push 1, so beside
+those (same seeds; *Push 1* is its baseline), 400 fights a row (about
+±2.5 a cell, ±3.5 a span), on `7b80352`. Unfinished 0–1.3%.
+
+| | Push 1 | + Bloodlust | + Bloodlust, stacking to 3 |
+|---|---:|---:|---:|
+| Byzantium against the Steppe | 33.8% | 34.5% | 34.8% |
+| against China | 40.3% | 40.3% | 41% |
+| against Persia | 60.8% | 59.5% | 60.3% |
+| Barbarian abroad: Steppe, China, Persia | 37.5, 57.5, 49.4% | 36, 57.8, 50.9% | 36.5, 58, 53.8% |
+| Others' (his mean abroad) | 48.1% | 48.2% | 49.4% |
+| Grappler, Vanguard, Juggernaut in his seat | 77.5, 69.3, 59.8% | 76.3, 68, 56.5% | 75.3, 65, 53.5% |
+| Kept | 31.1% | 33.1% | 35.4% |
+| **Score** (tanks 52.2–54.8%) | 39.6% | **40.7%** | **42.4%** |
+| Cataphract's seat kept | 61.1% | 61.5% | 61.5% |
+| Priest's seat kept | 46.4% | 46.6% | 43.5% |
+| Novice Barbarian | 46% | 44.5% | 45% |
+| Expert Barbarian | 50.8% | 50.8% | 51% |
+| **His skill span** | 4.8 | **6.3** | **6.0** |
+| Novice Byzantine party | 27.8% | 34% | 30.8% |
+| Expert Byzantine party | 55.3% | 60% | 58.5% |
+| Party's span | 27.5 | 26 | 27.7 |
+
+- **A small gain**: +1.1 as a score refreshed, +2.8 stacking, both
+  inside or at the edge of noise, still 10–14 under the other tanks. Most
+  of it is in his own seat (the other tanks win 2 to 4 points less in
+  it); abroad he is unchanged refreshed, +1.3 stacking (Persia's seat
+  +4.4).
+- **Byzantium's party is unchanged** against every region (±1.3). The
+  expert party is 3–5 points stronger and the novice party back where it
+  was before the Push (34% against 34.8% in the full check), but neither
+  span moves past noise.
+- **His skill span is 6.0–6.3 from 4.8**, inside noise, still the
+  lowest of any hero but the Outrider. Keeping an Empower going asks for
+  a hit every turn, which a tank that lunges each turn gives anyway, so
+  the AI has nothing to choose.
+- **Likely why so little** (not measured): at power 2 an Empower of 1 is
+  a 50% bigger hit, but he lunges only some of his turns, and the
+  Empower lasts one turn; a tank's worth here is holding the line more
+  than his damage.
+
+Not built into runs. The test stage plays the refreshed version.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

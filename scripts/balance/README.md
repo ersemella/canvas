@@ -256,6 +256,8 @@ their revision.
 of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
 support seat of the three other regions' mirrors, each other support in
 his seat of Persia's, and his skill as `skill-fights.mjs`.
+`full-check.mjs` (later 2026-10-31) a full check on the game as built, no patch: region against region, every role seat of `roles-twelve.mjs` (Byzantium's party ordered tank, damage, support since the swap) and every skill row of `skill-fights.mjs`. See balance.md, "Full balance check, the game as built".
+
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production
@@ -375,3 +377,7 @@ production by about the same margin, so deeper search on this evaluation
 keeps finding better moves rather than chasing its errors. The deep variant
 costs about four times the CPU of production, past the Worker's budget
 (ai-search.md).
+
+`lunge-push.mjs` (later 2026-10-31) measures Lunge's Push 1 (`ABILITY.lunge.push`, the test stage's `"lunge": {"push": 1}`) on every row of `full-check.mjs` the Barbarian plays in, its own skill and his party's, to set beside that file's rows (same seeds).
+
+`bloodlust.mjs` (later 2026-10-31) measures Bloodlust (`BLOODLUST`, patchable in experiments since then) beside the Barbarian's Fury, refreshed (`bl`) and stacking to 3 (`bls`), on `lunge-push.mjs`'s rows with Lunge's Push 1.

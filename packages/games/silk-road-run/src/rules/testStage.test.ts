@@ -16,9 +16,10 @@ describe('the test stage', () => {
   it('accepts the committed test-stage.json', () => {
     expect(() => createTestFight(1)).not.toThrow();
     const b = createTestFight(1).units.find((u) => u.hero === 'varangian')!;
-    // Byzantium's three as in a run: no override of the Barbarian left.
-    expect(b.passives).toEqual(['fury']);
-    expect(b.loadout).toBeUndefined();
+    // Byzantium's three as in a run, but the Barbarian's Battle Cry in place of Fury; Lunge without a Push.
+    expect(b.passives).toEqual(['battleCry']);
+    expect(b.lungePush).toBeUndefined();
+    expect(b.loadout).toEqual({heroPassives: ['battleCry']});
     expect(abilitiesOf(b).map((d) => d.id)).toEqual(['lunge', 'hold']);
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
@@ -117,6 +118,7 @@ describe('the test stage', () => {
       },
       leap: {shape: 'forward', shieldPerHit: 1},
       charge: {armour: 1},
+      lunge: {push: 1},
     };
     const s = createTestFight(1, raw, ['varangian', 'cataphract', 'priest']);
     const of = (id: string) => s.units.find((u) => u.id === id)!;
@@ -132,7 +134,10 @@ describe('the test stage', () => {
     expect(of('p-cataphract').maxHp).toBe(6);
     expect([of('p-varangian').caution, of('p-cataphract').caution]).toEqual([0, undefined]);
     expect(s.units.every((u) => u.leapShape === 'forward' && u.leapShieldPerHit === 1)).toBe(true);
-    expect(s.units.every((u) => u.chargeArmour === 1)).toBe(true);
+    expect(s.units.every((u) => u.chargeArmour === 1 && u.lungePush === 1)).toBe(true);
+    expect(() => parseTestStage({...raw, lunge: {push: 9}})).toThrow(
+      'lunge.push must be a whole number from 0 to 8.'
+    );
     expect(() => parseTestStage({...raw, charge: {armour: -1}})).toThrow(
       'charge.armour must be a whole number from 0 to 8.'
     );

@@ -40,7 +40,13 @@ aims it in lines or sets the overdose's damage.
 to 2 away along one of his six straight lines, ally or enemy, struck for
 his power, stepping in next to it first when it is 2 away, as a lunge
 (hail stops him short, and then he doesn't strike); and **Fury**: whenever
-he is hit, his card is Hastened 5. The Cataphract its damage hero, speed
+he is hit, his card is Hastened 5. Lunge's Push 1 (`"lunge": {"push": 1}`, below), here from later
+2026-10-31, is off again (owner). **And Battle Cry in
+place of Fury** (`"heroes"`, below; owner, later 2026-10-31; no hero's in
+runs, where he keeps Fury): whenever he is hit, his card and each ally's
+within 2, Humphrey too, are Hastened 3 (`BATTLE_CRY` in config.ts sets
+his own and the allies' apart). Bloodlust, beside Fury here before (his
+hit damaging an enemy Empowering him 1 for 10 slots), is off. The Cataphract its damage hero, speed
 2, defence 2 (health 6), power 2, without Armoured, Armour 1 for 8 slots
 after each charge. The Steppe's three were the enemy until 2026-10-31.
 **The Magus has Alignment in place of Omen** (`"heroes"`, below; owner,
@@ -72,7 +78,8 @@ a picked-up card down, then undoes the arrangement, then the line.
   "map": "cave",
   "wait": true,
   "heroes": {
-    "magus": {"abilities": ["alignment"]}
+    "magus": {"abilities": ["alignment"]},
+    "varangian": {"passives": ["battleCry"]}
   },
   "yurts": "none",
   "camel": {},
@@ -147,6 +154,7 @@ it, unhurt.
 | `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. `overdose`, a number from 0 to 20: above 0, the unit given it, ally or enemy, is Empowered until its hits deal that much, for 8 slots, then hit for its user's power, no heal, hit or Weaken besides (6 as built); `0`, the Elixir before it (an ally healed his power and Empowered 2, an enemy hit and Weakened 2), at the built range of 3. | Elixir as built: an overdose to 6, any unit within 3, himself too |
 | `heroes` | Every unit of a hero, both sides, the party picked on the start menu too, by the hero's id: `speed`, `defence`, `power`, `abilities` as a unit's (below), each under a unit's own; `passives`, its hero's own in place of config.ts's (`[]`: none, the Cataphract without Armoured; a unit's `passives` are added beside them); `caution`, how much the AI shies from enemy reach with it, 0 (a tank's: it walks into reach) to 5, 1 the other heroes'. E.g. `{"cataphract": {"power": 2, "passives": []}}`. | each hero as config.ts has it |
 | `leap` | Every Leap, both sides, a hero's or one given in `abilities`: `shape`, the spaces its axe strikes next to where he lands, `"front"` (the two ahead), `"forward"` (four, all but the two he flew over) or `"splash"` (the front two for his power, the other four for 1); `shieldPerHit`, 0 to 8, the Shield he gains for each enemy hit, Humphrey and allies not counted, for 8 slots, added to any he has. | Leap as built: `"front"`, no Shield |
+| `lunge` | Every Lunge, both sides, a hero's or one given in `abilities`: `push`, 0 to 8, how far the unit it strikes is Pushed straight away from him after the hit (its own Push, so Forceful adds none). | Lunge as built: no Push |
 | `charge` | Every Charge, both sides, a hero's or one given in `abilities`: `armour`, 0 to 8, the Armour its user gains after each charge, for 8 slots (a hit on it that much less, unless it Pierces). | Charge as built: no Armour after it |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
@@ -160,7 +168,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
 | `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"alignment"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"lunge"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
-| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 5; the Barbarian's own), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
+| `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 5; the Barbarian's own), `"bloodlust"` (whenever its hit damages an enemy, it is Empowered 1 for 10 slots), `"battleCry"` (whenever it is hit, its card and each ally's within 2 are Hastened 3; the test stage's Barbarian's), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 
 The heroes' own numbers and starting kits are `HEROES` in

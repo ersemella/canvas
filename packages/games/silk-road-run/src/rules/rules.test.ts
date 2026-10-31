@@ -14,6 +14,8 @@ import {
 import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
+  BATTLE_CRY,
+  BLOODLUST,
   AI,
   HEROES,
   DRAFT,
@@ -2115,6 +2117,63 @@ describe('the Barbarian', () => {
     applyTurn(s, b, {action: {ability: 'lunge', target: {hex: along(c, 0, 2)}}});
     expect(b.hex).toEqual(hexNeighbor(c, 0));
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), b.shield]).toEqual([2, 0, undefined]);
+  });
+
+  it('with a Push (`Unit.lungePush`, the test stage\'s) Lunge Pushes the unit struck away from him', () => {
+    const {s, b} = lunging({'e-modao': along(c, 0, 2), 'e-storm': along(c, 3, 1)});
+    expect(ABILITY.lunge.push).toBe(0);
+    b.lungePush = 1;
+    expect(ABILITIES.lunge.summary(b)).toContain('It is Pushed 1.');
+    applyTurn(s, b, {action: {ability: 'lunge', target: {hex: along(c, 0, 2)}}});
+    // He steps in to 1 away; the Vanguard, hit, is Pushed on to 3 away.
+    expect(b.hex).toEqual(hexNeighbor(c, 0));
+    expect(unit(s, 'e-modao').hex).toEqual(along(c, 0, 3));
+    expect(hp(s, 'e-modao')).toBe(2);
+  });
+
+  it('with Bloodlust (the test stage\'s) is Empowered 1 for 10 slots when his hit damages an enemy, not an ally', () => {
+    const {s, b} = lunging({'e-modao': hexNeighbor(c, 0), 'p-modao': hexNeighbor(c, 3)});
+    b.passives = ['fury', 'bloodlust'];
+    expect(BLOODLUST).toEqual({empower: 1, slots: 10, stacks: false, max: 3});
+    const ally = cloneFight(s);
+    applyTurn(ally, unit(ally, b.id), {action: {ability: 'lunge', target: {hex: hexNeighbor(c, 3)}}});
+    expect(unit(ally, b.id).empower).toBeUndefined();
+    const slot = s.currentSlot;
+    applyTurn(s, b, {action: {ability: 'lunge', target: {hex: hexNeighbor(c, 0)}}});
+    expect([b.empower, b.empowerUntil]).toEqual([1, slot + 10]);
+    // Refreshed, not stacked, as built; stacking adds 1 a hit, up to 3.
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    Object.assign(unit(s, 'e-modao'), {hp: 99, maxHp: 99});
+    hit(ctx, b, unit(s, 'e-modao'), 'A test hit');
+    expect(b.empower).toBe(1);
+    BLOODLUST.stacks = true;
+    try {
+      for (let i = 0; i < 3; i++) hit(ctx, b, unit(s, 'e-modao'), 'A test hit');
+      expect(b.empower).toBe(3);
+    } finally {
+      BLOODLUST.stacks = false;
+    }
+  });
+
+  it('with Battle Cry (the test stage\'s) is Hastened 3 when hit, and each ally within 2', () => {
+    const {s, b} = lunging({
+      'e-modao': hexNeighbor(c, 0),
+      'p-modao': along(c, 3, 2),
+      'p-mangudai': along(c, 3, 3),
+    });
+    b.passives = ['battleCry'];
+    expect(BATTLE_CRY).toEqual({self: 3, allies: 3, range: 2});
+    const [near, far] = [unit(s, 'p-modao'), unit(s, 'p-mangudai')];
+    b.slot = s.currentSlot + 10;
+    // Apart, so no two Hastened cards collide.
+    for (const u of [near, far]) u.slot = s.currentSlot + 12;
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    hit(ctx, unit(s, 'e-modao'), b, 'A test hit');
+    expect([b.slot, near.slot, far.slot]).toEqual([
+      s.currentSlot + 7,
+      s.currentSlot + 9,
+      s.currentSlot + 12,
+    ]);
   });
 
   it('Fury Hastens him 5 whenever he is hit', () => {

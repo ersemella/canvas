@@ -528,6 +528,30 @@ export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 export const FURY = {haste: 5 as number};
 
 /**
+ * Bloodlust (owner, later 2026-10-31; the test stage's Barbarian's beside
+ * Fury, no hero's in runs, not offered): whenever its hit deals damage to
+ * an enemy (a Shield taking it too; Armour stopping it all not), it is
+ * Empowered `empower` for `slots` slots (10, his own turn's at speed 1, so
+ * it lasts to his next turn). `stacks` off: Empowered at least `empower`,
+ * the time renewed; on: `empower` more for each such hit, at most `max`.
+ */
+/**
+ * Battle Cry (owner, later 2026-10-31; the test stage's Barbarian's in
+ * place of Fury and Bloodlust, no hero's in runs, not offered): whenever
+ * it is hit (any damage coming at it, a Shield's or not, as Fury and
+ * Spearhead), its own card is Hastened `self` and each ally's within
+ * `range`, Humphrey too, `allies`.
+ */
+export const BATTLE_CRY = {self: 3 as number, allies: 3 as number, range: 2 as number};
+
+export const BLOODLUST = {
+  empower: 1 as number,
+  slots: 10 as number,
+  stacks: false as boolean,
+  max: 3 as number,
+};
+
+/**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,
  * 2026-10-29): the builder's first readings, marked TBD there. Each Delay,
  * Haste, Weaken, Empower, Armour and Shield is the keyword's own (17.3,
@@ -959,12 +983,16 @@ export const ABILITY = {
    * the first unit up to `reach` (2) away along one of his six lines, ally
    * or enemy, hit for his power; one further than next to him, he steps
    * in until next to it first, as a lunge (stopped by hail).
+   * `push` (owner, later 2026-10-31; the test stage's 1, 0 in runs): as
+   * `line`, the unit struck is then Pushed that many away from him. A
+   * unit's own (`Unit.lungePush`, the test stage's `lunge`) comes first.
    */
   lunge: {
     shape: 'line' as 'funnel' | 'line',
     reach: 2 as number,
     shieldPerHit: 0 as number,
     slots: 10 as number,
+    push: 0 as number,
   },
   /**
    * Alignment (owner, 2026-10-31; the test stage's Magus's in place of Omen,
