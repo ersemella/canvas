@@ -5556,6 +5556,39 @@ Not built. To be even for the AI it would need more on each cast (its
 power 2 and the old heal on an ally, or the hit on an enemy only), or the
 AI planning the hit that follows it.
 
+Put on the test stage for play-testing (owner, 2026-10-31; `"elixir":
+{"overdose": 6}`, `Unit.elixirOverdose`), its shape as built.
+
+**By its shape** (the owner's question, 2026-10-31; `odLine`, `odRange3`,
+`odBurst`, `odAura` rows, the same seats and fights, on `029c9e3`), the
+overdose to 6 at power 1: in lines to 3 as Axe Throw (the test stage's
+shape before), one unit within 3, a burst of radius 1 on a space within
+2 (every unit around it, the Alchemist too), and every unit next to him
+and himself.
+
+| Overdose to 6 | Steppe | Persia | Byzantium | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| One unit within 2 (as built's) | 37.8% | 31.3% | 50.3% | 31.6% | 35.7% | 45.5% | 59.3% | 13.8 |
+| Lines to 3 | 32.3% | 33.4% | 52.9% | 30.3% | 34.9% | 42.8% | 56.3% | 13.5 |
+| **One unit within 3** | 43.3% | 35.8% | 55.6% | 44.2% | **44.5%** | 35.8% | 57.5% | **21.7** |
+| **Burst within 2** | 42% | 34.5% | 61.3% | 42.5% | **44.2%** | 40% | 53.1% | 13.1 |
+| Every unit next to him | 21.3% | 22% | 45.9% | 22.2% | **26%** | 42.5% | 53.5% | 11 |
+
+- **The shape matters, by its reach**: one unit within 3 or a burst
+  within 2 gain about 9 points (44.5%, 44.2%), still about 9 under the
+  Elixir as built (53%); lines to 3 are the unit within 2's equal
+  (34.9%), the lines' extra reach given back in the spaces off them.
+  The aura is the worst (26%): it catches the enemy beside him as often
+  as the ally, and he casts it on only 9–16% of his turns.
+- **Reach lets him pick the unit about to hit**: cast on 44–56% of his
+  turns within 3 or as a burst (31–46% within 2). The burst does best in
+  Byzantium's seat (61.3%), Empowering the Cataphract and the Barbarian
+  together.
+- **Within 3, the widest skill span measured on him, 21.7** (novice
+  35.8%, expert 57.5%): the further the Empowered unit can be, the more
+  it pays to plan its hit.
+- Unfinished fights at most 0.5%.
+
 ### The Barbarian and the Cataphract swapped (2026-10-31)
 
 Asked for (the owner): Byzantium's tank and damage hero swapped, as the
