@@ -3403,6 +3403,7 @@ describe('the built Elixir, an overdose (2026-10-31)', () => {
     );
     const alchemist = unit(s, 'p-alchemist');
     expect(alchemist.power).toBe(1);
+    expect(ABILITIES.elixir.name).toBe('Overdose');
     expect(ABILITIES.elixir.range).toBe(3);
     // Every unit within 3, the camel and himself too; not the Vanguard 7 away.
     expect(

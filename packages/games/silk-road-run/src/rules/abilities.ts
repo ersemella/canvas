@@ -885,7 +885,11 @@ const elixir: AbilityDef = {
   get single() {
     return ABILITY.elixir.shape === 'unit';
   },
-  name: 'Elixir',
+  // Named Overdose since it became one (owner, 2026-10-31); Elixir before,
+  // and with the overdose switched off.
+  get name() {
+    return ABILITY.elixir.overdose > 0 ? 'Overdose' : 'Elixir';
+  },
   kind: 'support',
   bothSides: true,
   // Getters, so the measuring switches (`ABILITY.elixir`) reach the page and the AI.
@@ -991,7 +995,10 @@ const elixir: AbilityDef = {
       return;
     }
     for (const u of caught) {
-      log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+      log(
+        ctx,
+        `${unitName(user)} gives ${unitName(u)} ${overdoseOf(user) > 0 ? 'an overdose' : 'an elixir'}.`
+      );
       if (overdoseOf(user) > 0) {
         // The overdose: Empowered first, then the Alchemist's power taken.
         if (u.power > 0) empower(ctx, u, elixirOverdose(user, u), user);

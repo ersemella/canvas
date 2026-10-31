@@ -26,8 +26,8 @@ through a unit (aimed at the space he lands on); `"swiftStrike"`, below,
 tries other versions of him.
 Every Priest's Blessing leaves him out (`"blessing": {"self": false}`,
 below; owner, 2026-10-30): it blesses only the units on the line aimed.
-The Elixir plays as in a run since 2026-10-31, an overdose on one unit
-within 3 (balance.md, "The Elixir as an overdose"); `"elixir"`, below,
+The Elixir (named Overdose since 2026-10-31) plays as in a run since
+2026-10-31, an overdose on one unit within 3 (balance.md, "The Elixir as an overdose"); `"elixir"`, below,
 aims it in lines or sets the overdose's damage.
 **Byzantium's tank and damage hero swapped** (`"heroes"` and `"leap"`,
 below; owner, 2026-10-31; balance.md, "The Barbarian and the Cataphract
