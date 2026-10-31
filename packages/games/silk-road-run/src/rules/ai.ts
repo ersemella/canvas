@@ -44,6 +44,7 @@ import {
   grappling,
   chargePlan,
   longshotLanes,
+  leapShapeOf,
   leapStrikes,
   reaveThrows,
   stompPlan,
@@ -60,7 +61,7 @@ import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, charging, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
 import {armourOf, camelOf, damageOf, lastsThrough, shotEmpower} from './resolve';
-import type {AbilityId, FightState, Side, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, LeapShape, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
   input: TurnInput;
@@ -270,7 +271,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (has('axeThrow') && inLine && d <= ABILITY.axeThrow.range) return true;
     // Leap: the two spaces in front of a landing, 3 away off its lines;
     // `forward` 2 away on them too, `splash` next to it as well.
-    if (has('leap') && leapGap(u.hex!, e.hex) === 0) return true;
+    if (has('leap') && leapGap(u.hex!, e.hex, leapShapeOf(u)) === 0) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -420,7 +421,7 @@ export function scoreOutcome(
       AI.leafTrack;
   // What enemies could do to it before its next turn (one step of lookahead),
   // weighed by the share of its health it would lose and by the hero's caution.
-  const caution = AI.threatFactor * AI.caution[me.hero];
+  const caution = AI.threatFactor * cautionOf(me);
   if (caution > 0 && me.alive) {
     const threat = threatDamage(threats, after, me);
     if (threat > 0) {
@@ -569,7 +570,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     ability === 'gale'
       ? hexNeighbors(target!.hex!)
       : ability === 'cleave' || ability === 'reave' || ability === 'leap'
-        ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!)
+        ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!, unit)
         : ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
           ? lungeCaught(state, unit.hex!, target, unit)
           : plan?.caught.map((u) => u.hex!);
@@ -578,7 +579,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     // Leap's splash (`ABILITY.leap.splash`) on the spaces not in front.
     const splashed =
       ability === 'leap'
-        ? leapStrikes(mapOf(state), unit.hex!, target!.hex!)
+        ? leapStrikes(mapOf(state), unit.hex!, target!.hex!, unit)
             .filter((s) => !s.full)
             .map((s) => s.hex)
         : [];
@@ -882,9 +883,14 @@ function orderedInputs(state: FightState, unit: Unit): TurnInput[] {
   return inputs.sort((a, b) => guesses.get(b)! - guesses.get(a)!);
 }
 
+/** The AI's caution for `u`: its own (the test stage's `heroes`), else its hero's. */
+function cautionOf(u: Unit): number {
+  return u.caution ?? AI.caution[u.hero];
+}
+
 /** The threat map `unit`'s options are scored against, if its caution counts it. */
 function threatsFor(state: FightState, unit: Unit, includeThreats: boolean): Threat[] {
-  return includeThreats && AI.threatFactor * AI.caution[unit.hero] > 0
+  return includeThreats && AI.threatFactor * cautionOf(unit) > 0
     ? threatsTo(state, mapOf(state), unit)
     : [];
 }
@@ -1302,12 +1308,11 @@ function shotGap(state: FightState, me: Unit, at: Hex, target: Unit): number {
  * off its six lines (in front of a landing); `forward`, 2 away on them too;
  * `splash`, next to it as well. Otherwise the spaces to the nearest such.
  */
-function leapGap(at: Hex, target: Hex): number {
+function leapGap(at: Hex, target: Hex, shape: LeapShape): number {
   const d = hexDistance(at, target);
   const dq = target.q - at.q;
   const dr = target.r - at.r;
   const inLine = dq === 0 || dr === 0 || dq === -dr;
-  const shape = ABILITY.leap.shape;
   if (d === 3 && !inLine) return 0;
   if (shape !== 'front' && d === 2 && inLine) return 0;
   if (shape === 'splash' && d === 1) return 0;
@@ -1324,7 +1329,7 @@ function gapFrom(state: FightState, me: Unit, at: Hex, hunting: boolean): number
     isRanged(me)
       ? shotGap(state, me, at, target)
       : kitOf(me).includes('leap')
-        ? leapGap(at, target.hex!)
+        ? leapGap(at, target.hex!, leapShapeOf(me))
         : hexDistance(at, target.hex!);
   const camel = hunting ? camelOf(state) : undefined;
   if (camel?.alive && camel.hex) return gap(camel);

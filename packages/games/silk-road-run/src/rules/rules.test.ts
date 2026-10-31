@@ -2042,6 +2042,27 @@ describe('the Barbarian', () => {
     expect(b2.shield).toBeUndefined();
   });
 
+  it('Leap with Shield per hit (`Unit.leapShieldPerHit`) Shields him 1 for each enemy caught, for 8 slots', () => {
+    const around = (d: number) => hexNeighbor(landing(0), d);
+    // Two enemies and an ally among the four spaces `forward` strikes.
+    const {s, b} = leaping({'e-modao': around(0), 'e-mangudai': around(5), 'p-modao': around(2)});
+    b.leapShape = 'forward';
+    b.leapShieldPerHit = 1;
+    expect(ABILITIES.leap.summary(b)).toContain('Gain Shield 1 for each enemy hit, for 8 slots.');
+    applyTurn(s, b, {action: {ability: 'leap', target: {hex: landing(0)}}});
+    expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), hp(s, 'p-modao')]).toEqual([3, 3, 3]);
+    // Both enemies count; the ally hit doesn't.
+    expect(b.shield).toBe(2);
+    expect(b.lastingShield).toBeUndefined();
+    expect(b.shieldUntil).toBeDefined();
+    // No enemy caught: no Shield.
+    const {s: s2, b: b2} = leaping({'p-modao': around(0)});
+    b2.leapShape = 'forward';
+    b2.leapShieldPerHit = 1;
+    applyTurn(s2, b2, {action: {ability: 'leap', target: {hex: landing(0)}}});
+    expect(b2.shield).toBeUndefined();
+  });
+
   it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {
     const {s, b} = leaping({'p-modao': front(1)[0]!, 'p-mangudai': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';

@@ -127,7 +127,7 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
         : charged && e.ability === 'stomp'
           ? [e.target]
           : def.area && u.hex
-            ? def.area(map, u.hex, e.target)
+            ? def.area(map, u.hex, e.target, u)
             : map.hexes.filter((h) => hexDistance(h, e.target!) <= radius);
       const effect = charged ? undefined : ABILITY_EFFECT[e.ability];
       // Effects move in steps, as pixel art does.

@@ -136,9 +136,10 @@ export function makeUnit(
   taken: PassiveId[] = []
 ): Unit {
   const stats = heroStats(hero, loadout, provisions);
-  const passives = [
-    ...new Set([...(HEROES[hero].passives ?? []), ...(loadout?.passives ?? []), ...taken]),
-  ];
+  // The test stage's `heroes` may stand in for its hero's own (`heroPassives`:
+  // the Cataphract without Armoured).
+  const own = loadout?.heroPassives ?? HEROES[hero].passives ?? [];
+  const passives = [...new Set([...own, ...(loadout?.passives ?? []), ...taken])];
   return {
     id: `${side === 'player' ? 'p' : 'e'}-${hero}${copy ? `-${copy + 1}` : ''}`,
     hero,

@@ -9,7 +9,7 @@
 import {ABILITY, AI, ARMOURED} from './config';
 import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
-import {dashOf, elixirLineRange, lungeOf, passesThrough} from './abilities';
+import {dashOf, elixirLineRange, leapShapeOf, lungeOf, passesThrough} from './abilities';
 import {blocks, tileAt} from './map';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
@@ -120,7 +120,7 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     // Leap: the spaces it strikes round each free landing (`ABILITY.leap.shape`),
     // unless it can't move.
     if (has('leap') && !isImmobilized(e)) {
-      const shape = ABILITY.leap.shape;
+      const shape = leapShapeOf(e);
       const struck: [number, number][] = [
         [0, power],
         [1, power],

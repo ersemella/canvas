@@ -58,6 +58,47 @@ describe('the test stage', () => {
     expect(createTestFight(1, {...raw, blessing: undefined}).units[0]!.blessesSelf).toBeUndefined();
   });
 
+  it('sets every unit of a hero with "heroes", the party picked too, and every Leap with "leap"', () => {
+    const raw = {
+      player: [{hero: 'bokh'}],
+      enemy: [{hero: 'cataphract'}, {hero: 'varangian', power: 4}],
+      heroes: {
+        varangian: {defence: 3, power: 2, caution: 0},
+        cataphract: {defence: 2, power: 2, passives: []},
+      },
+      leap: {shape: 'forward', shieldPerHit: 1},
+    };
+    const s = createTestFight(1, raw, ['varangian', 'cataphract', 'priest']);
+    const of = (id: string) => s.units.find((u) => u.id === id)!;
+    for (const id of ['p-varangian', 'p-cataphract', 'e-cataphract']) {
+      expect(of(id).defence).toBe(id.includes('varangian') ? 3 : 2);
+      expect(of(id).power).toBe(2);
+    }
+    // A unit's own stats over its hero's; Armoured gone; the Barbarian a tank to the AI.
+    expect([of('e-varangian').power, of('e-varangian').defence, of('e-varangian').maxHp]).toEqual([
+      4, 3, 8,
+    ]);
+    expect(of('e-cataphract').passives ?? []).not.toContain('armoured');
+    expect(of('p-cataphract').maxHp).toBe(6);
+    expect([of('p-varangian').caution, of('p-cataphract').caution]).toEqual([0, undefined]);
+    expect(s.units.every((u) => u.leapShape === 'forward' && u.leapShieldPerHit === 1)).toBe(true);
+    // Passives given a unit stay beside its hero's own.
+    const juggernaut = createTestFight(1, {
+      player: [{hero: 'mahout', passives: ['rally']}],
+      enemy: [{hero: 'wolf'}],
+    });
+    expect(juggernaut.units[0]!.passives).toEqual(['unstoppable', 'rally']);
+    expect(() => parseTestStage({...raw, heroes: {varangian: {at: space(1, 1)}}})).toThrow(
+      'heroes.varangian has an unknown field "at"'
+    );
+    expect(() => parseTestStage({...raw, heroes: {nobody: {}}})).toThrow(
+      'heroes.nobody.hero must be one of'
+    );
+    expect(() => parseTestStage({...raw, leap: {shape: 'round'}})).toThrow(
+      'leap.shape must be "front", "forward" or "splash".'
+    );
+  });
+
   it('aims every Elixir in lines to the range given with "elixir": {"line": 3}, over anything', () => {
     const from = spaceAt(3, 4);
     const along = (n: number) => {

@@ -281,7 +281,9 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       }
       // Cleave's line: a tap anywhere in it aims it.
       const match =
-        fight && acting.hex && targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h);
+        fight &&
+        acting.hex &&
+        targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h, acting);
       if (!match) return false;
       // Forked (19.9): with a target picked, another of its targets is the second, tapped again un-picked.
       if (forks(acting, ABILITIES[ability]) && target?.hex && !hexEquals(target.hex, match.hex!)) {

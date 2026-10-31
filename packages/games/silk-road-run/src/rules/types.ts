@@ -216,6 +216,9 @@ export interface Status {
   until?: number;
 }
 
+/** What Leap strikes round its landing (`ABILITY.leap.shape`). */
+export type LeapShape = 'front' | 'forward' | 'splash';
+
 /**
  * A unit's own stats and kit, in place of its hero's (config.ts), set up by
  * the test stage (test-stage.json; `testStage.ts`). A field left out is
@@ -227,8 +230,10 @@ export interface Loadout {
   power?: number;
   /** Its abilities, Hold included. */
   abilities?: AbilityId[];
-  /** Its passives (progression.md, 19.8). */
+  /** Its passives (progression.md, 19.8), beside its hero's own. */
   passives?: PassiveId[];
+  /** Its hero's own passives in place of config.ts's (the test stage's `heroes`; `[]`: none). */
+  heroPassives?: PassiveId[];
 }
 
 export interface Unit {
@@ -251,6 +256,12 @@ export interface Unit {
   statuses: Status[];
   /** The test stage's stats and kit for it; absent for a hero as config.ts has it. */
   loadout?: Loadout;
+  /** The AI's caution for it (`AI.caution`), the test stage's (`heroes`); absent for its hero's. */
+  caution?: number;
+  /** Its Leap's shape (`ABILITY.leap.shape`), the test stage's (`leap`); absent for the rule's. */
+  leapShape?: LeapShape;
+  /** Shield for each enemy its Leap hits, for 8 slots (`ABILITY.leap.perHit`), the test stage's; absent for the rule's. */
+  leapShieldPerHit?: number;
   /** Its provisions, stat by stat, added to its hero's or loadout's stats; absent with none. */
   provisions?: Partial<Record<StatId, number>>;
   /**

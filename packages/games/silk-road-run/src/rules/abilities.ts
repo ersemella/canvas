@@ -68,7 +68,7 @@ import {blocks, onMap, tileAt} from './map';
 import {aimSlot, chargeOf, placeCard, simultaneousOrder} from './track';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
-import type {AbilityId, ActionTarget, FightState, Unit} from './types';
+import type {AbilityId, ActionTarget, FightState, LeapShape, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
@@ -100,7 +100,7 @@ export interface AbilityDef {
    * rather than around its target (Cleave's line): the page and the
    * playback light these up in place of `radius`'s.
    */
-  area?: ((map: MapData, from: Hex, target: Hex) => Hex[]) | undefined;
+  area?: ((map: MapData, from: Hex, target: Hex, user?: Unit) => Hex[]) | undefined;
   /** One line for the side panel, with its damage (the user's power). Range is left out. */
   summary(user: Unit): string;
   /**
@@ -2238,41 +2238,52 @@ function leapDirection(from: Hex, landing: Hex): number | null {
  * (Leap's front), then for `forward` the one either side of them, and for
  * `splash` the two it flew over too.
  */
-function leapDirections(dir: number): number[] {
+/** A Leap's shape: `user`'s own (the test stage's), else the rule's. */
+export const leapShapeOf = (user?: Unit): LeapShape => user?.leapShape ?? ABILITY.leap.shape;
+
+/** The Shield a Leap gives for each enemy it hits (8 slots): `user`'s own, else the rule's. */
+const leapPerHitOf = (user: Unit): number => user.leapShieldPerHit ?? ABILITY.leap.perHit;
+
+function leapDirections(dir: number, shape: LeapShape): number[] {
   const front = [dir, dir + 1];
-  if (ABILITY.leap.shape === 'front') return front;
+  if (shape === 'front') return front;
   const sides = [dir - 1, dir + 2];
-  return ABILITY.leap.shape === 'forward'
-    ? [...front, ...sides]
-    : [...front, ...sides, dir + 3, dir + 4];
+  return shape === 'forward' ? [...front, ...sides] : [...front, ...sides, dir + 3, dir + 4];
 }
 
 /** Whether a Leap setting out along `dir` hits the space next to its landing in direction `d` for its user's full power. */
-const leapsFull = (dir: number, d: number): boolean =>
-  ABILITY.leap.shape !== 'splash' || (((d - dir) % 6) + 6) % 6 <= 1;
+const leapsFull = (dir: number, d: number, shape: LeapShape): boolean =>
+  shape !== 'splash' || (((d - dir) % 6) + 6) % 6 <= 1;
 
 /**
  * The spaces Leap strikes landing on `landing` from `from`
  * (`ABILITY.leap.shape`), the two straight ahead first, yurts left out,
  * each with whether it takes its user's power (`full`) or `splash`.
  */
-export function leapStrikes(map: MapData, from: Hex, landing: Hex): {hex: Hex; full: boolean}[] {
+export function leapStrikes(
+  map: MapData,
+  from: Hex,
+  landing: Hex,
+  user?: Unit
+): {hex: Hex; full: boolean}[] {
   const dir = leapDirection(from, landing);
   if (dir === null) return [];
-  return leapDirections(dir)
-    .map((d) => ({hex: hexNeighbor(landing, d), full: leapsFull(dir, d)}))
+  const shape = leapShapeOf(user);
+  return leapDirections(dir, shape)
+    .map((d) => ({hex: hexNeighbor(landing, d), full: leapsFull(dir, d, shape)}))
     .filter((s) => walkable(map, s.hex));
 }
 
 /** The spaces Leap strikes (`leapStrikes`). */
-export const leapArea = (map: MapData, from: Hex, landing: Hex): Hex[] =>
-  leapStrikes(map, from, landing).map((s) => s.hex);
+export const leapArea = (map: MapData, from: Hex, landing: Hex, user?: Unit): Hex[] =>
+  leapStrikes(map, from, landing, user).map((s) => s.hex);
 
-/** What Leap hits, by `ABILITY.leap.shape`. */
-function leapSays(): string {
-  if (ABILITY.leap.shape === 'forward')
+/** What Leap hits, by its shape (`leapShapeOf`). */
+function leapSays(user: Unit): string {
+  const shape = leapShapeOf(user);
+  if (shape === 'forward')
     return 'Hits every unit on the four spaces next to where you land, all but the two you flew over, allies included.';
-  if (ABILITY.leap.shape === 'splash')
+  if (shape === 'splash')
     return `Hits every unit on the two spaces in front of where you land, and every other unit next to it for ${ABILITY.leap.splash}, allies included.`;
   return 'Hits every unit on the two spaces in front of where you land, allies included.';
 }
@@ -2289,10 +2300,14 @@ const leap: AbilityDef = {
   name: 'Leap',
   kind: 'attack',
   stepsTo: true,
-  summary: () =>
-    `Leap over anything to a free space 2 away, off your straight lines. ${leapSays()}${
+  summary: (user) =>
+    `Leap over anything to a free space 2 away, off your straight lines. ${leapSays(user)}${
       ABILITY.leap.shield
         ? ` Gain Shield equal to the damage dealt to enemies, until spent (at most ${ABILITY.leap.shieldCap}); a leap that hits no one loses your Shield.`
+        : ''
+    }${
+      leapPerHitOf(user) > 0
+        ? ` Gain Shield ${leapPerHitOf(user)} for each enemy hit, for ${RULES.durations.turn} slots.`
         : ''
     }`,
   area: leapArea,
@@ -2306,7 +2321,7 @@ const leap: AbilityDef = {
     return out;
   },
   resolve(ctx, user, target) {
-    const strikes = leapStrikes(ctx.map, user.hex!, target.hex!);
+    const strikes = leapStrikes(ctx.map, user.hex!, target.hex!, user);
     log(ctx, `${unitName(user)} leaps.`);
     enterHex(ctx, user, target.hex!, 'leap');
     // Hail where it lands can fell it.
@@ -2322,6 +2337,10 @@ const leap: AbilityDef = {
     for (const {u, full} of caught)
       if (full) hit(ctx, user, u, 'The axe');
       else hitFor(ctx, user, u, 'The blow', ABILITY.leap.splash);
+    // `perHit` Shield for each enemy caught, felled or not, for 8 slots.
+    const enemies = caught.filter(({u}) => hostile(u, user)).length;
+    if (leapPerHitOf(user) > 0 && enemies > 0 && user.alive)
+      shield(ctx, user, enemies * leapPerHitOf(user));
     if (!ABILITY.leap.shield || !user.alive) return;
     if (caught.length === 0) {
       if (user.shield) log(ctx, `${unitName(user)} loses its Shield.`);

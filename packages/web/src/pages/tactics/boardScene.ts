@@ -239,7 +239,8 @@ export function buildScene(input: SceneInput): BoardScene {
     // everything, as a lane to aim along; the one aimed, or hovered, alone once picked.
     if (from && ability === 'blessing' && ABILITY.blessing.shape === 'line') {
       const aimed =
-        target?.hex ?? (hoverHex && targetAt(mapOf(fight), from, def, targets, hoverHex)?.hex);
+        target?.hex ??
+        (hoverHex && targetAt(mapOf(fight), from, def, targets, hoverHex, acting)?.hex);
       const dirOf = (h: Hex) => hexDirectionTo(from, h);
       out.lanes = {
         from,
@@ -313,7 +314,7 @@ export function buildScene(input: SceneInput): BoardScene {
       // space it's aimed at, so a swing that catches several shows them all.
       if (def.area && from)
         for (const t of targets)
-          for (const h of def.area(mapOf(fight), from, t.hex!)) {
+          for (const h of def.area(mapOf(fight), from, t.hex!, acting)) {
             const u = unitAt(fight, h);
             if (u && u.id !== acting.id) show(h, 'target');
           }
@@ -337,17 +338,17 @@ export function buildScene(input: SceneInput): BoardScene {
     // Cleave's line, before it's aimed: the one under the mouse, by any of its spaces.
     const hoveredAim =
       !target?.hex && from && hovered
-        ? targetAt(mapOf(fight), from, def, targets, hovered)?.hex
+        ? targetAt(mapOf(fight), from, def, targets, hovered, acting)?.hex
         : undefined;
     if (def.area && from && hoveredAim)
-      for (const h of def.area(mapOf(fight), from, hoveredAim))
+      for (const h of def.area(mapOf(fight), from, hoveredAim, acting))
         if (!hexEquals(h, hoveredAim)) highlights.push({hex: h, kind: 'area'});
     if (target?.hex) {
       // An area ability: highlight the area around the chosen hex (none since Hail covers one space),
       // or the one running out from the user (Cleave's line).
       const radius = ABILITIES[ability].radius;
       if (def.area && from) {
-        for (const h of def.area(mapOf(fight), from, target.hex))
+        for (const h of def.area(mapOf(fight), from, target.hex, acting))
           if (!hexEquals(h, target.hex)) highlights.push({hex: h, kind: 'area'});
       } else if (radius) {
         const map = mapOf(fight);

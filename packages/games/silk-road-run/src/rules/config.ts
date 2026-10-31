@@ -8,7 +8,7 @@
  * exactly its user's power in damage. Values marked PLACEHOLDER are the
  * builder's, for units the owner hasn't set.
  */
-import type {AbilityId, HeroId, PassiveId} from './types';
+import type {AbilityId, HeroId, LeapShape, PassiveId} from './types';
 
 export const RULES = {
   /**
@@ -920,12 +920,18 @@ export const ABILITY = {
    * With `shield` (owner, 2026-10-30; off): a leap that hits enemies Shields
    * him by the damage they take, until spent, his Shield at most
    * `shieldCap`; one that hits no one takes away any Shield he has.
+   * With `perHit` above 0 (owner, 2026-10-31; the test stage's Barbarian as
+   * a tank, off in runs): `perHit` Shield for every enemy the axe hits,
+   * Humphrey and allies not counted, lasting `RULES.durations.turn` (8)
+   * slots, added to any he has. A unit's own (`Unit.leapShape`,
+   * `.leapShieldPerHit`, the test stage's `leap`) comes first.
    */
   leap: {
-    shape: 'front' as 'front' | 'forward' | 'splash',
+    shape: 'front' as LeapShape,
     splash: 1 as number,
     shield: false as boolean,
     shieldCap: 3 as number,
+    perHit: 0 as number,
   },
   /**
    * Gore (owner, 2026-10-28), the Bull Demon King's: Stomp's charge

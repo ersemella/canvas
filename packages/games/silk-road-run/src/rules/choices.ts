@@ -71,7 +71,7 @@ export function castableSpaces(
   for (const t of offeredTargets(state, map, unit, def)) {
     if (!t.hex) continue;
     add(t.hex);
-    if (def.area) for (const h of def.area(map, from, t.hex)) add(h);
+    if (def.area) for (const h of def.area(map, from, t.hex, unit)) add(h);
   }
   if (def.targetsUnit) {
     // A foe to stand in each free space in turn: one of the foes on the board, plain.
@@ -103,12 +103,13 @@ export function targetAt(
   from: Hex,
   def: AbilityDef,
   targets: ActionTarget[],
-  h: Hex
+  h: Hex,
+  user?: Unit
 ): ActionTarget | undefined {
   return (
     targets.find((t) => t.hex && hexEquals(t.hex, h)) ??
     (def.area
-      ? targets.find((t) => t.hex && def.area!(map, from, t.hex).some((a) => hexEquals(a, h)))
+      ? targets.find((t) => t.hex && def.area!(map, from, t.hex, user).some((a) => hexEquals(a, h)))
       : undefined)
   );
 }

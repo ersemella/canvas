@@ -30,7 +30,7 @@ import {
 } from './map';
 import type {MapData, Tile} from './map';
 import {placeStartingCards, shuffled} from './track';
-import type {AbilityId, FightState, HeroId, Loadout, PassiveId, Unit} from './types';
+import type {AbilityId, FightState, HeroId, LeapShape, Loadout, PassiveId, Unit} from './types';
 
 /** The committed test-stage.json. */
 export const TEST_STAGE: unknown = config;
@@ -72,6 +72,15 @@ interface TestSetup {
   blessing: {self?: boolean};
   /** Every Elixir aimed in lines, to this range (`Unit.elixirLine`); 0 not. */
   elixir: {line?: number};
+  /**
+   * Every unit of a hero, both sides, the party picked on the start menu
+   * too: its stats and kit (under a unit's own), its hero's passives in
+   * place of config.ts's (`Loadout.heroPassives`), and the AI's caution
+   * for it (`Unit.caution`: 0 a tank's, 1 the rest's).
+   */
+  heroes: Partial<Record<HeroId, {loadout: Loadout; caution?: number}>>;
+  /** Every Leap's shape and Shield for each enemy hit (`Unit.leapShape`, `.leapShieldPerHit`). */
+  leap: {shape?: LeapShape; shieldPerHit?: number};
 }
 
 /** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
@@ -178,6 +187,8 @@ export function parseTestStage(raw: unknown): TestSetup {
     'swiftStrike',
     'blessing',
     'elixir',
+    'heroes',
+    'leap',
   ]);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
@@ -269,6 +280,52 @@ export function parseTestStage(raw: unknown): TestSetup {
       elixir.line = x.line as number;
     }
   }
+  const heroes: TestSetup['heroes'] = {};
+  if (v.heroes !== undefined) {
+    if (!isObject(v.heroes)) fail('heroes must be an object, e.g. {"cataphract": {"power": 2}}.');
+    for (const [hero, h] of Object.entries(v.heroes as Record<string, unknown>)) {
+      if (hero.startsWith('$')) continue;
+      const where = `heroes.${hero}`;
+      if (!isObject(h)) fail(`${where} must be an object like {"power": 2}.`);
+      const {caution, ...rest} = h as Record<string, unknown>;
+      if (caution !== undefined && (typeof caution !== 'number' || caution < 0 || caution > 5))
+        fail(`${where}.caution must be a number from 0 (a tank's) to 5.`);
+      if (rest.at !== undefined || rest.hero !== undefined)
+        fail(
+          `${where} has an unknown field "${rest.at !== undefined ? 'at' : 'hero'}" (expected speed, defence, power, abilities, passives, caution).`
+        );
+      // A hero's own fields, checked as a unit's; its passives its hero's.
+      const {loadout = {}} = parseUnit(where, {hero, ...rest});
+      if (loadout.passives) {
+        loadout.heroPassives = loadout.passives;
+        delete loadout.passives;
+      }
+      heroes[hero as HeroId] = {
+        loadout,
+        ...(caution !== undefined ? {caution: caution as number} : {}),
+      };
+    }
+  }
+  const leap: TestSetup['leap'] = {};
+  if (v.leap !== undefined) {
+    if (!isObject(v.leap)) fail('leap must be an object.');
+    const l = v.leap as Record<string, unknown>;
+    onlyKeys('leap', l, ['shape', 'shieldPerHit']);
+    if (l.shape !== undefined) {
+      if (!['front', 'forward', 'splash'].includes(l.shape as string))
+        fail('leap.shape must be "front", "forward" or "splash".');
+      leap.shape = l.shape as LeapShape;
+    }
+    if (l.shieldPerHit !== undefined) {
+      if (
+        !Number.isInteger(l.shieldPerHit) ||
+        (l.shieldPerHit as number) < 0 ||
+        (l.shieldPerHit as number) > 8
+      )
+        fail('leap.shieldPerHit must be a whole number from 0 to 8.');
+      leap.shieldPerHit = l.shieldPerHit as number;
+    }
+  }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -282,6 +339,8 @@ export function parseTestStage(raw: unknown): TestSetup {
     swiftStrike,
     blessing,
     elixir,
+    heroes,
+    leap,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -311,6 +370,13 @@ export function createTestFight(
 ): FightState {
   const setup = parseTestStage(raw);
   if (party) setup.player = party.map((hero) => ({hero}));
+  // `heroes`: a hero's stats and kit under each unit's own.
+  const withHero = (u: UnitSetup): UnitSetup => {
+    const own = setup.heroes[u.hero]?.loadout;
+    return own ? {...u, loadout: {...own, ...u.loadout}} : u;
+  };
+  setup.player = setup.player.map(withHero);
+  setup.enemy = setup.enemy.map(withHero);
   const random = seededRandom(setup.seed ?? runSeed);
   const map = mapById(setup.map);
   const copies = (list: UnitSetup[], i: number) =>
@@ -367,6 +433,13 @@ export function createTestFight(
       u.blessesSelf = setup.blessing.self;
   // Every unit, so an Elixir given in a loadout is aimed so too.
   if (setup.elixir.line !== undefined) for (const u of units) u.elixirLine = setup.elixir.line;
+  // A Leap too.
+  for (const u of units) {
+    if (setup.leap.shape !== undefined) u.leapShape = setup.leap.shape;
+    if (setup.leap.shieldPerHit !== undefined) u.leapShieldPerHit = setup.leap.shieldPerHit;
+    const caution = setup.heroes[u.hero]?.caution;
+    if (caution !== undefined) u.caution = caution;
+  }
   // The camel's road, at random (`ROUTES`), off any space a unit is set on.
   const setOn = (h: Hex) => placed.some(([u, {at}]) => at && hexEquals(at, h) && u.hero !== CAMEL);
   const roads = ROUTES.filter((r) => !setOn(r.camelStart));
