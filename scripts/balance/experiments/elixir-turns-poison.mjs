@@ -21,6 +21,15 @@ const variants = {
   lineOnly: (c) => Object.assign(c.ABILITY.elixir, lines),
   turns: (c) => Object.assign(c.ABILITY.elixir, lines, {mode: 'alternate'}),
   poison: (c) => Object.assign(c.ABILITY.elixir, lines, {mode: 'poison'}),
+  // The owner's question (2026-10-31): both with the Alchemist's power 2.
+  turns2: (c) => {
+    Object.assign(c.ABILITY.elixir, lines, {mode: 'alternate'});
+    c.HEROES.alchemist.power = 2;
+  },
+  poison2: (c) => {
+    Object.assign(c.ABILITY.elixir, lines, {mode: 'poison'});
+    c.HEROES.alchemist.power = 2;
+  },
 };
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};
