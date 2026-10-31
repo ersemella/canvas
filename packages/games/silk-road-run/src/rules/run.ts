@@ -517,7 +517,7 @@ export function parseAction(raw: unknown): RunAction {
   if (a.type === 'continue') return {type: 'continue'};
   if (a.type === 'turn') {
     const action = a.action as
-      | {ability?: unknown; target?: {hex?: unknown; to?: unknown; cards?: unknown}}
+      | {ability?: unknown; target?: {hex?: unknown; to?: unknown; cards?: unknown; mode?: unknown}}
       | undefined;
     if (
       !action ||
@@ -531,6 +531,12 @@ export function parseAction(raw: unknown): RunAction {
       const target: ActionTarget = {};
       if (action.target.hex !== undefined) target.hex = parseHex(action.target.hex);
       if (action.target.to !== undefined) target.to = parseHex(action.target.to);
+      // Eclipse's choice.
+      if (action.target.mode !== undefined) {
+        if (action.target.mode !== 'haste' && action.target.mode !== 'delay')
+          throw new RuleError('Malformed mode.');
+        target.mode = action.target.mode;
+      }
       // Alignment's arrangement: each card's unit by its space, and its slot.
       const {cards} = action.target;
       if (cards !== undefined) {

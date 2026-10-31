@@ -258,6 +258,9 @@ support seat of the three other regions' mirrors, each other support in
 his seat of Persia's, and his skill as `skill-fights.mjs`.
 `full-check.mjs` (later 2026-10-31) a full check on the game as built, no patch: region against region, every role seat of `roles-twelve.mjs` (Byzantium's party ordered tank, damage, support since the swap) and every skill row of `skill-fights.mjs`. See balance.md, "Full balance check, the game as built".
 
+`eclipse.mjs` (2026-10-31) the Magus's Eclipse (a space within 3 and
+the spaces next to it, every unit there Delayed or every one Hastened) at
+3, 5, 7 and 6 slots, beside Omen, in the same rows as `alignment.mjs`.
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

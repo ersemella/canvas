@@ -15,6 +15,8 @@ import {
   alignmentBlanks,
   alignmentDeck,
   alignmentPool,
+  eclipseCaught,
+  hostile,
   targetAt,
 } from '@canvas/games-silk-road-run';
 import type {
@@ -43,6 +45,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   leap: 'No free space to land on.',
   omen: 'No unit within 3 whose turn comes before your next.',
   alignment: 'No unit on any of your lines with a card to move.',
+  eclipse: 'No unit within 4 of you to Delay or Haste.',
   stomp: 'Nowhere to Stomp.',
   charge: 'Nowhere to charge.',
   longshot: 'No one in any of your lanes.',
@@ -396,6 +399,21 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
+      if (ability === 'eclipse') {
+        // A space in reach: aimed, Delaying if it catches more enemies than
+        // allies, else Hastening (the turn controls switch it). The space
+        // aimed again un-picks it.
+        const match = targets.find((t) => t.hex && hexEquals(t.hex, h));
+        if (!match || !fight) return false;
+        if (target?.hex && hexEquals(target.hex, h)) {
+          pick({target: null, tapped: null});
+          return true;
+        }
+        const caught = eclipseCaught(fight, h).filter((u) => u.id !== acting.id);
+        const foes = caught.filter((u) => hostile(u, acting)).length;
+        chooseTarget({hex: match.hex!, mode: foes > caught.length - foes ? 'delay' : 'haste'});
+        return true;
+      }
       if (ability === 'alignment') {
         // A line: a tap anywhere on it picks it, and the cards are arranged on the track.
         const match =
@@ -542,6 +560,19 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     toggleMove,
     planTap,
     stepBack,
+    /** Eclipse, aimed: Delay or Haste, switched in the turn controls. */
+    choice:
+      ability === 'eclipse' && target?.hex
+        ? {
+            value: target.mode ?? 'delay',
+            options: [
+              {value: 'delay', label: 'Delay'},
+              {value: 'haste', label: 'Haste'},
+            ],
+            onChange: (mode: string) =>
+              pick({target: {...target, mode: mode === 'haste' ? 'haste' : 'delay'}}),
+          }
+        : null,
     arrangeTap,
     arrangeDown,
     arrangeDrop,

@@ -291,6 +291,24 @@ const ICON: Record<IconId, Icon> = {
       '...=........',
     ],
   },
+  // Eclipse: the sun's ring, the moon's dark disc over it.
+  eclipse: {
+    kind: 'control',
+    rows: [
+      '............', //
+      '.....+......',
+      '...+++++....',
+      '..++====+...',
+      '..+=====+...',
+      '.++=====++..',
+      '..+=====+...',
+      '..++====+...',
+      '...+++++....',
+      '.....+......',
+      '............',
+      '............',
+    ],
+  },
   // Alignment: three stars in a line, the middle one the accent.
   alignment: {
     kind: 'control',

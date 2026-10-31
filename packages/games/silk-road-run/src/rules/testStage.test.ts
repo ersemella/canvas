@@ -24,32 +24,27 @@ describe('the test stage', () => {
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 
-  it('gives the Magus Alignment in place of Omen, the party picked on the start menu too', () => {
+  it('gives the Magus Eclipse in place of Omen, the party picked on the start menu too', () => {
     const s = createTestFight(1, undefined, ['magus', 'youxia', 'alchemist']);
     const m = s.units.find((u) => u.id === 'p-magus')!;
-    expect(abilitiesOf(m).map((a) => a.id)).toEqual(['alignment', 'hold']);
+    expect(abilitiesOf(m).map((a) => a.id)).toEqual(['eclipse', 'hold']);
   });
 
-  it("carries Alignment's arrangement through the run's actions, as the page sends it", () => {
+  it("carries Eclipse's choice through the run's actions, as the page sends it", () => {
     let run = createRun(1, {test: true, party: ['magus']});
     for (let i = 0; i < 40 && run.fight.awaiting !== 'p-magus'; i++)
       run = handleRunAction(run, {type: 'continue'});
     const m = run.fight.units.find((u) => u.id === 'p-magus')!;
     expect(run.fight.awaiting).toBe('p-magus');
-    const line = ABILITIES.alignment
+    const aim = ABILITIES.eclipse
       .targets(run.fight, mapOf(run.fight), m, m.hex!)
-      .find((t) => t.cards?.length)!;
+      .find((t) => t.mode === 'haste')!;
     run = handleRunAction(run, {
       type: 'turn',
-      action: {
-        ability: 'alignment',
-        target: JSON.parse(JSON.stringify({hex: line.hex, cards: line.cards})),
-      },
+      action: {ability: 'eclipse', target: JSON.parse(JSON.stringify(aim))},
     });
     expect(
-      run.fight.log.some((l) =>
-        /(card|next turn) moves to/.test(String((l as {text?: string}).text ?? l))
-      )
+      run.fight.log.some((l) => /Hastened/.test(String((l as {text?: string}).text ?? l)))
     ).toBe(true);
   });
 

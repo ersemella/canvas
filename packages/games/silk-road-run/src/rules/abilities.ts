@@ -2188,6 +2188,59 @@ const alignment: AbilityDef = {
   },
 };
 
+// ─── Magus: Eclipse ──────────────────────────────────────────────────────────
+
+/** The units an Eclipse on `hex` reaches: on it or next to it (`ABILITY.eclipse.radius`), with a card, not Inevitable. */
+export function eclipseCaught(state: FightState, hex: Hex): Unit[] {
+  return state.units.filter(
+    (u) =>
+      u.alive &&
+      u.hex !== null &&
+      u.slot !== null &&
+      hexDistance(u.hex, hex) <= ABILITY.eclipse.radius &&
+      !hasPassive(u, 'steadyGait')
+  );
+}
+
+/**
+ * Eclipse (owner, 2026-10-31; the test stage's Magus's): a space within
+ * `ABILITY.eclipse.range` and the spaces next to it; every unit there
+ * Hastened, or every one Delayed, `slots` (`target.mode`).
+ */
+const eclipse: AbilityDef = {
+  id: 'eclipse',
+  name: 'Eclipse',
+  kind: 'control',
+  damages: false,
+  bothSides: true,
+  get range() {
+    return ABILITY.eclipse.range;
+  },
+  get radius() {
+    return ABILITY.eclipse.radius;
+  },
+  summary: () =>
+    `A space within ${ABILITY.eclipse.range} and the spaces next to it: every unit there Hastened ${ABILITY.eclipse.slots}, or every one Delayed ${ABILITY.eclipse.slots}.`,
+  targets(state, map, _user, from) {
+    const out: ActionTarget[] = [];
+    for (const hex of spacesWithin(map, from, ABILITY.eclipse.range)) {
+      if (eclipseCaught(state, hex).length === 0) continue;
+      out.push({hex: {...hex}, mode: 'delay'}, {hex: {...hex}, mode: 'haste'});
+    }
+    return out;
+  },
+  check: (_state, _map, _user, target) =>
+    target.mode === 'haste' || target.mode === 'delay' ? null : 'Eclipse Hastens or Delays.',
+  resolve(ctx, user, target) {
+    const n = ABILITY.eclipse.slots;
+    const caught = eclipseCaught(ctx.state, target.hex!);
+    log(ctx, `${unitName(user)} calls an eclipse.`);
+    if (target.mode === 'haste')
+      for (const u of [...caught].sort((a, b) => a.slot! - b.slot!)) haste(ctx, u, n, user);
+    else for (const u of [...caught].sort((a, b) => b.slot! - a.slot!)) delay(ctx, u, n, user);
+  },
+};
+
 // ─── Juggernaut ──────────────────────────────────────────────────────────────
 
 /** The units standing in a row from `h` along direction `dir`, `h`'s first; none if it is free. */
@@ -3216,6 +3269,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   swiftStrike,
   omen,
   alignment,
+  eclipse,
   stomp,
   longshot,
   blessing,
@@ -3255,7 +3309,7 @@ export function unusableReason(unit: Unit, ability: AbilityDef): string | null {
 export function sameTarget(a: ActionTarget, b: ActionTarget): boolean {
   const eq = (x?: Hex, y?: Hex) =>
     x === undefined ? y === undefined : y !== undefined && hexEquals(x, y);
-  return eq(a.hex, b.hex) && eq(a.to, b.to);
+  return eq(a.hex, b.hex) && eq(a.to, b.to) && a.mode === b.mode;
 }
 
 /** Whether `unit`'s `def` takes one extra target: a single-target ability, with Forked (19.9). */

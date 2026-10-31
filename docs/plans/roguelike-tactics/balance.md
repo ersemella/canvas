@@ -6653,6 +6653,49 @@ those (same seeds; *Push 1* is its baseline), 400 fights a row (about
 
 Not built into runs. The test stage plays the refreshed version.
 
+## Eclipse (2026-10-31)
+
+Asked for (owner), after the versions of Alignment: a Magus ability at
+**range 3, radius 1**, where **every unit it reaches is Delayed, or every
+one Hastened**, his choice each cast (`ABILITY.eclipse`, the name a
+placeholder; the test stage's Magus's). Either side, Humphrey too, not
+Inevitable. The AI tries both on every space within 3 with a unit by it,
+and weighs each card's move as the share of a turn gained or lost, as
+Omen's. `experiments/eclipse.mjs`, 400 fights a row, on main with Wait in
+runs, beside Omen; as Alignment's rows (the Magus in each other region's
+support seat, and each other support in his seat of Persia's, shown as the
+Magus's side):
+
+| Seat | Omen | Eclipse 3 | Eclipse 5 | **Eclipse 6** | Eclipse 7 |
+|---|---:|---:|---:|---:|---:|
+| For the Storm Caller (Steppe) | 46.7% | 20.5% | 29.5% | 34.8% | 42.8% |
+| For the Alchemist (China) | 64.3% | 34.3% | 59.8% | 62.3% | 68.3% |
+| For the Priest (Byzantium) | 43.8% | 18.5% | 34.8% | 39% | 49.8% |
+| Against the Storm Caller in Persia's | 57.7% | 33.7% | 43.7% | 59.7% | 60.1% |
+| Against the Alchemist in Persia's | 56.1% | 32.5% | 50.9% | 61.5% | 67.7% |
+| Against the Priest in Persia's | 45.7% | 24.5% | 39% | 50.7% | 61% |
+| **Mean** | **52.4%** | **27.3%** | **43%** | **51.3%** | **58.3%** |
+
+| Played by | Omen | Eclipse 3 | Eclipse 5 | Eclipse 6 | Eclipse 7 |
+|---|---:|---:|---:|---:|---:|
+| Novice | 27.3% | 34.1% | 25.8% | 24.5% | 26.3% |
+| Expert | 55.8% | 55% | 51% | 51.3% | 49% |
+| Span | 28.5 | 20.9 | 25.2 | **26.8** | 22.7 |
+
+Unfinished 0–0.5% throughout.
+
+- **Eclipse 6 is even**: 51.3% as a score, Omen's 52.4% within noise, and
+  rises about 8 points a slot from 3 to 7. Built at 6 on the test stage.
+- **Uneven by seat, as Omen is**: 35–39% beside the Steppe's and
+  Byzantium's, 60–62% in China's and against Persia's others. A burst of
+  Delay suits a melee party that closes on clustered enemies.
+- **A Delay, mostly**: at 7 the AI Delays 8–11 units a fight and Hastens
+  about 1; it uses Eclipse on 53–60% of his turns (Omen 56–62%).
+- **Skill matters**: a span of 26.8 at 6, near Omen's 28.5; where to aim
+  (catching enemies, sparing allies) is the decision.
+- **No lock**: a Delay of 6 is less than a turn of anyone's (9 at speed
+  2), and spreading it costs aim; no fight stalled.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

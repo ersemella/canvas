@@ -57,6 +57,7 @@ import {
   dashOf,
   lungeCaught,
   alignmentSelfSlot,
+  eclipseCaught,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -597,7 +598,7 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
         !state.units.some((u) => u.alive && u.hex && hexDistance(u.hex, target.hex!) <= def.radius!)
       )
         continue;
-      const key = `${def.id}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}:${(target.cards ?? []).map((c) => `${hexKey(c.hex)}=${c.slot}`).join(',')}`;
+      const key = `${def.id}:${target.mode ?? ''}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}:${(target.cards ?? []).map((c) => `${hexKey(c.hex)}=${c.slot}`).join(',')}`;
       if (tried.has(key)) continue;
       tried.add(key);
       // A pair either way round is one turn (Omen as `bracket` or `swap`).
@@ -872,6 +873,19 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
             Math.max(a.shieldUntil ?? 0, lastsThrough(state))
           ) -
           lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0, a.shieldUntil));
+    }
+    return closing + value;
+  }
+  // Eclipse: the share of a turn each card loses (an enemy's Delayed, a
+  // gain; an ally's, a loss) or gains, as Alignment's.
+  if (ability === 'eclipse') {
+    const n = ABILITY.eclipse.slots * (target?.mode === 'haste' ? -1 : 1);
+    let value = 0;
+    for (const u of eclipseCaught(state, target!.hex!)) {
+      // A Haste never brings a card before the next slot.
+      const by = n < 0 ? -Math.min(-n, Math.max(0, u.slot! - state.currentSlot - 1)) : n;
+      if (u === unit) continue;
+      value += ((hostile(u, unit) ? 1 : -1) * turnValue(u) * by) / cardCost(u);
     }
     return closing + value;
   }
