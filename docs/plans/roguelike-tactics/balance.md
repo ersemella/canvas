@@ -5465,6 +5465,28 @@ it). Unfinished fights at most 4%.
 - Each point of Delay is worth about 3–5 points of the Vanguard's score.
   Not changed: the numbers are the owner's.
 
+**Beside the other tanks (2026-10-31).** Asked for: how these compare
+with the Juggernaut and the Grappler. Each tank's score from the same
+rows, the six tank rows without a Vanguard (`roles-twelve.mjs`, the same
+for every option) run on `e243cc1`, 400 fights each; the Cataphract too.
+
+| Vanguard as | Vanguard | Grappler | Juggernaut | Cataphract |
+|---|---:|---:|---:|---:|
+| Spearhead, Delay 6 (built) | **54.9%** | 46.3% | 51.6% | 47.2% |
+| No Spearhead, 6 | **50.4%** | 48.4% | **53.8%** | 47.5% |
+| No Spearhead, 7 | **55.2%** | 46.9% | 51.9% | 46.1% |
+| No Spearhead, 8 | **57.5%** | 45.8% | 51.4% | 45.3% |
+
+- **As built the Vanguard is now the strongest tank**, 3.3 points over
+  the Juggernaut and 8.6 over the Grappler; Delay 7 the same.
+- **Without Spearhead at Delay 6 the tanks are closest** (47.5–53.8%,
+  6.3 points against 8.6 as built): the Vanguard between the Grappler
+  and the Juggernaut, the Juggernaut then the strongest.
+- The Grappler (42.7–44.5% kept in its own seat) and the Cataphract
+  (43.6–45.9%) are weakest at home in every option: the Juggernaut wins
+  66.5% in the Steppe's seat. The Cataphract's 55.7% of 2026-10-29 is
+  gone with its slam.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
