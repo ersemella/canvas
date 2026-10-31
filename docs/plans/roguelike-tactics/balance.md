@@ -5300,6 +5300,53 @@ track", on today's rules. Unfinished fights 0–3.8%.
   (54–75% with it) and walks on 37–39% of his turns to line up allies:
   healing himself is about 12 points of his worth.
 
+### The Elixir in lines, by turns or as poison (2026-10-31)
+
+Asked for (the owner): two Elixirs, each aimed as Axe Throw is, a unit
+within 3 on one of the Alchemist's six lines, over units and yurts
+(`ABILITY.elixir.line`, `range` 3; not the Alchemist himself, who is on
+no line of his own). **By turns** (`mode` `alternate`): the first cast
+heals an ally his power, the next hits an enemy for it, and so on
+(`Unit.elixirCasts`; a heal turn can be spent on an unhurt ally to turn
+it). **Poison** (`mode` `poison`): any unit healed his power, then losing
+1 every 6 slots (`poisonEvery`) until his power + 1 (`poisonExtra`) is
+lost (`Unit.poison`, `poisonDue`; damage as hail's, a Shield taking it,
+Armour not; a second dose adds to what's left). Neither Empowers or
+Weakens. Against the Elixir as built, and the lines alone with its built
+effects (`lineOnly`). His power 1 throughout. All switches, off.
+`experiments/elixir-turns-poison.mjs`: the Alchemist in the other
+supports' seats, and each of them in his (China's), as "Blessing in a
+line"; 400 fights each, seeds from 1000, on `4fa1214` with the switches.
+Unfinished fights 0–1%.
+
+| Alchemist | Steppe | Persia | Byzantium | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| As built | 53.8% | 48.7% | 48.1% | 55.1% | 52.7% | 47% | 52.8% | 5.8 |
+| Lines, the built effects | 46% | 49.7% | 47.4% | 49.6% | 48.6% | 44% | 54% | 10 |
+| **Lines, by turns** | **25%** | **24.3%** | 44.6% | **23.3%** | **27.3%** | 47.5% | 52.3% | 4.8 |
+| **Lines, poison** | **31%** | **31.7%** | 45% | **23.8%** | **29.9%** | 46.5% | 51.5% | 5 |
+
+- **Both proposals are far too weak at power 1**, about 25 points under
+  the Elixir as built: any other support in China's seat wins 70–82%
+  against them (45–61% as built). Byzantium's seat loses least (45%),
+  the Priest's party carrying it.
+- **Most of the loss is the Empower 2 and Weaken 2**: the lines alone
+  cost about 4 points (52.7% to 48.6%), most of it in the Steppe's seat
+  (53.8% to 46%), where he can no longer give himself an Elixir (he lives
+  through 57.5% of fights there, 74.5% as built).
+- **By turns, the AI uses the Elixir on only 25–44% of his turns**
+  (61–75% as built): on a heal turn with no ally hurt, turning it on an
+  unhurt one is worth nothing to its guess, so he walks or Holds. A heal
+  of 1 or a hit of 1 every other turn is little either way.
+- **Poison is mostly a slow hit of 2 on an enemy** (net 1 on one already
+  hurt): an ally gains 1 now and loses 2, so the AI gives it to enemies.
+  Used on 36–64% of his turns.
+- **Skill**: spans 4.8 and 5 (5.8 as built, 10 for the lines alone).
+
+Not built. Both would need much more from each cast to be even, his
+power 2 or more (a heal and hit of 2, a poison of 3), or the Empower and
+Weaken kept beside them; not measured.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
