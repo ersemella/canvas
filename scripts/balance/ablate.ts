@@ -71,9 +71,13 @@ const SOURCES: [RegExp, string][] = [
   // Axe Throw, Reave and Leap's axe; Leap's splash (`ABILITY.leap.splash`).
   [/^The axe hits/, 'axe'],
   [/^The blow hits/, 'leapSplash'],
+  [/^The charge hits/, 'charge'],
+  [/^The stomp hits/, 'stomp'],
+  // The Alchemist's Overdose: its hit (applyDamage, "takes N from").
+  [/^The overdose takes/, 'overdose'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the (?:jian|sword)| gives .+ an elixir| smites| blesses| leaps| begins an invocation|'s invocation lands)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the (?:jian|sword)| gives .+ an elixir| smites| blesses| leaps| begins an invocation|'s invocation lands| charges| lunges| stomps| gives .+ (?:an overdose|a sedative))/;
 
 /** Runs `choose` with `settings` in place of production's AI settings (`Mod.ai`). */
 function withAi<T>(settings: Record<string, unknown> | undefined, choose: () => T): T {
@@ -149,6 +153,8 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   /** Sunlight's targets (self, ally hero, camel, enemy, or hail alone) and what it added. */
   const sunlight: Record<string, number> = {};
   let empowerDamage = 0;
+  /** The Alchemist's doses given, by ability and on whom (the giver's side or the other). */
+  const doses: Record<string, {ally: number; enemy: number}> = {};
   /** What Invocations heal (the lines after one lands). */
   let invocationHeal = 0;
   let melts = 0;
@@ -236,6 +242,11 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
           lastSource = source;
         }
         if (/ falls\.$/.test(text) && lastSource) add(kills, lastSource);
+        const dose = /^(Your|Enemy) .+? gives (Your|Enemy) .+ (an overdose|a sedative)\.$/.exec(text);
+        if (dose)
+          (doses[dose[3] === 'an overdose' ? 'overdose' : 'sedative'] ??= {ally: 0, enemy: 0})[
+            dose[1] === dose[2] ? 'ally' : 'enemy'
+          ]++;
         const added = /^Empower adds (\d+)\.$/.exec(text);
         if (added) empowerDamage += Number(added[1]);
         if (text === 'The sunlight melts the hail.') melts++;
@@ -444,6 +455,10 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
     ),
     sunlightTargets: sunlight,
     empowerDamagePerFight: perFight(empowerDamage),
+    /** Overdoses and Sedatives a fight, on the giver's allies or enemies. */
+    dosesPerFight: Object.fromEntries(
+      Object.entries(doses).map(([k, v]) => [k, {ally: perFight(v.ally), enemy: perFight(v.enemy)}])
+    ),
     invocationHealPerFight: perFight(invocationHeal),
     meltsPerFight: round(melts / fights, 2),
     survivalPct: Object.fromEntries(
