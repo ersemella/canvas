@@ -5556,6 +5556,103 @@ Not built. To be even for the AI it would need more on each cast (its
 power 2 and the old heal on an ally, or the hit on an enemy only), or the
 AI planning the hit that follows it.
 
+### The Barbarian and the Cataphract swapped (2026-10-31)
+
+Asked for (the owner): Byzantium's tank and damage hero swapped, as the
+test stage now has them (test-stage.md, `"heroes"` and `"leap"`): the
+**Barbarian a tank**, speed 1, defence 3 (health 8), power 2, the AI's
+tank caution (0); Leap as before, its axe on the **four spaces in front**
+of the landing (`ABILITY.leap.shape` `forward`), every unit there for his
+power, and **Shield 1 for each enemy hit, for 8 slots**
+(`ABILITY.leap.perHit`). The **Cataphract the damage hero**, speed 2,
+defence 2 (health 6), power 2, caution 1, **without Armoured**, Charge as
+built. `experiments/byzantium-swap.mjs` (a `patch`, both sides), on
+`ad9353d`'s rules: every row of `roles-twelve.mjs`, Byzantium's party
+ordered tank, damage, support, as built and swapped on the same seeds;
+400 fights a row (about ±2.5 points), seeds from 1000, production AI.
+Unfinished fights at most 7.3%. *Others'*: the hero in its role's seat of
+the other three regions' mirrors (Steppe / China / Persia, or with
+Byzantium in place of its own); *kept*: 100 − the other regions' heroes
+in its seat of its own; the score their mean.
+
+| Hero (role) | Built: others' | kept | **score** | Swapped: others' | kept | **score** |
+|---|---:|---:|---:|---:|---:|---:|
+| Grappler (tank) | 51.2 | 44.5 | 47.8 | 58.9 | 49.8 | 54.4 |
+| Vanguard (tank) | 51.7 | 50.1 | 50.9 | 54.3 | 56.0 | 55.1 |
+| Juggernaut (tank) | 55.8 | 50.0 | 52.9 | 56.3 | 55.7 | 56.0 |
+| Cataphract (tank, built) | 51.4 | 45.3 | 48.4 | | | |
+| **Barbarian (tank, swapped)** | | | | **34.5** (35.5 / 31.8 / 36.1) | **34.5** | **34.5** |
+| Outrider (damage) | 51.2 | 55.0 | 53.1 | 49.9 | 53.3 | 51.6 |
+| Duelist (damage) | 51.8 | 58.4 | 55.1 | 49.6 | 50.2 | 49.9 |
+| Ranger (damage) | 51.8 | 60.9 | 56.3 | 50.7 | 52.8 | 51.8 |
+| Barbarian (damage, built) | **25.8** (32 / 20.5 / 24.9) | 45.1 | **35.4** | | | |
+| **Cataphract (damage, swapped)** | | | | 43.8 (37.3 / 45 / 49) | 49.6 | **46.7** |
+| Storm Caller | 49.4 | 50.2 | 49.8 | 50.7 | 50.2 | 50.5 |
+| Alchemist | 50.2 | 55.8 | 53.0 | 47.5 | 55.8 | 51.6 |
+| Magus | 48.4 | 52.2 | 50.3 | 47.7 | 52.2 | 49.9 |
+| Priest | 47.3 | 46.5 | 46.9 | 47.3 | 48.6 | 48.0 |
+
+How the two play (production AI, their own role seats):
+
+| Row | Wins | Leap or Charge, share of his turns | His turns a fight | Lives through | Axe damage to enemies a fight (hits) |
+|---|---:|---:|---:|---:|---:|
+| Barbarian as damage (built) | 20.5–32% | Leap 10–16% | 3.6–4.7 | 42–57% | 3–4.2 (0.9–1.4) |
+| Barbarian as tank (swapped) | 31.8–36.1% | Leap 19–25% | 3.0–4.0 | 31–45% | 2.4–4.2 (1.2–2.1) |
+| Cataphract as tank (built) | 49.5–53.2% | Charge 92–96% | 3.7–4.3 | 49–59% | |
+| Cataphract as damage (swapped) | 37.3–49% | Charge 83–91% | 2.3–4.3 | 21–54% | |
+
+- **The Cataphract makes a damage hero**: 46.7%, 3–5 points under the
+  other three (49.9–51.8%), and Byzantium's damage seat is no longer a
+  free win: the other damage heroes kept 62.7–79.5% of fights in it as
+  built (the Barbarian's), 51–55% swapped. Weakest in the Steppe's seat
+  (37.3%; he lives through 21% of those fights, 2.3 turns a fight): the
+  Outrider and the Storm Caller shoot a 6-health rider down before it
+  reaches them.
+- **The Barbarian as a tank is as weak as he was as damage**: 34.5%
+  against 35.4%, about 20 points under every other tank (54.4–56.0%), the
+  same in every seat (32–36%). The other tanks rise 3–7 points only
+  because they beat him in Byzantium's seat (60–75%).
+- **Health didn't keep him up**: with 8 health he lives through fewer
+  fights than with 6 (31–45% against 42–57%), since a tank's caution
+  walks him into reach, and speed 1 gives him 3–4 turns a fight. He leaps
+  on a fifth of his turns, catches 1.2–2.1 enemies a fight for 2.4–4.2
+  damage, so the Shield comes about once a fight, 1–2 of it. The fault
+  measured on 2026-10-30 is unchanged: a leap seldom reaches anyone, and
+  four spaces in place of two didn't change that (as `forward` didn't
+  then).
+
+**Skill.** As `skill-fights.mjs`: the hero played by a novice (depth 1)
+or an expert (depth 4, 4× the work) in its role's seat of a Steppe
+mirror, against the same hero at production's search; and Byzantium's
+whole party in a mirror. 400 fights a row (about ±3.5 a span). Unfinished
+0% but the party's (2.8–7.8%).
+
+| Row | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Barbarian as tank (swapped) | 45.5% | 54.5% | **9.0** |
+| Barbarian as damage (built) | 49.8% | 52% | 2.2 |
+| Cataphract as damage (swapped) | 40% | 50.8% | **10.8** |
+| Cataphract as tank (built) | 44.8% | 58.5% | 13.7 |
+| Outrider (damage) | 45.5% | 49.3% | 3.8 |
+| Duelist (damage) | 40.8% | 57.5% | 16.7 |
+| Ranger (damage) | 52.3% | 53.9% | 1.6 |
+| Byzantium's party, swapped | 50.1% | 48.3% | −1.8 |
+| Byzantium's party, built | 50.4% | 52% | 1.6 |
+
+- **Both have a healthy skill gap in their new roles**: the Barbarian's
+  span 9.0 against 2.2 as damage, within the tanks' 5.3–12.7 (the
+  Vanguard 7.2, Grappler 5.3, Juggernaut 12.7, 2026-10-31); the Cataphract
+  10.8, second of the damage heroes after the Duelist (16.7), the Outrider
+  and the Ranger 1.6–3.8. Choosing where to leap matters to a tank who
+  must be where the enemy is; little did to a damage hero who rarely
+  reached anyone.
+- Byzantium's party shows no span either way (−1.8 and 1.6, within
+  noise): its two weak heroes' search carries little, and the Priest's
+  span was 1.1 (2026-10-29).
+- **Not changed in runs**: the swap is the test stage's. The Cataphract's
+  half is close to even; the Barbarian's needs his reach first (a landing
+  next to an enemy, a longer leap, or more speed), untried.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

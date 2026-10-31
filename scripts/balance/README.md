@@ -221,6 +221,10 @@ the Priest always blessed.
 at Cleave's Delay 6–10 (`ABILITY.cleave.delay`), beside Spearhead as built.
 `vanguard-skill.mjs` (2026-10-31) the tanks' skill, the Vanguard by those
 options, as `skill-fights.mjs`.
+`byzantium-swap.mjs` (2026-10-31) Byzantium's tank and damage hero swapped
+as the test stage has them (a `patch`, both sides): every role-seat row of
+`roles-twelve.mjs` as built and swapped, and the skill of the two heroes in
+their new and old seats, the other damage heroes and Byzantium's party.
 
 ## Ability and stat ablation
 
