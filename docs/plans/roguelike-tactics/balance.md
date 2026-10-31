@@ -6143,48 +6143,6 @@ before his next turn; enemies already past it stay. Same rows as above
   can't be again until it has acted, Omen's `once`); or the deck as first
   built with that guard.
 
-### Alignment before his next turn (later 2026-10-31)
-
-Asked for (owner): **no card Alignment moves may land after the Magus's
-next turn** (`ABILITY.alignment.beforeNext`, on), so he can't stun-lock an
-enemy by sending it back every turn; and the ability renamed Alignment
-(Syzygy before). Its deck now runs from the slot after his turn to the
-slot before his next (his action cost on, 9 at speed 2); a card already
-past it may still be brought in. The AI's enemies go to the latest slots
-before his next turn; enemies already past it stay. Same rows as above
-(`experiments/alignment.mjs`, 400 fights, on main as of the change):
-
-| Seat | Omen | Alignment, before his next turn |
-|---|---:|---:|
-| For the Storm Caller (Steppe) | 50.3% | 26% |
-| For the Alchemist (China) | 60% | 33% |
-| For the Priest (Byzantium) | 50.6% | 45.7% |
-| Against the Storm Caller in Persia's | 57.7% | 32.4% |
-| Against the Alchemist in Persia's | 59.9% | 33.2% |
-| Against the Priest in Persia's | 66.7% | 44.5% |
-| **Mean** | **57.5%** | **35.8%** |
-
-| Played by | Omen | Alignment, before his next turn |
-|---|---:|---:|
-| Novice | 40.3% | 45.9% |
-| Expert | 57% | 51% |
-| Span | 16.7 | 5.1 |
-
-- **Much too weak**: 35.8% as a score, 22 points under Omen and 26 under
-  Alignment as first built (62.1%). Its use fell from 69–79% of his turns
-  to 37–52%, the Magus walking more to find a line worth it.
-- **Why**: Omen sends an enemy to just *after* his next turn; this rule
-  stops every card *before* it, and the enemies in reach mostly act before
-  then already, so there is little delay left to give. The track's worth
-  of an enemy's turn is in making it wait past someone's turn; past his own
-  is what is now ruled out.
-- **The stun-lock is gone**: unfinished fights 0–0.5% (6.3–6.8% with a
-  Magus on each side as first built), and skill matters less (span 5.1).
-- **Untried, to keep the lock out without the loss**: Omen's reach (to just
-  after his next turn) with a guard (a card he has sent past his next turn
-  can't be again until it has acted, Omen's `once`); or the deck as first
-  built with that guard.
-
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
