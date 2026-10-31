@@ -73,7 +73,7 @@ describe('the test stage', () => {
       );
     }
     expect(s.units.find((u) => u.hero === 'wolf')!.lunge).toBeUndefined();
-    // The committed file's: through units, no Haste.
+    // Through units, no Haste.
     const through = createTestFight(1, {
       ...raw,
       swiftStrike: {lunge: 2, walk: 2, passThrough: true, haste: 0},
@@ -85,7 +85,7 @@ describe('the test stage', () => {
     );
     expect(() => parseTestStage({...raw, swiftStrike: {passThrough: 1}})).toThrow(/passThrough/);
     expect(() => parseTestStage({...raw, swiftStrike: {jump: 'yes'}})).toThrow(/jump/);
-    // The committed file's: one jump a turn, Haste 1, 2, 3 on turns striking running.
+    // One jump a turn, Haste 1, 2, 3 on turns striking running.
     const one = createTestFight(1, {
       ...raw,
       swiftStrike: {
