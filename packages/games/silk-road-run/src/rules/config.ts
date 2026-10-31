@@ -323,7 +323,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
     abilities: ['charge', 'hold'],
     // Armoured (owner, 2026-10-29), off while the slam Stunned and back
     // with its Delay 6 (balance.md, "The slam's Delay 6 with Armoured
-    // back": 57–72% in the other tank seats, even in its own).
+    // back": 57–72% in the other tank seats, even in its own); the slam
+    // off since 2026-10-31, Armoured kept.
     passives: ['armoured'],
     moveCap: 0,
   },
@@ -858,9 +859,10 @@ export const ABILITY = {
    * with `slam` `delay`, Delayed `delay` slots (owner, later 2026-10-29;
    * 6, balance.md, "The slam as a Delay": 4 was weaker in every seat);
    * with `stun`, Stunned for its next turn, as first built (balance.md,
-   * "The slam without Armour": 74.7% in China's tank seat); `none`, no slam.
+   * "The slam without Armour": 74.7% in China's tank seat); `none`, no slam
+   * (owner, 2026-10-31: the slam's Delay taken off).
    */
-  charge: {slam: 'delay' as 'delay' | 'stun' | 'none', delay: 6 as number},
+  charge: {slam: 'none' as 'delay' | 'stun' | 'none', delay: 6 as number},
   /**
    * Axe Throw (owner, 2026-10-28; roster.md), the Barbarian's: any unit on
    * one of the six straight lines from him, 1 to `range` (3) spaces away,
