@@ -5819,6 +5819,62 @@ Unfinished fights at most 6.5%.
   as low as the Grappler (5.3).
 - **Not changed in runs**; the test stage has both.
 
+### Walks priced by the hit they set up (2026-10-31)
+
+Asked for: item 1 of what Wait needs from the AI, a walk priced by what
+it sets up. Built as `AI.reachShare`, **off** (0): the search's leaf
+counts each unit's best hit from where it stands (`threatsTo`'s map of
+what it reaches, turned round: no more than the target's health, a hit
+on Temee at `camelHealthWeight`), its side's for it and the other's
+against, × the share; screening counts the acting unit's own. So a walk
+into reach is worth about the hit it sets up, and standing in an
+enemy's reach costs what it could take. `experiments/reach.mjs`, 800
+fights a row, production search for both sides. The first rows ran on
+`02da6ee`'s kits, the confirming ones on `740494a`'s (the Duelist's
+dash, the Overdose, Invocation, landed meanwhile); the Steppe's and
+Persia's rows came out the same on both.
+
+**Is the AI better for it?** One side's AI with it, `modWinPct` in each
+region's mirror:
+
+| Mirror | 0.25 | 0.5 | 1 | 0.25 on `740494a` |
+|---|---:|---:|---:|---:|
+| Steppe | 51.5% | 54.3% | 53.1% | 51.5% |
+| China | 61.6% | 61% | 52.6% | 52.9% |
+| Persia | 60.7% | 57.9% | 50.7% | 60.7% |
+| Byzantium | 55.2% | 54.6% | 51.6% | **61.3%** |
+
+Yes, at 0.25 or 0.5: 51.5–61.3%, the most anything has added to the AI
+since the search widths; heavier, it gives it back (a hit set up is
+worth less than a hit made, the target being free to step away first).
+No more unfinished fights (0–2%, Byzantium 4.5% → 0% on `740494a`), and
+fights a little shorter (Steppe 52 → 47 actions). It costs time: about
+a third more a decision (200 Steppe mirror fights 17s → 21s), which the
+fixed work cap measured here doesn't feel but the browser's clock
+(`AI.browser`, 400 ms) would, as depth.
+
+**Wait with it.** Both AIs with reach, one side with Wait at 2/3 (Patient
+3), `modWinPct`; the track in the leaf (`AI.leafTrack`) at 1 as before,
+then at the same weight as reach, so a third of a turn saved and a hit
+set up are priced alike:
+
+| Mirror | No reach, track 1 | Reach 0.25, track 1 | Reach and track 0.25 | Reach and track 0.5 |
+|---|---:|---:|---:|---:|
+| Steppe | 34.1% | 44% | 49.4% | 47.3% |
+| China | 37.8% | 51% | 45.8% | 49.1% |
+| Persia | 34.6% | 42.5% | 48.2% | 46.6% |
+| Byzantium | 44.1% | 49% | 50.8% | 52.8% |
+
+With the two priced alike the AI no longer Waits in place of walking:
+the Horse Archer Holds 14% of its turns and walks 42% (40% and 27% with
+the track alone; 14% and 43% with reach alone). But Wait is still worth
+nothing to it, 46–53%. What it doesn't yet see is the timing a Wait
+buys: its search runs three decisions, not a stretch of the track, so
+a line that Waits sees fewer enemy turns than one that acts (item 2),
+and a Hold seldom survives screening to be searched where timing pays
+(item 4). Both switches stay off; switching reach on is the owner's
+call (the AI would get stronger, so every measurement here would move).
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
