@@ -41,7 +41,11 @@ describe('the test stage', () => {
   });
 
   it('leaves every Priest out of his own Blessing with "blessing": {"self": false}', () => {
-    const raw = {player: [{hero: 'priest'}], enemy: [{hero: 'wolf'}], blessing: {self: false}};
+    const raw = {
+      player: [{hero: 'priest', abilities: ['blessing']}],
+      enemy: [{hero: 'wolf'}],
+      blessing: {self: false},
+    };
     const s = createTestFight(1, raw);
     const p = s.units.find((u) => u.hero === 'priest')!;
     expect(p.blessesSelf).toBe(false);

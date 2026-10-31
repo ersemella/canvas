@@ -1148,6 +1148,34 @@ function drawBoulder(ctx: CanvasRenderingContext2D, {from, target, area, k}: Eff
  * A Volley in the air, on the board until it lands: its space ringed in
  * the archer's colour, dashed, with arrows hanging above it, pointing down.
  */
+/**
+ * Where a Priest's Invocation will land (`ShotInAir.ability`): a dashed ring
+ * on each space of its area, in his side's light colour, and a small cross
+ * of light over its centre.
+ */
+export function drawInvocationMark(
+  ctx: CanvasRenderingContext2D,
+  centre: Hex,
+  area: Hex[],
+  color: string
+): void {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4, 5]);
+  for (const h of area) {
+    const c = center(h);
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y + 6, 22, 13, 0, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.restore();
+  const c = center(centre);
+  ctx.fillStyle = color;
+  ctx.fillRect(c.x - 2, c.y - 44, 4, 16);
+  ctx.fillRect(c.x - 7, c.y - 40, 14, 4);
+}
+
 export function drawVolleyMark(ctx: CanvasRenderingContext2D, h: Hex, color: string): void {
   const c = center(h);
   // Over the head of whoever stands there, so they still show.

@@ -598,6 +598,24 @@ const ICON: Record<IconId, Icon> = {
       '.....++.....',
     ],
   },
+  // Rays falling from above on a cross, the accent.
+  invocation: {
+    kind: 'support',
+    rows: [
+      '.#...#...#..', //
+      '.#...#...#..',
+      '..#..#..#...',
+      '..#..#..#...',
+      '............',
+      '.....++.....',
+      '.....++.....',
+      '...++++++...',
+      '...++++++...',
+      '.....++.....',
+      '..==.++.==..',
+      '.===.++.===.',
+    ],
+  },
   // A shield, a mending cross on it the accent.
   blessing: {
     kind: 'support',

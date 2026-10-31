@@ -58,6 +58,8 @@ export type AbilityId =
   | 'stomp'
   | 'longshot'
   | 'blessing'
+  // The Priest's since 2026-10-31, in place of Blessing.
+  | 'invocation'
   | 'reave'
   | 'hew'
   | 'axeThrow'
@@ -458,8 +460,13 @@ export interface ShotInAir {
   source: string;
   /** A Skirmish arrow's lane direction; absent for a Volley. */
   dir?: number;
-  /** A Volley's space: whoever stands there when it lands is hit. */
+  /**
+   * A Volley's space: whoever stands there when it lands is hit. An
+   * Invocation's centre (`ability`), its area the space and those next to it.
+   */
   hex?: Hex;
+  /** The Priest's Invocation (charged as a Hold costs); absent for an Outrider's arrows. */
+  ability?: 'invocation';
   /**
    * The Outrider's Empower when it drew: the arrow carries it, though the
    * Empower itself ends with that turn. Absent when it had none.

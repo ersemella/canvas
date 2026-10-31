@@ -124,6 +124,7 @@ import {
 import type {RunState} from './run';
 import {
   actionCost,
+  waitCost,
   aimSlot,
   chargeOf,
   freeSlotFrom,
@@ -3094,10 +3095,14 @@ describe('the Cataphract', () => {
 describe('the Priest', () => {
   const party: HeroId[] = ['priest', 'bokh', 'storm'];
   const c = at(1, 4);
-  /** A fight with the Priest at `c` to act, and units where `placements` puts them. */
+  /**
+   * A fight with the Priest at `c` to act, and units where `placements` puts
+   * them; with Blessing, in no kit since 2026-10-31, as his ability.
+   */
   const ready = (placements: Record<string, Hex>) => {
     const s = setup({'p-priest': c, ...placements}, party);
     const p = unit(s, 'p-priest');
+    p.loadout = {abilities: ['blessing', 'hold']};
     p.slot = s.currentSlot;
     s.awaiting = p.id;
     return {s, p};
@@ -3107,10 +3112,11 @@ describe('the Priest', () => {
   const bless = (s: FightState, p: Unit, u: Unit) =>
     applyTurn(s, p, {action: {ability: 'blessing', target: {hex: u.hex!}}});
 
-  it('has speed 2, defence 1, power 3, and is on the roster', () => {
-    const {p} = ready({});
-    expect([p.speed, p.defence, p.power, p.maxHp]).toEqual([2, 1, 3, healthOf(1)]);
-    expect(abilitiesOf(p).map((d) => d.id)).toEqual(['blessing', 'hold']);
+  it('has speed 1, defence 2, power 3, Invocation, and is on the roster', () => {
+    const s = setup({'p-priest': c}, party);
+    const p = unit(s, 'p-priest');
+    expect([p.speed, p.defence, p.power, p.maxHp]).toEqual([1, 2, 3, healthOf(2)]);
+    expect(abilitiesOf(p).map((d) => d.id)).toEqual(['invocation', 'hold']);
     expect([ABILITY.blessing.shape, ABILITY.blessing.lineSelf]).toEqual(['line', true]);
     expect(ROSTER).toContain('priest');
   });
@@ -5144,5 +5150,95 @@ describe('events for playback', () => {
     applyTurn(copy, unit(copy, 'p-bokh'), {move: [at(1, 4)], action: {ability: 'hold'}});
     expect(copy.events).toBeUndefined();
     expect(s.events).toEqual([]);
+  });
+});
+
+describe('the Priest’s Invocation', () => {
+  const party: HeroId[] = ['priest', 'bokh', 'storm'];
+  const c = at(1, 4);
+  // Two spaces out from the Priest, so he is out of its area.
+  const t = hexNeighbor(hexNeighbor(c, 0), 0);
+  const ready = (placements: Record<string, Hex>) => {
+    const s = setup({'p-priest': c, ...placements}, party);
+    const p = unit(s, 'p-priest');
+    p.slot = s.currentSlot;
+    s.awaiting = p.id;
+    return {s, p};
+  };
+  const invoke = (s: FightState, p: Unit, hex: Hex) =>
+    applyTurn(s, p, {action: {ability: 'invocation', target: {hex}}});
+
+  it('reaches any open space within 3, his own too, with a radius of 1', () => {
+    const {s, p} = ready({});
+    const def = ABILITIES.invocation;
+    expect([def.range, def.radius]).toEqual([3, 1]);
+    const targets = def.targets(s, mapOf(s), p, c).map((x) => x.hex!);
+    expect(targets.some((h) => hexEquals(h, c))).toBe(true);
+    expect(targets.every((h) => hexDistance(h, c) <= 3)).toBe(true);
+    // An enemy's space is offered as well as an ally's.
+    const e = setup({'p-priest': c, 'e-bokh': t}, party);
+    const offered = offeredTargets(e, mapOf(e), unit(e, 'p-priest'), def);
+    expect(offered.some((x) => hexEquals(x.hex!, t))).toBe(true);
+  });
+
+  it('does nothing when cast; his card goes a Hold’s cost on, charging', () => {
+    const {s, p} = ready({'p-bokh': t, 'e-bokh': hexNeighbor(t, 0)});
+    const ally = unit(s, 'p-bokh');
+    const enemy = unit(s, 'e-bokh');
+    ally.hp = 2;
+    invoke(s, p, t);
+    expect(ally.hp).toBe(2);
+    expect(enemy.hp).toBe(enemy.maxHp);
+    expect(p.slot).toBe(waitCost(p));
+    expect(charging(s, p)).toBe(true);
+  });
+
+  it('as his card comes back, hits enemies and heals allies in its area, then goes a full turn on', () => {
+    const {s, p} = ready({
+      'p-bokh': t,
+      'e-bokh': hexNeighbor(t, 0),
+      'p-storm': hexNeighbor(hexNeighbor(t, 0), 0),
+    });
+    const ally = unit(s, 'p-bokh');
+    const enemy = unit(s, 'e-bokh');
+    const far = unit(s, 'p-storm');
+    ally.hp = 2;
+    far.hp = 2;
+    invoke(s, p, t);
+    const back = p.slot!;
+    // The track reaches his card: it lands, and he is asked again a turn later.
+    expect(advanceToDecision(s)).toBe(p);
+    expect(ally.hp).toBe(5);
+    expect(enemy.hp).toBe(enemy.maxHp - p.power);
+    expect(far.hp).toBe(2);
+    expect(charging(s, p)).toBe(false);
+    expect(s.currentSlot).toBe(back + actionCost(p));
+  });
+
+  it('heals the Priest himself when he stands in it', () => {
+    const {s, p} = ready({'e-bokh': at(6, 7)});
+    p.hp = 1;
+    invoke(s, p, hexNeighbor(c, 0));
+    advanceToDecision(s);
+    expect(p.hp).toBe(1 + p.power);
+  });
+
+  it('is lost if he is Stunned before it lands', () => {
+    const {s, p} = ready({'e-bokh': t});
+    const enemy = unit(s, 'e-bokh');
+    invoke(s, p, t);
+    stun({state: s, map: mapOf(s), slot: s.currentSlot}, p, {kind: 'stunned'});
+    expect(charging(s, p)).toBe(false);
+    advanceToDecision(s);
+    expect(enemy.hp).toBe(enemy.maxHp);
+  });
+
+  it('the AI invokes on hurt allies with an enemy beside them rather than hold', () => {
+    // Temee on the board, so the fight isn't already lost.
+    const {s, p} = ready({'p-bokh': t, 'e-bokh': hexNeighbor(t, 0), 'p-camel': at(6, 7)});
+    p.controller = 'ai';
+    unit(s, 'p-bokh').hp = 2;
+    const turn = chooseAiTurn(s, p);
+    expect(turn.action.ability).toBe('invocation');
   });
 });

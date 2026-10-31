@@ -1074,6 +1074,41 @@ const sedative: AbilityDef = {
 
 // ─── Priest ──────────────────────────────────────────────────────────────────
 
+/** The spaces an Invocation centred on `centre` covers: it and every space within `ABILITY.invocation.radius`. */
+export function invocationArea(map: MapData, centre: Hex): Hex[] {
+  return spacesWithin(map, centre, ABILITY.invocation.radius);
+}
+
+/**
+ * Invocation (owner, 2026-10-31), the Priest's in place of Blessing: a
+ * space within `ABILITY.invocation.range`, no line of fire, charged as a
+ * Hold costs (`chargeOf`). Nothing happens as he casts it; when his card
+ * comes back (`landShots`), every enemy within `radius` of the space takes
+ * his power and every ally there, himself too, is healed his power.
+ */
+const invocation: AbilityDef = {
+  id: 'invocation',
+  name: 'Invocation',
+  kind: 'support',
+  // Allies healed and enemies hit, so any space is offered, an enemy's too.
+  bothSides: true,
+  range: ABILITY.invocation.range,
+  radius: ABILITY.invocation.radius,
+  summary: (user) =>
+    `A space within ${ABILITY.invocation.range} and the spaces next to it: charge ${chargeOf(user, 'invocation')}. When your card comes back, enemies there take ${user.power} and allies there, you too, heal ${user.power}.`,
+  targets: (_state, map, _user, from) =>
+    hexesWithin(map, from, ABILITY.invocation.range, (h) => !blocks(tileAt(map, h))),
+  resolve(ctx, user, target) {
+    log(ctx, `${unitName(user)} begins an invocation.`);
+    (ctx.state.shots ??= []).push({
+      source: user.id,
+      ability: 'invocation',
+      hex: {...target.hex!},
+      ...(user.empower ? {empower: user.empower} : {}),
+    });
+  },
+};
+
 /**
  * Whether Blessing can take `u`: an ally of `user`'s, the Priest himself
  * with `ABILITY.blessing.self`, the camel with `.camel`.
@@ -2774,6 +2809,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   stomp,
   longshot,
   blessing,
+  invocation,
   reave,
   axeThrow,
   leap,

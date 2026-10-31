@@ -302,17 +302,20 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
-   * healer. Speed 2, defence 1 (health 4) and power 3 are the owner's.
-   * Blessing heals an ally his power, and what it can't heal and 1 more
-   * become Shield until spent (`ABILITY.blessing`).
+   * healer. Speed 1, defence 2 (health 6) and power 3 are the owner's
+   * (2026-10-31; speed 2, defence 1 before). Invocation in place of
+   * Blessing (owner, 2026-10-31; `ABILITY.invocation`): charged, it lands
+   * on a space within 3 and the spaces next to it when his card comes
+   * back, enemies there hit and allies healed his power. Blessing is kept,
+   * in no kit (`ABILITY.blessing`).
    */
   priest: {
     name: 'Priest',
     letter: 'P',
-    speed: 2,
-    defence: 1,
+    speed: 1,
+    defence: 2,
     power: 3,
-    abilities: ['blessing', 'hold'],
+    abilities: ['invocation', 'hold'],
   },
   /**
    * The Cataphract (owner, 2026-10-28; roster.md): Byzantium's tank,
@@ -611,6 +614,17 @@ export const ABILITY = {
    * Shield, lasting with `lasts`, a unit holding at most `cap`. With
    * `trackSmite` off (the owner, 2026-10-30) no enemy is hit: a pure support.
    */
+  /**
+   * Invocation (owner, 2026-10-31), the Priest's in place of Blessing: a
+   * space within `range` (no line of fire) and every space within `radius`
+   * of it. Charged: it does nothing as he casts it, his card going as many
+   * slots on as a Hold would send it (`waitCost`), greyed while it charges;
+   * when it comes back, every enemy in the area then takes his power and
+   * every ally there, himself and the camel too, is healed his power
+   * (`landShots`), and his card goes his action cost on, a full turn. A
+   * Stun before it lands loses it, as a drawn arrow.
+   */
+  invocation: {range: 3 as number, radius: 1 as number},
   blessing: {
     mode: 'heal' as 'heal' | 'track',
     scale: 'bands' as 'cap' | 'bands',

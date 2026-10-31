@@ -60,7 +60,7 @@ import type {Point} from './board/pixels';
 import {WALK_OUT_STEP_SECONDS, walkOutPlan, walkPosition} from './board/walkOut';
 import type {Walk} from './board/walkOut';
 import {drawPlaybackEvent, playbackScene, steppingAt} from './board/playbackDraw';
-import {drawVolleyMark} from './board/effects';
+import {drawInvocationMark, drawVolleyMark} from './board/effects';
 import {camelNextStep} from './board/camelStep';
 
 /** Seconds a gone status's marker takes to rise off its unit and fade. */
@@ -443,8 +443,14 @@ export class TacticsBoardSystem extends BaseSystem {
     // Drawn arrows in the air: a dotted arrow, as Snap Shot aims, from the
     // shooter to where it would hit now, in its side's light colour.
     // A Volley also marks the space it will land on.
+    // An Invocation marks its whole area instead.
     for (const v of fight.shots ?? []) {
       const archer = fight.units.find((u) => u.id === v.source);
+      if (v.ability === 'invocation') {
+        if (archer?.alive && v.hex)
+          drawInvocationMark(ctx, v.hex, shotLane(fight, map, v), SIDE_LIGHT[archer.side]);
+        continue;
+      }
       const last = shotLane(fight, map, v).at(-1);
       if (archer?.hex && last) drawLaneArrow(ctx, archer.hex, last, SIDE_LIGHT[archer.side], true);
       if (archer && v.hex) drawVolleyMark(ctx, v.hex, SIDE_LIGHT[archer.side]);

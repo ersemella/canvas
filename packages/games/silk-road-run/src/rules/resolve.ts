@@ -32,6 +32,7 @@ import {
   isStunned,
   isUnstoppable,
   shotLane,
+  sortByHex,
   unitAt,
   walkable,
 } from './board';
@@ -825,6 +826,28 @@ export function clearHail(state: FightState, caster: Unit): void {
 }
 
 /**
+ * The Priest's Invocation landing, his charging card come back (owner,
+ * 2026-10-31): every unit within `ABILITY.invocation.radius` of its space
+ * now, each enemy hit for his power (the Empower he cast it with carried),
+ * each ally, himself and the camel too, healed his power.
+ */
+function landInvocation(ctx: Ctx, user: Unit, v: ShotInAir): void {
+  log(ctx, `${unitName(user)}'s invocation lands.`);
+  record(ctx.state, {kind: 'land', unitId: user.id, ability: 'invocation', target: v.hex!});
+  const caught = sortByHex(
+    ctx.state.units.filter(
+      (u) => u.alive && u.hex && hexDistance(u.hex, v.hex!) <= ABILITY.invocation.radius
+    ),
+    (u) => u.hex!
+  );
+  for (const u of caught) {
+    if (!u.alive) continue;
+    if (u.side === user.side) heal(ctx, u, user.power, user);
+    else hit(ctx, user, u, `${unitName(user)}'s invocation`, shotEmpower(user, v));
+  }
+}
+
+/**
  * `user`'s shots fly, its charging card having come back: each down its
  * lane from where the Outrider stands now, the first unit in it taking its
  * power (`shotLane`).
@@ -834,6 +857,10 @@ export function landShots(ctx: Ctx, user: Unit): void {
   if (!mine?.length) return;
   ctx.state.shots = ctx.state.shots!.filter((v) => v.source !== user.id);
   for (const v of mine) {
+    if (v.ability === 'invocation' && v.hex) {
+      landInvocation(ctx, user, v);
+      continue;
+    }
     if (v.hex) {
       // A Volley: arrows from above on its space.
       log(ctx, `${unitName(user)}'s volley lands.`);
@@ -916,8 +943,9 @@ export function stun(ctx: Ctx, u: Unit, status: Status): void {
 function interrupt(ctx: Ctx, u: Unit): void {
   endGrapples(ctx, (g) => g.champion === u.id);
   if (ctx.state.shots?.some((v) => v.source === u.id)) {
+    const invoking = ctx.state.shots.some((v) => v.source === u.id && v.ability === 'invocation');
     ctx.state.shots = ctx.state.shots.filter((v) => v.source !== u.id);
-    log(ctx, `${unitName(u)} loses the drawn arrow.`);
+    log(ctx, `${unitName(u)} loses ${invoking ? 'the invocation' : 'the drawn arrow'}.`);
   }
 }
 

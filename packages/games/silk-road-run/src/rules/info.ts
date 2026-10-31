@@ -155,6 +155,14 @@ export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {
   const archer = state.units.find((u) => u.id === shot.source);
   const who = archer ? `the ${HEROES[archer.hero].name}’s` : 'its archer’s';
   const damage = archer ? `${archer.power} damage` : 'its damage';
+  if (shot.ability === 'invocation') {
+    const power = archer ? archer.power : 'his power';
+    return {
+      name: 'Invocation',
+      short: 'Lands here when its card comes back',
+      detail: `Lands when ${who} charging card comes back: ${power} damage to each enemy here and ${power} healing to each ally here.`,
+    };
+  }
   if (shot.hex)
     return {
       name: 'Volley',

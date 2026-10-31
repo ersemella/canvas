@@ -64,7 +64,7 @@ import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, charging, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
 import {armourOf, camelOf, damageOf, lastsThrough, shotEmpower} from './resolve';
-import type {AbilityId, FightState, LeapShape, Side, TurnInput, Unit} from './types';
+import type {AbilityId, FightState, LeapShape, ShotInAir, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
   input: TurnInput;
@@ -86,7 +86,8 @@ function turnValue(u: Unit): number {
 function attacksFromAfar(u: Unit): boolean {
   const kit = kitOf(u);
   return (
-    isRanged(u) || ['hail', 'gale', 'volley', 'cleave'].some((a) => kit.includes(a as AbilityId))
+    isRanged(u) ||
+    ['hail', 'gale', 'volley', 'invocation', 'cleave'].some((a) => kit.includes(a as AbilityId))
   );
 }
 
@@ -249,6 +250,7 @@ function strikable(state: FightState, u: Unit): Unit[] {
     if (d <= 1) return true;
     if (has('hail') && d === ABILITY.hail.range) return true;
     if (has('volley') && d <= ABILITY.volley.range) return true;
+    if (has('invocation') && d <= ABILITY.invocation.range + ABILITY.invocation.radius) return true;
     if (has('stomp') && ABILITY.stomp.mode === 'stomp' && d <= 1 + ABILITY.stomp.step) return true;
     if (
       has('stomp') &&
@@ -339,6 +341,10 @@ function shotPoints(state: FightState, side: Side): number {
   for (const v of state.shots ?? []) {
     const source = state.units.find((u) => u.id === v.source);
     if (!source?.alive || source.slot === null) continue;
+    if (v.ability === 'invocation') {
+      score += invocationPoints(state, source, v, side);
+      continue;
+    }
     const lane = shotLane(state, mapOf(state), v);
     const target = lane.length ? unitAt(state, lane[lane.length - 1]!) : undefined;
     if (!target) continue;
@@ -353,6 +359,35 @@ function shotPoints(state: FightState, side: Side): number {
       : hit * (target.hero === CAMEL ? AI.camelHealthWeight : 1) +
         (hit >= target.hp && target.hero !== CAMEL ? AI.kill : 0);
     score += (target.side === side ? -1 : 1) * value;
+  }
+  return score;
+}
+
+/**
+ * What `source`'s Invocation in the air is worth to `side`: each enemy of
+ * the Priest's in its area now the hit it will take, only `AI.dodgeShare`
+ * of it if it can walk out before it lands, and each ally there the health
+ * it will heal.
+ */
+function invocationPoints(state: FightState, source: Unit, v: ShotInAir, side: Side): number {
+  let score = 0;
+  for (const u of state.units) {
+    if (!u.alive || !u.hex || hexDistance(u.hex, v.hex!) > ABILITY.invocation.radius) continue;
+    const weight = u.hero === CAMEL ? AI.camelHealthWeight : 1;
+    let value: number;
+    if (!hostile(u, source)) value = Math.min(source.power, u.maxHp - u.hp) * weight;
+    else {
+      const hit = Math.min(
+        Math.max(0, damageOf(source, shotEmpower(source, v)) - armourOf(undefined, u, source.hex)),
+        u.hp
+      );
+      const dodges = u.slot !== null && u.slot < source.slot! && !isStunned(u) && !isImmobilized(u);
+      value = dodges
+        ? hit * AI.dodgeShare
+        : hit * weight + (hit > 0 && hit >= u.hp && u.hero !== CAMEL ? AI.kill : 0);
+    }
+    // A heal on the Priest's ally and a hit on his enemy alike are his side's gain.
+    score += side === source.side ? value : -value;
   }
   return score;
 }
@@ -479,8 +514,8 @@ function trackPoints(state: FightState, side: Side): number {
 }
 
 /** What a turn's charge costs its user: the share of a turn it waits, in damage. */
-function chargeCost(actor: Unit, input: TurnInput): number {
-  return (chargeOf(actor, input.action.ability) / cardCost(actor)) * turnValue(actor);
+function chargeCost(actor: Unit, input: TurnInput, share?: number): number {
+  return (chargeOf(actor, input.action.ability, share) / cardCost(actor)) * turnValue(actor);
 }
 
 /**
@@ -704,6 +739,18 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     const amount = sedation(u) - (u.weaken ?? 0);
     if (amount > 0) gain -= (u.weaken ? 0 : 1) + weakenGuess(state, u, amount);
     return closing + (hostile(u, unit) ? -gain : gain);
+  }
+  // Invocation: what it will be worth as it stands when it lands, less
+  // the charge that holds the Priest back (`invocationPoints`, `chargeCost`).
+  if (ability === 'invocation') {
+    const shot: ShotInAir = {source: unit.id, ability: 'invocation', hex: target!.hex!};
+    const value = invocationPoints(
+      state,
+      {...unit, slot: state.currentSlot + chargeOf(unit, ability, state.waitShare)},
+      shot,
+      unit.side
+    );
+    return closing + value - chargeCost(unit, input, state.waitShare);
   }
   // Blessing: the health it heals, as any heal is weighed, and the Shield's worth.
   if (ability === 'blessing') {
@@ -932,7 +979,11 @@ function scoreOption(
 ): ScoredOption | null {
   const after = simulate(state, unit.id, input, true);
   if (!after) return null;
-  return {input, score: scoreOutcome(state, after, unit, threats) - chargeCost(unit, input), after};
+  return {
+    input,
+    score: scoreOutcome(state, after, unit, threats) - chargeCost(unit, input, state.waitShare),
+    after,
+  };
 }
 
 /**

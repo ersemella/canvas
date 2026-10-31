@@ -214,6 +214,15 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
             mark(hexes, k, power * AI.dodgeShare);
         }
     }
+    // Invocation: any space within its range and radius, at the dodge share.
+    if (has('invocation')) {
+      const range = ABILITY.invocation.range + ABILITY.invocation.radius;
+      for (let dq = -range; dq <= range; dq++)
+        for (let dr = Math.max(-range, -dq - range); dr <= Math.min(range, -dq + range); dr++) {
+          const k = id(fq + dq, fr + dr);
+          if ((dq || dr) && board.get(k) !== undefined) mark(hexes, k, power * AI.dodgeShare);
+        }
+    }
     // Skirmish: Snap Shot's lanes from each free space next to it, unless it
     // can't step, at the dodge share once charged.
     if (has('skirmish') && !isImmobilized(e)) {

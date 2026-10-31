@@ -29,9 +29,12 @@ export function waitCost(unit: Unit, share = RULES.waitShare): number {
  * this many slots on instead of its action cost (Skirmish's: half of it,
  * rounded), greyed while it charges,
  * and the ability lands when the card comes back, in place of a turn
- * (`landCharge` in fight.ts). Skirmish's; 0 for the rest.
+ * (`landCharge` in fight.ts). Skirmish's, Volley's and Invocation's (a
+ * Hold's cost, `waitCost` at the fight's `share`; owner, 2026-10-31); 0
+ * for the rest.
  */
-export function chargeOf(unit: Unit, ability: AbilityId): number {
+export function chargeOf(unit: Unit, ability: AbilityId, share = RULES.waitShare): number {
+  if (ability === 'invocation') return waitCost(unit, share);
   const charge =
     ability === 'skirmish'
       ? ABILITY.skirmish.charge
@@ -55,7 +58,7 @@ export function aimSlot(
   idle = false
 ): number {
   if (idle) return now + waitCost(unit, state.waitShare);
-  const charge = ability ? chargeOf(unit, ability) : 0;
+  const charge = ability ? chargeOf(unit, ability, state.waitShare) : 0;
   return now + (charge > 0 ? charge : actionCost(unit));
 }
 
