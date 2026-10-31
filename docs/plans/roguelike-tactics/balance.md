@@ -5394,6 +5394,8 @@ before); the score over the Steppe's and Persia's seats only, as there.
 | Jumps, streak, walk 2 straight | 46.9% | 46% | 46.4% | 69.8% | 42.3% | 52.8% | 10.5 |
 | **Dash 3**, walk 3 straight, Haste 3 | 40.5% | 40.5% | **40.5%** | 67% | 42.5% | 55.3% | 12.8 |
 | Dash 3, walk 3 straight, streak | 38.4% | 35.1% | **36.7%** | 65.3% | 45.8% | 51.5% | 5.7 |
+| **Dash 2 or 3**, walk 3 straight, Haste 3 (owner, the same day) | 48.3% | 48% | **48.1%** | 72.3% | 40.8% | 57.5% | **16.7** |
+| Dash 2 or 3, walk 3 straight, streak | 44.8% | 42.4% | 43.6% | 72.8% | 43.5% | 53.8% | 10.3 |
 
 Byzantium's seat (left out): the Duelist in it 62–65% walking straight or
 free, 51% dashing; the Barbarian in China's 21–30%, 31–37% dashing.
@@ -5412,10 +5414,18 @@ streak.
   it leaves him past the enemy's front. The streak lasts least of all with
   it, so it is the weaker there.
 
+- **A dash of 2 or 3, his choice, is even with Haste 3** (48.1%,
+  `ABILITY.swiftStrike.dashMin` 2, a switch, 0 as built: any free space 2
+  or 3 out with a unit passed on the way), with a span of 16.7, the
+  widest after the free walk's: he uses it on 32% of his turns, his sword
+  6.7 a fight. His speed +1 is back up to 72.3%, and unfinished fights up
+  to 6.3%, over the 3% a change should ship under (Principles, 12). With
+  the streak it is weaker again (43.6%).
+
 Not changed: the numbers are the owner's. The free walk of 3 with the
-jumps stays the one with the span; the straight walk is even (47.2%) at
-half of it; the dash would need a shorter, freer shape (2, or landing on
-any free space up to 3) to be worth measuring again.
+jumps stays the one with the widest span (20.5, at 55.1%); the dash of 2
+or 3 with Haste 3 is even with the next (16.7), its unfinished fights the
+thing to watch.
 
 ### Spearhead off, Cleave's Delay raised in its place (2026-10-31)
 
