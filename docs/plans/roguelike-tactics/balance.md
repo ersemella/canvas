@@ -5719,6 +5719,57 @@ whole party in a mirror. 400 fights a row (about ±3.5 a span). Unfinished
   half is close to even; the Barbarian's needs his reach first (a landing
   next to an enemy, a longer leap, or more speed), untried.
 
+### The swap with Hew, and the Cataphract with Armoured (later 2026-10-31)
+
+Asked for (the owner), after "The Barbarian and the Cataphract swapped":
+the Barbarian's Leap taken off for **Hew** (`ABILITY.hew`): a funnel, the
+two spaces next to him either side of one way and the space past them
+touching both, every unit there hit for his power, allies too, and he is
+**Empowered 1 for each enemy hit, for 10 slots** (his turn's at speed 1:
+the usual 8 would end before his next turn). And whether **Armoured**
+(Armour 1) would let the Cataphract hold out in melee after a charge.
+`experiments/byzantium-hew.mjs`: the rows of `roles-twelve.mjs` with
+Byzantium in them, the rest from `byzantium-swap.mjs`'s `swap-` rows (the
+same seeds; both on the Elixir before the overdose, `83f760a`); `hew` the
+Cataphract as there, `hewArmoured` with Armoured back. 400 fights a row,
+production AI. Unfinished fights at most 0.8%.
+
+| Hero (role) | Swapped, Leap | Hew | Hew, Cataphract Armoured |
+|---|---:|---:|---:|
+| Grappler / Vanguard / Juggernaut (tanks) | 54.4 / 55.1 / 56.0 | 52.4 / 53.6 / 55.5 | 50.4 / 53.4 / 54.6 |
+| **Barbarian (tank)** | 34.5 | **38.5** | 41.6 |
+| Outrider / Duelist / Ranger (damage) | 51.6 / 49.9 / 51.8 | 51.5 / 50.8 / 51.9 | 47.9 / 47.0 / 50.0 |
+| **Cataphract (damage)** | 46.7 | 45.8 | **55.2** |
+| Priest | 48.0 | 47.0 | 47.0 |
+
+| Row (his own role seats) | Wins | Hew or Charge, share of turns | Turns a fight | Lives through | Axe damage to enemies a fight |
+|---|---:|---:|---:|---:|---:|
+| Barbarian, Leap | 31.8–36.1% | 19–25% | 3.0–4.0 | 31–45% | 2.4–4.2 |
+| Barbarian, Hew | 38.3–42% | 27–37% | 2.8–3.0 | **24–25%** | 3.6–5.1 |
+| Cataphract, no Armoured | 37.3–49% | 83–91% | 2.3–4.3 | 21–53.5% | |
+| Cataphract, Armoured | 54.8–63.8% | 88–95.5% | 3.2–5.0 | **55–68.5%** | |
+
+- **Armoured does what it was asked to and more**: the Cataphract lives
+  through 55–68.5% of fights in the damage seats (21–53.5% without),
+  through 55% in the Steppe's (21%), and scores 55.2%, 3–8 points over
+  the other damage heroes (47–50% beside him), who lose 2–4 points to
+  him. About 9 points for Armour 1: a defence 2 rider that takes 1 less
+  from every hit is a tank's worth of armour on a damage hero. Something
+  between none and always, untried: Armour only for a while after a
+  charge (8 slots), or Armour 1 against melee alone.
+- **Hew is better than Leap, not enough**: 38.5% against 34.5%, still
+  14–17 points under the tanks. He uses it a third of his turns and deals
+  3.6–5.1 a fight (2.4–4.2 with Leap), but lives through only a quarter
+  of fights (31–45% with Leap): reaching 1–2 spaces with no leap in, at
+  speed 1, he stands in the enemy's reach for 3 turns a fight and goes
+  down. The AI doesn't count the Empower it gives him when it chooses.
+- **Skill** (as `skill-fights.mjs`, the Steppe mirror's seat, ±3.5): the
+  Barbarian with Hew 47.3% to 54.5%, **span 7.2** (9.0 with Leap); the
+  Cataphract with Armoured 46.9% to 52.5%, **span 5.6** (10.8 without):
+  Armour forgives where he ends a charge.
+- **Not changed in runs**; the test stage has Hew, and the Cataphract
+  without Armoured.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

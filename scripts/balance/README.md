@@ -225,6 +225,9 @@ options, as `skill-fights.mjs`.
 as the test stage has them (a `patch`, both sides): every role-seat row of
 `roles-twelve.mjs` as built and swapped, and the skill of the two heroes in
 their new and old seats, the other damage heroes and Byzantium's party.
+`byzantium-hew.mjs` (2026-10-31) the swap with Hew in place of Leap
+(`ABILITY.hew`), the Cataphract without and with Armoured; only the rows
+with Byzantium in them, the rest from `byzantium-swap.mjs`.
 
 ## Ability and stat ablation
 
