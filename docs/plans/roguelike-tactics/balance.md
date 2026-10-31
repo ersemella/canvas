@@ -6653,6 +6653,103 @@ those (same seeds; *Push 1* is its baseline), 400 fights a row (about
 
 Not built into runs. The test stage plays the refreshed version.
 
+### Battle Cry in place of Fury, on the test stage (later 2026-10-31)
+
+Asked for: Fury and Bloodlust taken off the Barbarian, and Lunge's Push
+(owner), and a passive tested where being hit Hastens both him and his
+allies within 2. Built as **Battle Cry** (`BATTLE_CRY`, no hero's in
+runs, not offered): whenever he is hit (any damage coming at him, a
+Shield's or not, as Fury and Spearhead), his card is Hastened `self` and
+each ally's within `range` 2, Humphrey too, `allies`. Three versions:
+`bc3` 3 and 3 (Spearhead's; the test stage's), `bc53` 5 (Fury's) and 3,
+`bc5` 5 and 5. `experiments/battle-cry.mjs`, on Lunge as built (no Push),
+beside "Full balance check, the game as built"'s rows of the same names
+(*Fury*: the game as built, same seeds), 400 fights a row (about ±2.5 a
+cell, ±3.5 a span), on `a1cb059`. Unfinished 0–1%.
+
+| | Fury (built) | Battle Cry 3/3 | 5 self, 3 allies | 5/5 |
+|---|---:|---:|---:|---:|
+| Byzantium against the Steppe | 32.5% | 33% | 31.8% | 36% |
+| against China | 39% | 36.5% | 40.8% | 41.8% |
+| against Persia | 60.9% | 61.4% | 64.2% | 64.7% |
+| Byzantium's mean | 44.1% | 43.6% | 45.6% | **47.5%** |
+| Barbarian abroad: Steppe, China, Persia | 39.8, 59.5, 51.6% | 45.3, 52.5, 51.5% | 45, 62.5, 52.8% | 47.3, 68.5, 55.3% |
+| Others' (his mean abroad) | 50.3% | 49.8% | 53.4% | 57% |
+| Grappler, Vanguard, Juggernaut in his seat | 81, 72.5, 64.8% | 77.5, 69.8, 59.3% | 76.5, 68.5, 55% | 73.3, 66.8, 53.3% |
+| Kept | 27.2% | 31.1% | 33.3% | 35.5% |
+| **Score** (tanks 52.2–54.8%) | 38.8% | 40.4% | 43.4% | **46.3%** |
+| Cataphract's seat kept | 62.4% | 61.8% | 64.3% | 61.9% |
+| Priest's seat kept | 48.1% | 49.1% | 48.1% | 46.2% |
+| Novice Barbarian | 46.8% | 49.3% | 47% | 47.5% |
+| Expert Barbarian | 51% | 51.3% | 51.3% | 54.5% |
+| **His skill span** | 4.2 | 2.0 | 4.3 | **7.0** |
+| Novice Byzantine party | 34.8% | 31.5% | 32.5% | 29.1% |
+| Expert Byzantine party | 55.8% | 56.5% | 56.3% | 54% |
+| Party's span | 21 | 25 | 23.8 | 24.9 |
+
+- **At 3/3 Battle Cry is Fury's equal** (40.4% against 38.8%): what the
+  allies gain he loses with a Haste of 3 for himself in place of 5. The
+  Steppe's seat likes it (45.3% from 39.8%), China's less (52.5% from
+  59.5%).
+- **At 5/5 it is the best thing tried for him**: 46.3% as a score, 7.5
+  over Fury, 6–8 under the other tanks. Abroad he is now over even (57%),
+  most of it in China's seat (68.5%, beside the Duelist and the
+  Alchemist); his own seat is still the game's weakest (kept 35.5%, from
+  27.2%). Byzantium's party is 3.4 points stronger on the mean, most
+  against the Steppe and Persia. 5 for himself, 3 for allies falls
+  between (43.4%).
+- **Skill**: his span 7.0 at 5/5 from 4.2, at the edge of noise (2.0 at
+  3/3, 4.3 at 5/3); his expert gains more than his novice. The party's
+  span 24–25 from 21, inside noise.
+- **His partners are unchanged** (the Cataphract's and the Priest's seats
+  kept within 2.5 of before), so the gain is his own seat's.
+
+Not built into runs, where he keeps Fury. The test stage plays 3/3; 5/5
+is `BATTLE_CRY` `self` and `allies` 5 in config.ts.
+### The slam in place of the brace (later 2026-10-31)
+
+Asked for (the owner): the Cataphract has no walk and charges nearly every
+turn (91.5–95% of them, "The Cataphract braced after a charge"), and at
+speed 2 his turn is about 8.6 slots, so Armour 1 for 8 slots after each
+charge is on almost always; could a unit carried into ruins or the map's
+edge be **Delayed** in its place? That is the slam (`ABILITY.charge.slam`
+`delay`, measured for him as a tank on 2026-10-29, "The slam as a
+Delay"). `experiments/slam-damage.mjs`, on `73041dd` (the game as built,
+so *brace* matches the full check's 58.2%): `brace` as built; `slam6`
+and `slam9`, no Armour (`armour` 0), the slam's Delay 6 or 9. 400 fights
+a row (about ±2.5 a cell, ±3.5 a span), the same seeds. Unfinished 0–1%.
+
+| | Brace (built) | **Slam, Delay 6** | Slam, Delay 9 |
+|---|---:|---:|---:|
+| Byzantium against the Steppe | 32.5% | 33% | 39% |
+| against China | 39% | 52.3% | 66.8% |
+| against Persia | 60.9% | 60.3% | 61.3% |
+| Cataphract abroad: Steppe, China, Persia | 53.8, 51.5, 57% | 52.8, 61.4, 55.1% | 58.5, 72, 52.9% |
+| Others' (his mean abroad) | 54.1% | 56.4% | 61.1% |
+| Outrider, Duelist, Ranger in his seat | 36.3, 43.8, 32.8% | 30.3, 37, 27.5% | 19.8, 26, 21% |
+| Kept | 62.4% | 68.4% | 77.7% |
+| **Score** | **58.2%** | **62.4%** | **69.4%** |
+| Novice Cataphract | 44.8% | 41.5% | 46.8% |
+| Expert Cataphract | 54.3% | 55.3% | 58.3% |
+| **His skill span** | 9.5 | **13.8** | 11.5 |
+
+- **The slam can stand in for the brace, and is stronger**: Delay 6 with
+  no Armour scores 4.2 more (62.4% against 58.2%), Delay 9 11.2 more. He
+  was already the strongest damage seat (58.2%, "Full balance check"), so
+  a swap at 6 widens that.
+- **Most of the gain is against China** (his seat there 51.5 → 61.4%,
+  Byzantium 39 → 52.3%): the Duelist and the Alchemist have 4 health and
+  the Vanguard acts every 10 slots, as with the slam on 2026-10-29. In the
+  Steppe's and Persia's seats it is even with the brace (±2); the other
+  damage heroes do 5–7 points worse in his seat.
+- **Skill span 13.8 from 9.5**, near the edge of noise: where he aims a
+  charge, against ruins or the edge, matters more than with the brace,
+  which every charge earns.
+- **To bring him even**, untried: the slam at Delay 3–4 with no Armour,
+  or the slam only against ruins, not the map's edge.
+
+Not built into runs or on the test stage.
+
 ## Eclipse (2026-10-31)
 
 Asked for (owner), after the versions of Alignment: a Magus ability at
