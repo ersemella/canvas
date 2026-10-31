@@ -35,6 +35,7 @@ import {
   elixirAmount,
   elixirCaught,
   elixirHeals,
+  elixirPoison,
   blessingCaught,
   forks,
   blessingOf,
@@ -92,11 +93,23 @@ function attacksFromAfar(u: Unit): boolean {
 function statusPoints(state: FightState, u: Unit): number {
   return (
     statusCost(u, state) +
+    poisonLoss(u) +
     weakenLoss(state, u) -
     empowerGain(state, u) -
     rescueGain(state, u) -
     lastingWorth(state, u, u.shield ?? 0, u.lastingShield ?? 0, u.shieldUntil)
   );
+}
+
+/**
+ * What an Elixir's poison on `u` will take (`Unit.poison`), as damage
+ * taken now, and a kill if it fells `u` (the camel's weighed by health).
+ */
+function poisonLoss(u: Unit): number {
+  if (!u.poison) return 0;
+  const loss = Math.min(u.poison.left, u.hp);
+  if (u.hero === CAMEL) return loss * AI.camelHealthWeight;
+  return loss + (u.poison.left >= u.hp ? AI.kill : 0);
 }
 
 /** How many of `u`'s turns start within a window lasting through `until`, its card as it lies. */
@@ -611,8 +624,36 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // Elixir: what it gives each unit it reaches (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
-    const {fixed, haste, delay} = ABILITY.elixir;
+    const {fixed, haste, delay, mode} = ABILITY.elixir;
+    const weight = (u: Unit) => (u.hero === CAMEL ? AI.camelHealthWeight : 1);
     for (const u of elixirCaught(state, unit, unit.hex!, target!.hex!)) {
+      // Poison: the heal, then what the poison will take, by its side.
+      if (mode === 'poison') {
+        const healed = Math.min(unit.power, u.maxHp - u.hp);
+        const before = poisonLoss(u);
+        const after = poisonLoss({
+          ...u,
+          hp: u.hp + healed,
+          poison: {left: (u.poison?.left ?? 0) + elixirPoison(unit), at: 0, by: unit.id},
+        });
+        const gain = healed * weight(u) - (after - before);
+        value += hostile(u, unit) ? -gain : gain;
+        continue;
+      }
+      // Turn about: a heal on an ally, or a hit on an enemy as any attack's.
+      if (mode === 'alternate') {
+        if (!hostile(u, unit)) {
+          value += Math.min(unit.power, u.maxHp - u.hp) * weight(u);
+          continue;
+        }
+        const damage = Math.min(
+          Math.max(0, damageOf(unit) - armourOf(undefined, u, unit.hex)),
+          u.hp
+        );
+        value +=
+          damage * weight(u) + (damage > 0 && damage >= u.hp && u.hero !== CAMEL ? AI.kill : 0);
+        continue;
+      }
       if (!hostile(u, unit)) {
         if (elixirHeals(u))
           value +=
@@ -961,7 +1002,9 @@ export function evaluatePosition(state: FightState, side: Side): number {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.
     const value =
-      u.hero === CAMEL ? u.hp * AI.camelHealthWeight : u.hp + AI.kill - statusPoints(state, u);
+      u.hero === CAMEL
+        ? u.hp * AI.camelHealthWeight - poisonLoss(u)
+        : u.hp + AI.kill - statusPoints(state, u);
     score += (u.side === side ? 1 : -1) * value;
   }
   return score;

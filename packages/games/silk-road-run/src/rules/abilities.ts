@@ -786,7 +786,11 @@ const elixirTakes =
   (user: Unit) =>
   (u: Unit | undefined): u is Unit => {
     if (u === undefined || (!ABILITY.elixir.self && u.id === user.id)) return false;
-    const {fixed, haste, delay} = ABILITY.elixir;
+    const {fixed, haste, delay, mode} = ABILITY.elixir;
+    // Poison: any unit. Turn about: an ally (hurt or not, to turn it) or an enemy.
+    if (mode === 'poison') return u.alive;
+    if (mode === 'alternate')
+      return elixirHits(user) ? u.side !== user.side : u.side === user.side && elixirHeals(u);
     if (u.side !== user.side)
       return fixed > 0 || delay > 0 || (u.power > 0 && elixirAmount('weaken') > 0);
     return (
@@ -795,6 +799,24 @@ const elixirTakes =
       (elixirHeals(u) && u.hp < u.maxHp)
     );
   };
+
+/**
+ * Whether `user`'s next Elixir hits, with `ABILITY.elixir.mode`
+ * `alternate`: every second cast (`Unit.elixirCasts`), the first healing.
+ */
+export const elixirHits = (user: Unit): boolean =>
+  ABILITY.elixir.mode === 'alternate' && (user.elixirCasts ?? 0) % 2 === 1;
+
+/** What an Elixir's poison takes in all (`ABILITY.elixir.mode` `poison`): its user's power + `poisonExtra`. */
+export const elixirPoison = (user: Unit): number => user.power + ABILITY.elixir.poisonExtra;
+
+/**
+ * Elixir's six lines from `from` (`ABILITY.elixir.line`): 1 to `range`
+ * spaces straight out, through units and yurts, as Axe Throw's.
+ */
+export function elixirLines(map: MapData, from: Hex): Hex[][] {
+  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(0, ABILITY.elixir.range));
+}
 
 /** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed` (0: none). */
 export const elixirAmount = (which: 'empower' | 'weaken'): number =>
@@ -834,11 +856,14 @@ const elixir: AbilityDef = {
   },
   name: 'Elixir',
   kind: 'support',
-  damages: false,
   bothSides: true,
   // Getters, so the measuring switches (`ABILITY.elixir`) reach the page and the AI.
+  get damages() {
+    return ABILITY.elixir.mode === 'alternate';
+  },
+  // No reach to outline in lines: it isn't every space within range.
   get range() {
-    return ABILITY.elixir.range;
+    return ABILITY.elixir.line ? 0 : ABILITY.elixir.range;
   },
   /** A burst's area, round the space it's aimed at; the other shapes have none. */
   get radius() {
@@ -874,11 +899,18 @@ const elixir: AbilityDef = {
           : '';
       return `${[allies, enemies].filter(Boolean).join(', ')}${empowers || weakens ? `, for ${RULES.durations.turn} slots` : ''}.`;
     };
+    const where = ABILITY.elixir.line
+      ? `A unit within ${range} in a straight line, over anything in between`
+      : `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}`;
+    if (ABILITY.elixir.mode === 'alternate')
+      return `${where}: ${elixirHits(user) ? `this time an enemy, hit for ${user.power}` : `this time an ally, healed ${user.power}`}; heal and hit by turns.`;
+    if (ABILITY.elixir.mode === 'poison')
+      return `${where}: healed ${user.power}, then it loses 1 every ${ABILITY.elixir.poisonEvery} slots until ${elixirPoison(user)} is lost.`;
     const who = `${hastes || delays ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
     if (shape === 'burst')
       return `${range === 1 ? 'A space next to you, or your own' : `A space within ${range}`}, and every ${who} within ${radius} of it: ${effect()}`;
     if (shape === 'aura') return `Every ${who} within ${radius} of you: ${effect()}`;
-    return `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}: ${effect()}`;
+    return `${where}: ${effect()}`;
   },
   targets(state, map, user, from) {
     const {shape, range} = ABILITY.elixir;
@@ -888,6 +920,12 @@ const elixir: AbilityDef = {
       return spacesWithin(map, from, range)
         .filter((h) => elixirCaught(state, user, from, h).length > 0)
         .map((h) => ({hex: h}));
+    if (ABILITY.elixir.line)
+      return elixirLines(map, from)
+        .flat()
+        .map((h) => unitAt(state, h))
+        .filter(elixirTakes(user))
+        .map((u) => ({hex: u.hex!}));
     return spacesWithin(map, from, range)
       .map((h) => unitAt(state, h))
       .filter(elixirTakes(user))
@@ -895,7 +933,30 @@ const elixir: AbilityDef = {
   },
   resolve(ctx, user, target) {
     const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
-    const {fixed, haste: hastes, delay: delays} = ABILITY.elixir;
+    const {fixed, haste: hastes, delay: delays, mode, poisonEvery} = ABILITY.elixir;
+    if (mode === 'alternate') {
+      const hits = elixirHits(user);
+      user.elixirCasts = (user.elixirCasts ?? 0) + 1;
+      for (const u of caught) {
+        log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+        if (hits) hit(ctx, user, u, 'The elixir');
+        else heal(ctx, u, user.power, user);
+      }
+      return;
+    }
+    if (mode === 'poison') {
+      for (const u of caught) {
+        log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+        heal(ctx, u, user.power, user);
+        // A second dose adds to what's left, on the first's clock.
+        u.poison = {
+          left: (u.poison?.left ?? 0) + elixirPoison(user),
+          at: u.poison?.at ?? ctx.slot + poisonEvery,
+          by: user.id,
+        };
+      }
+      return;
+    }
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
       if (u.side === user.side) {

@@ -732,6 +732,15 @@ export const ABILITY = {
    * turns (balance.md, "Elixir on one ally within 3: a heal and
    * Unstoppable", "The Elixir swapping speed and health", "The Elixir
    * granting Immortal").
+   * `line` (owner's idea, 2026-10-31; off): aimed as Axe Throw is, a unit on
+   * one of the Alchemist's six lines within `range`, over anything in
+   * between, so not the Alchemist itself.
+   * `mode` (owner's ideas, 2026-10-31; `built` as built): `alternate`, its
+   * casts taking turns, the first healing an ally the Alchemist's power, the
+   * next hitting an enemy for it, and so on (`Unit.elixirCasts`), no
+   * Empower or Weaken; `poison`, any unit healed the Alchemist's power, then
+   * losing 1 every `poisonEvery` slots until its power + `poisonExtra` is
+   * lost (`Unit.poison`), no Empower, Weaken or hit.
    */
   elixir: {
     range: 2 as number,
@@ -744,6 +753,10 @@ export const ABILITY = {
     empower: 2 as number,
     weaken: 2 as number,
     self: true as boolean,
+    line: false as boolean,
+    mode: 'built' as 'built' | 'alternate' | 'poison',
+    poisonEvery: 6 as number,
+    poisonExtra: 1 as number,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

@@ -268,6 +268,17 @@ export interface Unit {
   weaken?: number;
   /** The last slot its Weaken lasts through (`RULES.durations.turn` slots on). */
   weakenUntil?: number;
+  /**
+   * Its Elixirs cast so far, with `ABILITY.elixir.mode` `alternate`: an even
+   * count heals, an odd one hits. Absent before its first.
+   */
+  elixirCasts?: number;
+  /**
+   * An Elixir's poison (`ABILITY.elixir.mode` `poison`): `left` more to lose,
+   * 1 at slot `at` and every `ABILITY.elixir.poisonEvery` slots after,
+   * from `by`'s Elixir (`poisonDue` in resolve.ts). Absent when it has none.
+   */
+  poison?: {left: number; at: number; by: string};
   /** Its passives (progression.md, 19.8); absent with none. */
   passives?: PassiveId[];
   /**

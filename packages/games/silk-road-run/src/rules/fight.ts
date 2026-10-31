@@ -29,6 +29,7 @@ import {
   scorch,
   settle,
   squeezeDue,
+  poisonDue,
   startTurnPassives,
   takeHasteDue,
   unitName,
@@ -310,6 +311,10 @@ export function advanceToDecision(state: FightState, spend?: () => void): Unit |
     // A grapple squeezes every so many slots, whoever's card is here.
     squeezeDue(ctx, unit.slot!);
     if (state.phase !== 'fight') return;
+    // An Elixir's poison too; one can fell the unit whose card it is.
+    poisonDue(ctx, unit.slot!);
+    if (state.phase !== 'fight') return;
+    if (!unit.alive) continue;
     if (charging(state, unit)) {
       landCharge(ctx, unit);
       continue;

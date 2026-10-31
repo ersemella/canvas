@@ -173,8 +173,16 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     if (has('cleave'))
       for (const area of cleaveAreas(map, e.hex))
         for (const h of area) mark(hexes, id(h.q, h.r), power);
-    // Elixir: a hit on any space within its range (`fixed`; none at 0).
-    if (has('elixir') && ABILITY.elixir.fixed > 0) {
+    // Elixir: a hit on any space within its range (`fixed`; none at 0), or
+    // in its lines (`line`); turn about (`mode` `alternate`) any cast's.
+    const elixirHits =
+      ABILITY.elixir.mode === 'alternate' ||
+      (ABILITY.elixir.mode === 'built' && ABILITY.elixir.fixed > 0);
+    if (has('elixir') && elixirHits && ABILITY.elixir.line) {
+      for (const [dq, dr] of AXIAL)
+        for (let i = 1; i <= ABILITY.elixir.range; i++)
+          mark(hexes, id(fq + dq * i, fr + dr * i), power);
+    } else if (has('elixir') && elixirHits) {
       const range = ABILITY.elixir.range;
       for (let dq = -range; dq <= range; dq++)
         for (let dr = Math.max(-range, -dq - range); dr <= Math.min(range, -dq + range); dr++)

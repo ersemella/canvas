@@ -960,6 +960,27 @@ export function squeezeDue(ctx: Ctx, slot: number): void {
     }
 }
 
+/**
+ * The track reaching `slot`: each Elixir's poison (`Unit.poison`) takes 1
+ * for every `ABILITY.elixir.poisonEvery` slots passed since its last,
+ * whoever's card is there, until its total is lost. Damage as hail's, no
+ * hit: Armour doesn't hold against it, a Shield does.
+ */
+export function poisonDue(ctx: Ctx, slot: number): void {
+  for (const u of ctx.state.units) {
+    while (u.alive && u.poison && u.poison.at <= slot) {
+      const {left, at, by: id} = u.poison;
+      const by = ctx.state.units.find((c) => c.id === id);
+      // A new object, not changed in place: `cloneFight` copies units shallowly.
+      if (left > 1) u.poison = {left: left - 1, at: at + ABILITY.elixir.poisonEvery, by: id};
+      else delete u.poison;
+      applyDamage(ctx, u, 1, `The poison takes 1 from ${unitName(u)}`, by);
+      if (ctx.state.phase !== 'fight') return;
+    }
+    if (!u.alive) delete u.poison;
+  }
+}
+
 /** One squeeze of `champion`'s grapple on `u`: its squeeze, Empowered, Weakened, less Armour. */
 function squeeze(ctx: Ctx, champion: Unit, u: Unit): void {
   const empowered = (champion.empower ?? 0) + passiveEmpower(champion, ctx.state);

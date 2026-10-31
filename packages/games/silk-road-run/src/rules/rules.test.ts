@@ -3465,6 +3465,91 @@ describe('the Vanguard and the Alchemist', () => {
     expect(alchemist.empower).toBeUndefined();
   });
 
+  it('Elixir in lines (`line`): a unit within 3 on one of its six lines, over anything; not itself', () => {
+    withElixir({range: 3, line: true}, 1, () => {
+      const from = at(4, 4);
+      const one = hexNeighbor(from, 0);
+      const two = hexNeighbor(one, 0);
+      const three = hexNeighbor(two, 0);
+      const s = setup(
+        {
+          'p-alchemist': from,
+          'p-mangudai': one,
+          'e-mangudai': three,
+          'p-camel': hexNeighbor(hexNeighbor(from, 1), 2),
+          'e-modao': hexNeighbor(hexNeighbor(hexNeighbor(hexNeighbor(from, 3), 3), 3), 3),
+        },
+        party
+      );
+      const alchemist = unit(s, 'p-alchemist');
+      unit(s, 'p-mangudai').hp -= 1;
+      unit(s, 'p-camel').hp -= 1;
+      // Past the ally in front, the enemy 3 away; not the camel off the lines, nor the Duelist 4 away.
+      expect(
+        offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
+          .map((t) => hexKey(t.hex!))
+          .sort()
+      ).toEqual([one, three].map(hexKey).sort());
+      expect(ABILITIES.elixir.range).toBe(0);
+    });
+  });
+
+  it('Elixir by turns (`mode` `alternate`): the first heals an ally the power, the next hits an enemy, and so on', () => {
+    withElixir({range: 3, line: true, mode: 'alternate'}, 2, () => {
+      const from = at(4, 4);
+      const ally = hexNeighbor(from, 0);
+      const enemy = hexNeighbor(hexNeighbor(from, 3), 3);
+      const s = setup(
+        {'p-alchemist': from, 'p-mangudai': ally, 'e-mangudai': enemy, 'e-modao': at(8, 6)},
+        party
+      );
+      const alchemist = unit(s, 'p-alchemist');
+      const keys = () =>
+        offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).map((t) => hexKey(t.hex!));
+      // A heal first: allies only, a healthy one too.
+      expect(keys()).toEqual([hexKey(ally)]);
+      unit(s, 'p-mangudai').hp -= 3;
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: ally}}});
+      expect(unit(s, 'p-mangudai').hp).toBe(unit(s, 'p-mangudai').maxHp - 1);
+      expect(unit(s, 'p-mangudai').empower).toBeUndefined();
+      // Then a hit: enemies only.
+      expect(keys()).toEqual([hexKey(enemy)]);
+      expect(ABILITIES.elixir.summary(alchemist)).toContain('this time an enemy, hit for 2');
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: enemy}}});
+      expect(unit(s, 'e-mangudai').hp).toBe(unit(s, 'e-mangudai').maxHp - 2);
+      expect(unit(s, 'e-mangudai').weaken).toBeUndefined();
+      expect(keys()).toEqual([hexKey(ally)]);
+    });
+  });
+
+  it('Elixir as poison (`mode` `poison`): healed the power, then 1 lost every 6 slots until power + 1 is', () => {
+    withElixir({range: 3, line: true, mode: 'poison'}, 1, () => {
+      const from = at(4, 4);
+      const enemy = hexNeighbor(from, 0);
+      const s = setup({'p-alchemist': from, 'e-mangudai': enemy, 'e-modao': at(8, 6)}, party);
+      s.units.forEach((u) => (u.controller = 'human'));
+      const alchemist = unit(s, 'p-alchemist');
+      const e = unit(s, 'e-mangudai');
+      e.hp -= 1;
+      alchemist.slot = 1;
+      e.slot = 100;
+      expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+      const cast = s.currentSlot;
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: enemy}}});
+      expect(e.hp).toBe(e.maxHp);
+      expect(e.poison).toEqual({left: 2, at: cast + 6, by: 'p-alchemist'});
+      // A card at the first tick's slot: 1 lost; at the second, the last of it.
+      alchemist.slot = cast + 6;
+      expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+      expect(e.hp).toBe(e.maxHp - 1);
+      applyTurn(s, alchemist, {action: {ability: 'hold'}});
+      alchemist.slot = cast + 20;
+      expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+      expect(e.hp).toBe(e.maxHp - 2);
+      expect(e.poison).toBeUndefined();
+    });
+  });
+
   /** The burst (2026-10-26, built until later that day). */
   const burst = {
     range: 1,
