@@ -53,7 +53,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   cataphract:
     'An armoured horseman of the imperial cavalry, rider and horse alike clad in iron. The Cataphract never walks: it charges, as far as it likes in a straight line, carrying everyone in its way before it, as far as there is room, and braces in its iron where the charge ends, taking 1 less from every blow for a while.',
   magus:
-    'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but reads an omen for one unit: an ally acts at once, an enemy must wait until the Magus has acted again, while its own course is fixed and cannot be hurried or held back.',
+    'A court astrologer who reads the stars with an astrolabe. The Magus strikes no one, but calls an eclipse over a patch of ground: everyone caught there, friend or foe, is held back, or everyone hurried on, as the Magus chooses, while its own course is fixed and cannot be hurried or held back.',
 };
 
 /**

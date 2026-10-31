@@ -261,6 +261,9 @@ his seat of Persia's, and his skill as `skill-fights.mjs`.
 `eclipse.mjs` (2026-10-31) the Magus's Eclipse (a space within 3 and
 the spaces next to it, every unit there Delayed or every one Hastened) at
 3, 5, 7 and 6 slots, beside Omen, in the same rows as `alignment.mjs`.
+`eclipse-runs.mjs` (2026-10-31) whole runs with the Magus (Persia's party,
+and the Magus in the Steppe's support seat), Eclipse as built against Omen
+back (`runs.mjs`).
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

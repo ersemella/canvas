@@ -2323,6 +2323,8 @@ describe('the Magus', () => {
     const m = unit(s, 'p-magus');
     expect([m.speed, m.power, m.defence, m.maxHp]).toEqual([2, 0, 1, healthOf(1)]);
     expect(m.passives).toEqual(['steadyGait']);
+    // Eclipse since 2026-10-31, Omen before.
+    expect(abilitiesOf(m).map((a) => a.id)).toEqual(['eclipse', 'hold']);
     const ctx: Ctx = {state: s, map: mapOf(s), slot: 0};
     const was = m.slot;
     delay(ctx, m, 3);
@@ -2652,6 +2654,8 @@ describe('the Magus', () => {
         party
       );
       const m = unit(s, 'p-magus');
+      // Omen is no longer his in runs (Eclipse since 2026-10-31).
+      m.loadout = {...m.loadout, abilities: ['omen', 'hold']};
       const e = unit(s, 'e-mangudai');
       const b = unit(s, 'p-bokh');
       m.slot = s.currentSlot;
@@ -2683,6 +2687,8 @@ describe('the Magus', () => {
         party
       );
       const m = unit(s, 'p-magus');
+      // Omen is no longer his in runs (Eclipse since 2026-10-31).
+      m.loadout = {...m.loadout, abilities: ['omen', 'hold']};
       const e = unit(s, 'e-mangudai');
       const b = unit(s, 'p-bokh');
       m.slot = s.currentSlot;
@@ -2720,6 +2726,8 @@ describe('the Magus', () => {
         party
       );
       const m = unit(s, 'p-magus');
+      // Omen is no longer his in runs (Eclipse since 2026-10-31).
+      m.loadout = {...m.loadout, abilities: ['omen', 'hold']};
       const e = unit(s, 'e-mangudai');
       const b = unit(s, 'p-bokh');
       m.slot = s.currentSlot;
@@ -2749,6 +2757,8 @@ describe('the Magus', () => {
         party
       );
       const m = unit(s, 'p-magus');
+      // Omen is no longer his in runs (Eclipse since 2026-10-31).
+      m.loadout = {...m.loadout, abilities: ['omen', 'hold']};
       const e = unit(s, 'e-mangudai');
       const b = unit(s, 'p-bokh');
       m.slot = s.currentSlot;
@@ -2764,6 +2774,7 @@ describe('the Magus', () => {
       expect(b.slot).toBe(s.currentSlot + 1);
       const s2 = setup({'p-magus': c, 'e-mangudai': hexNeighbor(c, 0)}, party);
       const m2 = unit(s2, 'p-magus');
+      m2.loadout = {...m2.loadout, abilities: ['omen', 'hold']};
       const e2 = unit(s2, 'e-mangudai');
       m2.slot = s2.currentSlot;
       e2.slot = 1;

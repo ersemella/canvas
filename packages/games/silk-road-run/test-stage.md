@@ -49,15 +49,16 @@ his own and the allies' apart). Bloodlust, beside Fury here before (his
 hit damaging an enemy Empowering him 1 for 10 slots), is off. The Cataphract its damage hero, speed
 2, defence 2 (health 6), power 2, without Armoured, Armour 1 for 8 slots
 after each charge. The Steppe's three were the enemy until 2026-10-31.
-**The Magus has Eclipse in place of Omen** (`"heroes"`, below; owner,
-2026-10-31; the name a placeholder): a space within 3 of him and the six
+**The Magus has Eclipse, as in a run** since 2026-10-31 (owner; Omen
+before, in runs; here, Alignment): a space within 3 of him and the six
 spaces next to it; **every unit there Delayed 6, or every one Hastened 6**,
 his choice each cast, of either side, Humphrey too, not Inevitable
 (`ABILITY.eclipse`). Aim it at a space, then pick Delay or Haste beside
 Skip turn (Delay is picked first when the area holds more enemies than
-allies); the track's arrows show every card it moves. Alignment, below,
-was his here before it (`"abilities": ["alignment"]` to play it again).
-**The Magus has Alignment in place of Omen** (`"heroes"`, below; owner,
+allies); the track's arrows show every card it moves. To play Alignment
+(below) or Omen again: `"heroes": {"magus": {"abilities": ["alignment"]}}`
+or `["omen"]`.
+**Alignment, before Eclipse** (`"heroes"`; owner,
 2026-10-31; named Syzygy at first): one of his six lines, any distance,
 through anything (units, yurts), and the cards of every unit on it, of
 either side, Humphrey too, not Inevitable, rearranged on the track: each
@@ -86,7 +87,6 @@ a picked-up card down, then undoes the arrangement, then the line.
   "map": "cave",
   "wait": true,
   "heroes": {
-    "magus": {"abilities": ["eclipse"]},
     "varangian": {"passives": ["battleCry"]}
   },
   "yurts": "none",
