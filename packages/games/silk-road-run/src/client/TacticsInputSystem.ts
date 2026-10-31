@@ -1,7 +1,7 @@
 import {BaseSystem, mouseService} from '@canvas/engine';
 import type {Hex, SystemContext} from '@canvas/engine';
 import {mapOf} from '../rules/fight';
-import {cardAt, hexAt, sameHex, slotAt, trackCards} from './layout';
+import {cardAt, hexAt, sameHex, slotAt, trackCards, trackDrag} from './layout';
 import type {BoardScene} from './board/scene';
 
 export interface TacticsTapPayload {
@@ -12,10 +12,15 @@ export interface TacticsCardPayload {
   unitId: string;
 }
 
-/** A tap on the track's deck while Syzygy arranges it (`BoardScene.arrange`): the slot tapped, blank or not. */
-export interface TacticsSlotPayload {
-  slot: number;
-}
+/**
+ * The track's deck while Syzygy arranges it (`BoardScene.arrange`), by slot,
+ * blank cards included: a press on a slot (`down`), a release on the slot
+ * pressed (`tap`), or a release on another after dragging from `from`
+ * (`drop`).
+ */
+export type TacticsSlotPayload =
+  | {phase: 'down' | 'tap'; slot: number}
+  | {phase: 'drop'; slot: number; from: number};
 
 /** The hex or track card under a mouse pointer; null when it leaves or a finger is used. */
 export interface TacticsHoverPayload {
@@ -25,8 +30,8 @@ export interface TacticsHoverPayload {
 
 /**
  * The board's taps and hover. Taps on a map hex emit `tactics:tap`, taps on
- * a track card `tactics:card` (while Syzygy arranges the track, any deck
- * card `tactics:slot`); a mouse moving over either emits
+ * a track card `tactics:card` (while Syzygy arranges the track, presses,
+ * taps and drags on any deck card `tactics:slot`); a mouse moving over either emits
  * `tactics:hover` when what's under it changes. Picks against the map's own
  * hexagon (which a `HexGrid` rectangle can't describe), and
  * runs before `MouseSystem` (950) clears the frame's tap.
@@ -59,6 +64,31 @@ export class TacticsInputSystem extends BaseSystem {
     const fight = this.scene?.fight;
     if (!fight) return;
     const tap = mouseService.justUp && !mouseService.upConsumed;
+    // Arranging the track (Syzygy): a press on a deck card, then a release
+    // on it (a tap) or on another (a drag and drop), blank cards included.
+    const arrange = this.scene!.arrange;
+    if (!arrange) trackDrag.from = null;
+    const slotUnder = () =>
+      slotAt(
+        fight,
+        this.scene!.previewSlot ?? null,
+        this.scene!.previewBumps ?? {},
+        mouseService.position
+      );
+    if (arrange && mouseService.justDown) {
+      trackDrag.from = slotUnder();
+      if (trackDrag.from !== null)
+        events.emit<TacticsSlotPayload>('tactics:slot', {phase: 'down', slot: trackDrag.from});
+    }
+    if (arrange && mouseService.justUp && trackDrag.from !== null) {
+      const from = trackDrag.from;
+      trackDrag.from = null;
+      const slot = tap ? slotUnder() : null;
+      if (slot === from) events.emit<TacticsSlotPayload>('tactics:slot', {phase: 'tap', slot});
+      else if (slot !== null)
+        events.emit<TacticsSlotPayload>('tactics:slot', {phase: 'drop', slot, from});
+      return;
+    }
     // Nothing to pick: no mouse over the board, no tap.
     if (!this.mouseOver && !tap) {
       if (this.hover.hex || this.hover.unitId) {
@@ -80,19 +110,6 @@ export class TacticsInputSystem extends BaseSystem {
     }
 
     if (!tap) return;
-    // Arranging the track (Syzygy): any card of the deck, blank ones too.
-    if (this.scene!.arrange) {
-      const slot = slotAt(
-        fight,
-        this.scene!.previewSlot ?? null,
-        this.scene!.previewBumps ?? {},
-        p
-      );
-      if (slot !== null) {
-        events.emit<TacticsSlotPayload>('tactics:slot', {slot});
-        return;
-      }
-    }
     const card = cardAt(cards, p);
     if (card) {
       events.emit<TacticsCardPayload>('tactics:card', {unitId: card.unitId});

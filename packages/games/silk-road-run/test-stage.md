@@ -61,9 +61,10 @@ deck (from the slot after his turn to 12 slots on, or the furthest card if
 that is further), or several swapped among themselves in any order
 (`ABILITY.syzygy`). No Magus is in the committed line-up: take him on the
 start menu to play it. Aim it by tapping a line, then arrange on the
-track: tap a card of the line (outlined in gold) to pick it up, then a
-blank card (lit) to put it there, or another of the line's cards to swap
-the two; its own card puts it back down. The preview's arrows show every
+track: drag a card of the line (outlined in gold) onto a blank card (lit
+while one is picked up) to put it there, or onto another of the line's
+cards to swap the two; or tap the card to pick it up, then tap where it
+goes (its own card puts it back down). The preview's arrows show every
 move; the button confirms once a card has moved. Esc or a right-click puts
 a picked-up card down, then undoes the arrangement, then the line.
 

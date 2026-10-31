@@ -178,6 +178,15 @@ export function drawTrack(
     );
   }
   if (!advance && previewSlot !== null) drawMoves(ctx, deck, trackMoves(fight, previewSlot, bumps));
+  // The card Syzygy has picked up, dragged: over everything, centred under the pointer.
+  const dragged = opts.arrange?.held && fight.units.find((u) => u.id === opts.arrange!.held);
+  if (dragged && opts.dragX != null) {
+    const i = Math.max(
+      0,
+      Math.min(deck.count - 1, (opts.dragX - deck.x0 - deck.cardW / 2) / deck.w)
+    );
+    drawCard(ctx, deck, dragged, {i, lift: 0, ghost: false, grow: 0, mark: 'held'}, opts);
+  }
 }
 
 /** What the track marks: the card selected and hovered, and Syzygy's arranging (`BoardScene.arrange`). */
@@ -185,6 +194,8 @@ export interface TrackOpts {
   selected: string | null;
   hovered: string | null;
   arrange?: {movable: string[]; held: string | null; open: number[]} | null;
+  /** Where the picked-up card is being dragged along the track, in scene pixels; null when it isn't. */
+  dragX?: number | null;
 }
 
 /** How Syzygy's arranging marks a card: one it may move, the one picked up, or a blank one it may go on. */
