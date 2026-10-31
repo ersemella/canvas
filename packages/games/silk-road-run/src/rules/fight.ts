@@ -486,12 +486,13 @@ export function applyTurn(
       enterHex(ctx, unit, target.to!);
       log(ctx, `${unitName(unit)} steps.`);
     }
-    record(state, {
-      kind: 'action',
-      unitId: unit.id,
-      ability: def.id,
-      ...(target.hex ? {target: target.hex} : {}),
-    });
+    if (!def.recordsOwn?.(unit))
+      record(state, {
+        kind: 'action',
+        unitId: unit.id,
+        ability: def.id,
+        ...(target.hex ? {target: target.hex} : {}),
+      });
     const from = unit.hex!;
     def.resolve(ctx, unit, target);
     // The second, if still a target once the first has resolved (it may have fallen or moved).

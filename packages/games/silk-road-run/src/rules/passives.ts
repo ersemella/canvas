@@ -497,7 +497,8 @@ const TRAITS: Partial<Record<AbilityId, Trait[]>> = {
   gale: ['melee', 'ranged'],
   cleave: ['melee', 'ranged', 'delays'],
   elixir: ['heals', 'empowers', 'weakens', 'single'],
-  swiftStrike: ['melee', 'single'],
+  // A dash moves him, so no second target (Forked) since 2026-10-31.
+  swiftStrike: ['melee'],
   omen: ['single'],
   stomp: ['melee'],
   longshot: ['ranged', 'delays', 'single'],

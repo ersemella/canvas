@@ -31,7 +31,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   sunlight: 'No ally within reach to Empower, nor hail to melt.',
   grapple: 'No one within reach to grapple whom you aren’t grappling already.',
   bite: 'No enemy next to you.',
-  swiftStrike: 'No enemy next to you.',
+  swiftStrike: 'No enemy to dash through.',
   reave: 'No one next to you to swipe, nor in a line of 3 to throw at.',
   axeThrow: 'No one within 3 in a straight line.',
   leap: 'No free space to land on.',

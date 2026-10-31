@@ -5422,10 +5422,10 @@ streak.
   to 6.3%, over the 3% a change should ship under (Principles, 12). With
   the streak it is weaker again (43.6%).
 
-Not changed: the numbers are the owner's. The free walk of 3 with the
-jumps stays the one with the widest span (20.5, at 55.1%); the dash of 2
-or 3 with Haste 3 is even with the next (16.7), its unfinished fights the
-thing to watch.
+**Built (owner, 2026-10-31): the dash of 2 or 3 with Haste 3 and the
+straight walk of 3**, in runs and on the test stage (roster.md). The free
+walk of 3 with the jumps stays the one with the widest span (20.5, at
+55.1%); the dash's unfinished fights (up to 6.3%) are the thing to watch.
 
 ### Spearhead off, Cleave's Delay raised in its place (2026-10-31)
 

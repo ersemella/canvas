@@ -41,7 +41,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   alchemist:
     'A master of elixirs, brewed from minerals in sealed crucibles. The Alchemist throws an elixir at anyone close by, itself included: an ally is mended and strikes harder, while an enemy is scalded and weakened.',
   youxia:
-    'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Duelist travels light with a straight sword, and every stroke that lands quickens the next.',
+    'A wandering knight-errant, sworn to keep their word and avenge wrongs. The Duelist travels light with a straight sword, dashing through foes, and every stroke that lands quickens the next.',
   mahout:
     'A driver of war elephants, perched behind the ears of a beast no one can shift. The Juggernaut stamps down among its foes, battering everyone around it and driving them back, and neither a wrestler’s grip nor the hail can hold it.',
   archer:

@@ -225,6 +225,9 @@ export const HEROES: Record<HeroId, HeroStats> = {
     power: 2,
     abilities: ['swiftStrike', 'hold'],
     moveCap: 3,
+    // Walks straight, up to 3 (owner, 2026-10-31; balance.md, "The
+    // Duelist walking straight, and a dash").
+    movesStraight: true,
   },
   /**
    * The Magus (owner, 2026-10-27; roster.md): Persia's support, a track
@@ -793,15 +796,18 @@ export const ABILITY = {
      * exactly `dash` spaces straight along one of the six directions,
      * through the units on the spaces before the last, each hit, to the free
      * space it lands on; with yurts or the map's edge on that space, one
-     * fewer, through a unit next to it. No strike in place. 0 as built.
+     * fewer, through a unit next to it. No strike in place. 3 since
+     * 2026-10-31 (owner; balance.md, "The Duelist walking straight, and a
+     * dash"), with `dashMin` 2 and his straight walk; 0: melee, as first built.
      */
-    dash: 0 as number,
+    dash: 3 as number,
     /**
      * The shortest dash (owner's idea, 2026-10-31): it may stop on any free
      * space from `dashMin` to `dash` out, with a unit passed on the way.
      * 0: exactly `dash` (one fewer against yurts or the edge), as first built.
+     * 2 since 2026-10-31 (owner).
      */
-    dashMin: 0 as number,
+    dashMin: 2 as number,
     /** With `jump`, a jump may be followed by another in the same turn. On (owner, 2026-10-30). */
     chain: true as boolean,
     /**

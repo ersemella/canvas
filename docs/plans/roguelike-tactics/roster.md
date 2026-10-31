@@ -140,6 +140,20 @@ beard it read as the Alchemist.
 |---|---|---|---|---|---|---|---|
 | Duelist | 3 | 1 | 2 | 4 | 3 (the ordinary cap is 2) | Swift Strike | Melee, a *jian* stroke for the Duelist's power (named Ten Paces, after Li Bai's swordsman who "kills one man every ten paces", until the owner asked for a more familiar name the same day); when it hits, the Duelist's card is **Hastened 3** ([keywords.md](keywords.md) 17.3; 2 until 2026-10-26), taken off as its card is placed after the turn: 5 slots to its next turn after a strike instead of its usual 8. |
 
+**Swift Strike as a dash, built 2026-10-31 (owner):** the Duelist walks
+straight, up to 3 spaces along one of the six directions (`movesStraight`,
+as the Outrider, capped by his walk of 3), and Swift Strike is only a dash
+of 2 or 3 spaces straight (`ABILITY.swiftStrike.dash` 3, `dashMin` 2),
+through the units on the way, each hit his power, to the free space it
+lands on, with at least one unit passed; no strike in place, nothing when
+Immobilized; Haste 3 when it hits. Not Forked (a second dash from where he
+started), so Forked isn't drafted for him. Chosen from the versions
+measured that day and the day before (balance.md, "The Duelist's lunge and
+streak" to "The Duelist walking straight, and a dash"): even (48.1%), the
+widest span of the even ones (16.7), his speed +1 72.3%, unfinished fights
+up to 6.3%. The melee strike, a lunge, a lunge through units, jumps and the
+streak stay as switches.
+
 **Built 2026-10-28 (owner): the Cataphract**, Byzantium's tank
 (`cataphract` in config.ts), on the start menu and in Byzantium's heroes (`REGIONS`), which
 no enemy brings until the region's stages are built. No sprite or

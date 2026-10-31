@@ -1,13 +1,25 @@
 // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
 // each given here by loadout, and the rarities the caravanserai draws them
 // and the passives by (19.3b).
-import {describe, expect, it} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
 import {isImmobilized, isStunned} from './board';
 import {offeredTargets} from './choices';
-import {ABILITY, PARTY, RARITY_WEIGHT, RULES} from './config';
+import {ABILITY, HEROES, PARTY, RARITY_WEIGHT, RULES} from './config';
+
+// These tests use Swift Strike as first built, a plain melee strike next to
+// the Duelist, and his free walk (the dash and straight walk since 2026-10-31).
+const builtSwift = {dash: ABILITY.swiftStrike.dash, straight: HEROES.youxia.movesStraight};
+beforeEach(() => {
+  Object.assign(ABILITY.swiftStrike, {dash: 0});
+  Object.assign(HEROES.youxia, {movesStraight: false});
+});
+afterEach(() => {
+  Object.assign(ABILITY.swiftStrike, {dash: builtSwift.dash});
+  Object.assign(HEROES.youxia, {movesStraight: builtSwift.straight});
+});
 import {RuleError, advanceToDecision, applyTurn, createFight} from './fight';
 import {STEPPE} from './map';
 import {PASSIVES, draftPick, fitsKit} from './passives';

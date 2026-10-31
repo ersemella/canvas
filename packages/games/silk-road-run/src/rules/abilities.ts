@@ -157,6 +157,12 @@ export interface AbilityDef {
    * page's offered targets and the AI's guess.
    */
   aimedAt?(state: FightState, user: Unit, target: ActionTarget): Unit | undefined;
+  /**
+   * It records its own actions as it resolves (Swift Strike's dash, one for
+   * each unit it cuts, so the page plays a stroke on each), in place of the
+   * one at its target.
+   */
+  recordsOwn?(user: Unit): boolean;
   /** Resolves the ability now. */
   resolve(ctx: Ctx, user: Unit, target: ActionTarget): void;
 }
@@ -1320,6 +1326,7 @@ function dash(ctx: Ctx, user: Unit, to: Hex): void {
     at = hexNeighbor(at, dir);
     const u = unitAt(ctx.state, at);
     if (u && u !== user) {
+      record(ctx.state, {kind: 'action', unitId: user.id, ability: 'swiftStrike', target: at});
       log(ctx, `${unitName(user)} cuts ${unitName(u)} passing.`);
       hit(ctx, user, u, 'The sword');
       hits++;
@@ -1518,7 +1525,10 @@ export function swiftStrikeHaste(u: Unit, n: number): number {
  */
 const swiftStrike: AbilityDef = {
   id: 'swiftStrike',
-  single: true,
+  // Aimed at one unit, as first built; a dash moves him, so not Forked (19.9).
+  get single() {
+    return ABILITY.swiftStrike.dash === 0;
+  },
   name: 'Swift Strike',
   kind: 'attack',
   summary: (user) => {
@@ -1551,6 +1561,7 @@ const swiftStrike: AbilityDef = {
   },
   targetsUnit: true,
   targets: swiftStrikeTargets,
+  recordsOwn: (user) => dashOf(user) > 0,
   resolve(ctx, user, target) {
     if (dashOf(user) > 0) return dash(ctx, user, target.hex!);
     if (isJump(ctx.state, user, target)) return jump(ctx, user, target.hex!);

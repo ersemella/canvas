@@ -98,7 +98,7 @@ describe('the test stage', () => {
     const raw = {
       player: [{hero: 'youxia'}],
       enemy: [{hero: 'youxia'}, {hero: 'wolf'}],
-      swiftStrike: {lunge: 2, walk: 2, streak: [2, 3, 4]},
+      swiftStrike: {dash: 0, lunge: 2, walk: 2, streak: [2, 3, 4]},
     };
     const s = createTestFight(1, raw);
     for (const u of s.units.filter((x) => x.hero === 'youxia')) {
@@ -112,7 +112,7 @@ describe('the test stage', () => {
     // Through units, no Haste.
     const through = createTestFight(1, {
       ...raw,
-      swiftStrike: {lunge: 2, walk: 2, passThrough: true, haste: 0},
+      swiftStrike: {dash: 0, lunge: 2, walk: 2, passThrough: true, haste: 0},
     });
     const y = through.units.find((u) => u.hero === 'youxia')!;
     expect([y.passThrough, y.swiftHaste]).toEqual([true, 0]);
@@ -138,6 +138,7 @@ describe('the test stage', () => {
     const one = createTestFight(1, {
       ...raw,
       swiftStrike: {
+        dash: 0,
         lunge: 1,
         walk: 2,
         jump: true,
@@ -159,7 +160,7 @@ describe('the test stage', () => {
     // Left out, Swift Strike is as built.
     const built = createTestFight(1, {player: [{hero: 'youxia'}], enemy: [{hero: 'wolf'}]});
     expect(movementCap(built.units.find((u) => u.hero === 'youxia')!)).toBe(3);
-    expect(() => parseTestStage({...raw, swiftStrike: {lunge: -1}})).toThrow(/lunge/);
+    expect(() => parseTestStage({...raw, swiftStrike: {dash: 0, lunge: -1}})).toThrow(/lunge/);
     expect(() => parseTestStage({...raw, swiftStrike: {streak: 3}})).toThrow(/streak/);
     expect(() => parseTestStage({...raw, swiftStrike: {reach: 2}})).toThrow(/unknown field/);
   });
@@ -175,7 +176,7 @@ describe('the test stage', () => {
         {hero: 'bokh', at: space(5, 4)},
         {hero: 'mangudai', at: space(3, 4)},
       ],
-      swiftStrike: {lunge: 1, walk: 2, jump: true, haste: 0},
+      swiftStrike: {dash: 0, lunge: 1, walk: 2, jump: true, haste: 0},
     };
     const s = createTestFight(1, raw);
     const y = s.units.find((u) => u.hero === 'youxia')!;

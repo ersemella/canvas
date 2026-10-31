@@ -1666,7 +1666,8 @@ describe('the Duelist', () => {
     expect(Math.max(...reachableHexes(s, mapOf(s), y).map((r) => r.path.length))).toBe(3);
   });
 
-  it('Swift Strike hits an enemy next to it, and Hastens its own card', () => {
+  it('as first built, Swift Strike hits an enemy next to it, and Hastens its own card', () => {
+    withSwift({});
     const s = setup({'p-youxia': c, 'e-modao': hexNeighbor(c, 0), 'e-mangudai': at(4, 7)}, party);
     const y = unit(s, 'p-youxia');
     const targets = ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!);
@@ -1678,9 +1679,10 @@ describe('the Duelist', () => {
   });
 
   /** Swift Strike with `ABILITY.swiftStrike` patched for one test. */
+  /** Swift Strike patched for one test, from its first build (melee, no dash) unless `patch` says. */
   const withSwift = (patch: Partial<typeof ABILITY.swiftStrike>) => {
     const was = {...ABILITY.swiftStrike};
-    Object.assign(ABILITY.swiftStrike, patch);
+    Object.assign(ABILITY.swiftStrike, {dash: 0, dashMin: 0, ...patch});
     onTestFinished(() => void Object.assign(ABILITY.swiftStrike, was));
   };
   const along = (h: Hex, dir: number, n: number): Hex => {
@@ -1809,8 +1811,9 @@ describe('the Duelist', () => {
     expect(ABILITIES.swiftStrike.targets(t, mapOf(t), z, z.hex!)).toEqual([]);
   });
 
-  it('with a shortest dash of 2, it may stop 2 or 3 out, a unit passed on the way', () => {
-    withSwift({dash: 3, dashMin: 2});
+  it('as built, Swift Strike dashes 2 or 3 straight through a unit, Hastening its card', () => {
+    // No patch: the dash of 2 to 3 since 2026-10-31.
+    expect([ABILITY.swiftStrike.dash, ABILITY.swiftStrike.dashMin]).toEqual([3, 2]);
     const s = setup({'p-youxia': c, 'e-modao': along(c, 0, 1), 'e-storm': at(0, 0)}, party);
     s.tiles = {};
     const y = unit(s, 'p-youxia');
@@ -1819,9 +1822,24 @@ describe('the Duelist', () => {
       sortByHex([{hex: along(c, 0, 2)}, {hex: along(c, 0, 3)}], (t) => t.hex!)
     );
     y.slot = s.currentSlot;
+    s.events = [];
     applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: along(c, 0, 2)}}});
     expect(y.hex).toEqual(along(c, 0, 2));
     expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
+    expect(y.slot).toBe(actionCost(y) - ABILITY.swiftStrike.haste);
+    // The page plays a stroke on the unit it cuts, none on the space it lands on.
+    expect(s.events.filter((e) => e.kind === 'action').map((e) => e.target)).toEqual([
+      along(c, 0, 1),
+    ]);
+  });
+
+  it('walks straight, up to 3 along one of its six lines', () => {
+    const s = setup({'p-youxia': c, 'e-storm': at(0, 0)}, party);
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    const reach = reachableHexes(s, mapOf(s), y).filter((r) => r.path.length > 0);
+    expect(reach.length).toBe(18);
+    for (const r of reach) expect(hexDirectionTo(y.hex!, r.hex)).not.toBeNull();
   });
 
   it('passing through, it hits the unit next to it and the one in front of where it lands', () => {
@@ -1895,6 +1913,7 @@ describe('the Duelist', () => {
   });
 
   it('a walk and Hold leave its card where it was due', () => {
+    withSwift({});
     const s = setup({'p-youxia': c, 'e-modao': at(4, 7)}, party);
     const y = unit(s, 'p-youxia');
     y.slot = s.currentSlot;

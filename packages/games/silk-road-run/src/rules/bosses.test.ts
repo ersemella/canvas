@@ -1,10 +1,22 @@
 // China's boss, the Bull Demon King and Princess Iron Fan (owner, 2026-10-28; enemies.md):
 // Gore, the Iron Fan, Fan the Flames and its fire, Devoted, and the
 // fan she drops.
-import {describe, expect, it} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {hexDistance, hexKey, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, DEVOTED, RULES} from './config';
+import {ABILITY, DEVOTED, HEROES, RULES} from './config';
+
+// These tests use Swift Strike as first built, a plain melee strike next to
+// the Duelist, and his free walk (the dash and straight walk since 2026-10-31).
+const builtSwift = {dash: ABILITY.swiftStrike.dash, straight: HEROES.youxia.movesStraight};
+beforeEach(() => {
+  Object.assign(ABILITY.swiftStrike, {dash: 0});
+  Object.assign(HEROES.youxia, {movesStraight: false});
+});
+afterEach(() => {
+  Object.assign(ABILITY.swiftStrike, {dash: builtSwift.dash});
+  Object.assign(HEROES.youxia, {movesStraight: builtSwift.straight});
+});
 import {advanceToDecision, applyTurn, createFight, mapOf, seededRandom} from './fight';
 import {exitSealed, kitOf, reachableHexes, roadToExit} from './board';
 import {checkEnd, kill} from './resolve';
