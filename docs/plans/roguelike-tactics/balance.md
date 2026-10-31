@@ -6027,6 +6027,57 @@ Byzantium's party in a mirror, against production's search. Unfinished
   into it) is likely some of his loss in the AI's hands and less in a
   player's.
 
+### Hew as a line, with Fury (later 2026-10-31)
+
+Asked for (the owner): Hew's Shield taken off, and its funnel for a
+**line**: the first unit up to 2 away along one of his six lines, ally or
+enemy, struck for his power, the Barbarian **stepping in next to it
+first** when it is 2 away (`ABILITY.hew.shape` `line`, `.reach` 2); and
+**Fury**, a passive, his card **Hastened 3 whenever he is hit** (`FURY`).
+`experiments/byzantium-fury.mjs`: every row of `roles-twelve.mjs` with
+Fury (`fury`), and the rows with Byzantium in them without it (`line`),
+the Cataphract braced as before; 400 fights a row (about ±2.5),
+production AI, on `e41168a`. Unfinished fights at most 2.5%. **On the
+Priest's Invocation** (speed 1, defence 2; in runs since `81e3d7c`'s
+day), so not beside the sections before: the Priest wins 24–33% in the
+other regions' support seats (45–52% as he was), and Byzantium's party is
+weak whoever stands in it, the other tanks winning 77.5–92.3% in its tank
+seat. So *kept* is the Priest's as much as each hero's; *others'* (each
+hero in the other regions' mirrors, no Priest in them) is the fair read.
+
+| Hero (role) | Others' seats, Fury | kept | score | Others' seats, no Fury | score |
+|---|---:|---:|---:|---:|---:|
+| Grappler / Vanguard / Juggernaut (tanks) | 61.9 / 59.7 / 58.1 | 47.3 / 50.0 / 51.6 | 54.6 / 54.8 / 54.8 | 62.5 / 59.8 / 58.1 | 55.0 / 56.1 / 55.3 |
+| **Barbarian (tank)** | **47.1** (43 / 49.8 / 48.5) | 24.4 | 35.8 | 43.7 (42.5 / 42.5 / 46.1) | 33.7 |
+| Outrider / Duelist / Ranger (damage) | 42.8 / 45.8 / 44.0 | 51.1 / 51.4 / 50.2 | 47.0 / 48.6 / 47.1 | | |
+| **Cataphract (damage)** | **50.2** (43.8 / 50 / 56.8) | 64.5 | 57.3 | 50.2 | 56.9 |
+| Priest (support) | 29.4 | 24.9 | 27.1 | | 28.3 |
+
+| Barbarian (his tank seats) | Wins | Lives through | Turns a fight | Axe damage to enemies a fight |
+|---|---:|---:|---:|---:|
+| Funnel, Shield (before, the old Priest) | 40.5–49% | 33–36% | 3.0–3.4 | 4–5.5 |
+| Line, no Fury | 42.5–46.1% | 24–34% | 2.9–3.0 | 3.9–5.1 |
+| **Line, Fury** | **43–49.8%** | **30–42%** | 3.2–3.3 | 4.3–6.6 |
+
+- **Line Hew with Fury is the Barbarian's best yet** in the other
+  regions' seats: 47.1%, within about 3 of even (the funnel's 43.8%, on
+  the old Priest). Fury is worth 3.4 points there (43.7% without), 2–7 a
+  seat, and 6–9 points of his survival: Hastened when hit, he gets about
+  a third of a turn more a fight and hits back sooner.
+- His score (35.8%) and the other tanks' (54.6–54.8%) are bent by
+  Byzantium's party: the Grappler wins 90.5% in its tank seat.
+- **The Cataphract is even in others' seats** (50.2%, the same as on the
+  old Priest); his 64.5% *kept* is the other damage heroes doing worse in
+  a weak Byzantine party, not his own strength.
+- **Skill** (as `skill-fights.mjs`, the Steppe mirror's tank seat, no
+  Priest in it; ±3.5): line Hew with Fury 47.3% to 53%, **span 5.7**;
+  without Fury 45.5% to 55.3%, **span 9.8**. Fury fires on being hit,
+  not on a choice, so it lifts a novice as much as an expert (as
+  Spearhead added no skill to the Vanguard); the choosing is the line
+  Hew's.
+- **Not changed in runs**; the test stage has the line Hew and Fury.
+  Byzantium's numbers want measuring again once the Priest is settled.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

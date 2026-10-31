@@ -238,6 +238,9 @@ with Byzantium in them, the rest from `byzantium-swap.mjs`.
 `byzantium-brace.mjs` (2026-10-31) the swap as the test stage has it: the
 Cataphract with Armour after a charge (`ABILITY.charge.armour`), Hew's
 Shield (`ABILITY.hew.shieldPerHit`); every role-seat row and their skill.
+`byzantium-fury.mjs` (2026-10-31) Hew as a line of 2, stepping in
+(`ABILITY.hew.shape` `line`), with Fury (`FURY`) and without; on the
+Priest's Invocation.
 
 `syzygy.mjs` (2026-10-31) the Magus's Syzygy (the test stage's in place
 of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
