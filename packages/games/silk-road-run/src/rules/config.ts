@@ -982,9 +982,17 @@ export const ABILITY = {
    * swaps only, no blank cards: the cards of the line's units, his own
    * next turn's (where his card would land after this turn) and
    * Humphrey's (on the line or not) permuted among themselves, so every
-   * card sent back brings another forward.
+   * card sent back brings another forward. `self` (with `swaps`): his own
+   * next turn's card in the pool too; on, it gave him turn after turn
+   * (balance.md, "Alignment as swaps only"), so off (owner, later
+   * 2026-10-31): the line's cards and Humphrey's only.
    */
-  alignment: {swaps: true as boolean, beforeNext: true as boolean, deck: 12 as number},
+  alignment: {
+    swaps: true as boolean,
+    self: false as boolean,
+    beforeNext: true as boolean,
+    deck: 12 as number,
+  },
   /**
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the

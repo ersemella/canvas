@@ -1924,8 +1924,8 @@ export interface AlignmentCard {
 /**
  * The cards an Alignment from `from` toward `toward` may move, and where
  * each is now: the line's units' (`alignmentUnits`); with
- * `ABILITY.alignment.swaps`, his own next turn's too (`alignmentSelfSlot`)
- * and Humphrey's, on the line or not. In slot order.
+ * `ABILITY.alignment.swaps`, Humphrey's too, on the line or not, and with
+ * `.self` his own next turn's (`alignmentSelfSlot`). In slot order.
  */
 export function alignmentPool(
   state: FightState,
@@ -1948,7 +1948,8 @@ export function alignmentPool(
         !units.includes(u)
     );
     if (camel) out.push({unit: camel, hex: camel.hex!, slot: camel.slot!});
-    out.push({unit: user, hex: from, slot: alignmentSelfSlot(state, user)});
+    if (ABILITY.alignment.self)
+      out.push({unit: user, hex: from, slot: alignmentSelfSlot(state, user)});
   }
   return out.sort((a, b) => a.slot - b.slot);
 }
@@ -2129,7 +2130,9 @@ const alignment: AbilityDef = {
   area: (map, from, target) => blessingLine(map, from, target),
   summary: () =>
     ABILITY.alignment.swaps
-      ? 'A line from you, any distance, through anything: swap the cards of the units on it, your next turn’s and Humphrey’s among themselves, in any order.'
+      ? ABILITY.alignment.self
+        ? 'A line from you, any distance, through anything: swap the cards of the units on it, your next turn’s and Humphrey’s among themselves, in any order.'
+        : 'A line from you, any distance, through anything: swap the cards of the units on it and Humphrey’s among themselves, in any order.'
       : ABILITY.alignment.beforeNext
         ? 'A line from you, any distance, through anything: rearrange the cards of the units on it, each on a blank card before your next turn, or swapped among themselves there.'
         : 'A line from you, any distance, through anything: rearrange the cards of the units on it, each on any blank card of the track, or swapped among themselves.',
@@ -2140,8 +2143,17 @@ const alignment: AbilityDef = {
       // A line with a card that can move: onto a blank card, or two in the deck to swap.
       const units = alignmentUnits(state, map, user, from, l[0]!);
       const {last} = alignmentDeck(state, user);
-      const swappable = ABILITY.alignment.swaps || units.filter((u) => u.slot! <= last).length >= 2;
-      if (units.length === 0 || (!swappable && alignmentBlanks(state, user).length === 0)) continue;
+      // With swaps, two cards in the pool to trade (the line's and Humphrey's).
+      const swappable = ABILITY.alignment.swaps
+        ? alignmentPool(state, map, user, from, l[0]!).length >= 2
+        : units.filter((u) => u.slot! <= last).length >= 2;
+      if (
+        units.length === 0 ||
+        (ABILITY.alignment.swaps
+          ? !swappable
+          : !swappable && alignmentBlanks(state, user).length === 0)
+      )
+        continue;
       const hex = {...l[0]!};
       const ways = alignmentArrangements(state, map, user, from, hex);
       if (ways.length === 0) out.push({hex, cards: []});

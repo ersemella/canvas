@@ -2391,7 +2391,7 @@ describe('the Magus', () => {
     });
 
     describe("as swaps only, with his own card and Humphrey's (`swaps`)", () => {
-      beforeEach(() => Object.assign(ABILITY.alignment, {swaps: true}));
+      beforeEach(() => Object.assign(ABILITY.alignment, {swaps: true, self: true}));
       /** The two enemies up line 0, Humphrey off every line at slot 12. */
       const swapping = () => {
         const s = setup(
@@ -2475,6 +2475,53 @@ describe('the Magus', () => {
           {hex: line, slot: actionCost(m)},
           {hex: along(c, 0, 3), slot: 12},
         ]);
+      });
+
+      it("without his own card (`self` off, as built): the line's cards and Humphrey's only", () => {
+        Object.assign(ABILITY.alignment, {self: false});
+        const {s, m} = swapping();
+        const line = along(c, 0, 1);
+        expect(alignmentPool(s, mapOf(s), m, c, line).map((p) => p.unit.id)).toEqual([
+          'e-mangudai',
+          'e-bokh',
+          'p-camel',
+        ]);
+        // His own card can't be swapped.
+        expect(
+          tryTurn(s, 'p-magus', {
+            action: {
+              ability: 'alignment',
+              target: {
+                hex: line,
+                cards: [
+                  {hex: line, slot: actionCost(m)},
+                  {hex: c, slot: 2},
+                ],
+              },
+            },
+          })
+        ).toThrow(RuleError);
+        // The AI's: Humphrey's card first, the enemy's to his slot.
+        expect(alignmentArrangements(s, mapOf(s), m, c, line)).toContainEqual([
+          {hex: along(c, 4, 3), slot: 2},
+          {hex: line, slot: 5},
+          {hex: along(c, 0, 3), slot: 12},
+        ]);
+        const c1 = cloneFight(s);
+        applyTurn(c1, unit(c1, 'p-magus'), {
+          action: {
+            ability: 'alignment',
+            target: {
+              hex: line,
+              cards: [
+                {hex: line, slot: 12},
+                {hex: along(c, 4, 3), slot: 2},
+              ],
+            },
+          },
+        });
+        expect([unit(c1, 'e-mangudai').slot, unit(c1, 'p-camel').slot]).toEqual([12, 2]);
+        expect(unit(c1, 'p-magus').slot).toBe(actionCost(m));
       });
     });
   });
