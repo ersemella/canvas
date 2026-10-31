@@ -67,6 +67,7 @@ describe('the test stage', () => {
         cataphract: {defence: 2, power: 2, passives: []},
       },
       leap: {shape: 'forward', shieldPerHit: 1},
+      charge: {armour: 1},
     };
     const s = createTestFight(1, raw, ['varangian', 'cataphract', 'priest']);
     const of = (id: string) => s.units.find((u) => u.id === id)!;
@@ -82,6 +83,10 @@ describe('the test stage', () => {
     expect(of('p-cataphract').maxHp).toBe(6);
     expect([of('p-varangian').caution, of('p-cataphract').caution]).toEqual([0, undefined]);
     expect(s.units.every((u) => u.leapShape === 'forward' && u.leapShieldPerHit === 1)).toBe(true);
+    expect(s.units.every((u) => u.chargeArmour === 1)).toBe(true);
+    expect(() => parseTestStage({...raw, charge: {armour: -1}})).toThrow(
+      'charge.armour must be a whole number from 0 to 8.'
+    );
     // Passives given a unit stay beside its hero's own.
     const juggernaut = createTestFight(1, {
       player: [{hero: 'mahout', passives: ['rally']}],

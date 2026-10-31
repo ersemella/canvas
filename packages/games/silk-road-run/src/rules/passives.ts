@@ -508,7 +508,7 @@ const TRAITS: Partial<Record<AbilityId, Trait[]>> = {
   leap: ['melee'],
   charge: ['melee'],
   reave: ['melee', 'ranged'],
-  hew: ['melee', 'empowers'],
+  hew: ['melee'],
 };
 
 /** The traits a generic upgrade needs one of to do anything (19.9). */

@@ -285,8 +285,7 @@ describe('the track', () => {
     // At most two abilities besides Hold (owner, 2026-10-25): each hero
     // takes one of its upgrades; the Alchemist, with none, starts with two
     // (the overdose and Sedative, owner, 2026-10-31).
-    for (const h of ROSTER)
-      expect(hasRoomForAbility(HEROES[h].abilities)).toBe(h !== 'alchemist');
+    for (const h of ROSTER) expect(hasRoomForAbility(HEROES[h].abilities)).toBe(h !== 'alchemist');
     expect(HEROES.alchemist.abilities).toEqual(['elixir', 'sedative', 'hold']);
     expect(HEROES.alchemist.upgrades).toBeUndefined();
     expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(false);
@@ -2067,7 +2066,7 @@ describe('the Barbarian', () => {
     expect(b2.shield).toBeUndefined();
   });
 
-  it('Hew hits a funnel, two spaces next to him and the one past them, and Empowers him 1 an enemy hit for 10 slots', () => {
+  it('Hew hits a funnel, two spaces next to him and the one past them, and Shields him 1 an enemy hit for 10 slots', () => {
     // Set toward 0: the spaces along 0 and 1, and the one past both (Leap's landing along 0).
     const funnel = [hexNeighbor(c, 0), hexNeighbor(c, 1), landing(0)];
     const {s, b} = leaping({
@@ -2081,9 +2080,9 @@ describe('the Barbarian', () => {
     expect(ABILITIES.hew.targets(s, mapOf(s), b, c).length).toBe(3);
     const slot = s.currentSlot;
     applyTurn(s, b, {action: {ability: 'hew', target: {hex: landing(0)}}});
-    // Power 3 here (the hero's own): the ally is hit too, only enemies Empower.
+    // Power 3 here (the hero's own): the ally is hit too, only enemies Shield him.
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), hp(s, 'p-modao')]).toEqual([3, 3, 3]);
-    expect([b.empower, b.empowerUntil]).toEqual([2, slot + 10]);
+    expect([b.shield, b.shieldUntil, b.empower]).toEqual([2, slot + 10, undefined]);
   });
 
   it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {
@@ -2863,6 +2862,21 @@ describe('the Cataphract', () => {
     expect(k.hp).toBe(k.maxHp - 3);
   });
 
+  it('with Armour after a charge (`Unit.chargeArmour`) gains it for 8 slots, a hit then 1 less', () => {
+    const {s, k} = ready({'e-bokh': along(c, dir, 2), 'e-storm': hexNeighbor(c, 0)});
+    k.passives = [];
+    k.chargeArmour = 1;
+    expect(ABILITIES.charge.summary(k)).toContain('Then gain Armour 1 for 8 slots.');
+    const slot = s.currentSlot;
+    charge(s, k, along(c, dir, 3));
+    expect([k.armour, k.armourUntil]).toEqual([1, slot + 8]);
+    const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
+    const before = k.hp;
+    // The Storm Caller's 2, less 1.
+    hit(ctx, unit(s, 'e-storm'), k, 'A test hit');
+    expect(k.hp).toBe(before - 1);
+  });
+
   it('with no one in the way rides any distance straight, to a lane’s end', () => {
     const {s, k} = ready({});
     const end = lane(mapOf(s), c, dir).at(-1)!;
@@ -2977,7 +2991,7 @@ describe('the Cataphract', () => {
   };
 
   it('slams no one (owner, 2026-10-31): a unit carried into yurts or the edge isn’t Delayed', () => {
-    expect(ABILITY.charge).toEqual({slam: 'none', delay: 6});
+    expect(ABILITY.charge).toEqual({slam: 'none', delay: 6, armour: 0, armourSlots: 8});
     const {s, k} = ready({'e-bokh': along(c, dir, 1), 'e-storm': along(c, dir, 2)});
     s.tiles[hexKey(along(c, dir, 4))] = 'obstacle';
     const [b, st] = [unit(s, 'e-bokh'), unit(s, 'e-storm')];
@@ -3428,7 +3442,9 @@ describe('the built Elixir, an overdose (2026-10-31)', () => {
     expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
     // Himself (power 1): Empowered 5.
     const self = cloneFight(s);
-    applyTurn(self, unit(self, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(1, 3)}}});
+    applyTurn(self, unit(self, 'p-alchemist'), {
+      action: {ability: 'elixir', target: {hex: at(1, 3)}},
+    });
     expect(unit(self, 'p-alchemist').empower).toBe(5);
     expect(unit(self, 'p-alchemist').hp).toBe(unit(self, 'p-alchemist').maxHp - 1);
   });

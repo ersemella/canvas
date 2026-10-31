@@ -2130,14 +2130,21 @@ function slams(map: MapData, u: Unit, dir: number): boolean {
  * row and the Cataphract behind it; if the units in its way fall, the way
  * is clear and it rides on.
  */
+/** The Armour a Charge leaves its user (8 slots): its own (the test stage's), else the rule's. */
+const chargeArmourOf = (user: Unit): number => user.chargeArmour ?? ABILITY.charge.armour;
+
 const charge: AbilityDef = {
   id: 'charge',
   pushes: true,
   name: 'Charge',
   kind: 'attack',
   stepsTo: true,
-  summary: () =>
-    `Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.${slamSays()}`,
+  summary: (user) =>
+    `Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.${slamSays()}${
+      chargeArmourOf(user) > 0
+        ? ` Then gain Armour ${chargeArmourOf(user)} for ${ABILITY.charge.armourSlots} slots.`
+        : ''
+    }`,
   targets(state, map, user, from) {
     if (isImmobilized(user)) return [];
     const out: ActionTarget[] = [];
@@ -2194,6 +2201,16 @@ const charge: AbilityDef = {
         else stunForATurn(ctx, u);
       }
     if (user.alive) endGrapplesApart(ctx, user);
+    // Armour after the charge, where it leaves him in melee.
+    const armour = chargeArmourOf(user);
+    if (user.alive && armour > 0) {
+      user.armour = Math.max(user.armour ?? 0, armour);
+      user.armourUntil = Math.max(
+        user.armourUntil ?? 0,
+        lastsThrough(ctx.state, ABILITY.charge.armourSlots)
+      );
+      log(ctx, `${unitName(user)} braces: Armour ${user.armour}.`);
+    }
   },
 };
 
@@ -2221,7 +2238,7 @@ export function hewArea(map: MapData, from: Hex, target: Hex): Hex[] {
 /**
  * Hew (owner, 2026-10-31): the Barbarian's great axe through a funnel, two
  * spaces next to him and the one past them (`hewFunnel`), every unit there
- * hit for his power, allies too; then he is Empowered for each enemy hit
+ * hit for his power, allies too; then he gains Shield for each enemy hit
  * (`ABILITY.hew`), for slots, not turns.
  */
 const hew: AbilityDef = {
@@ -2229,7 +2246,7 @@ const hew: AbilityDef = {
   name: 'Hew',
   kind: 'attack',
   summary: () =>
-    `Hits every unit on two spaces next to you and the space past them, allies included. Empowered ${ABILITY.hew.empowerPerHit} for each enemy hit, for ${ABILITY.hew.slots} slots.`,
+    `Hits every unit on two spaces next to you and the space past them, allies included. Gain Shield ${ABILITY.hew.shieldPerHit} for each enemy hit, for ${ABILITY.hew.slots} slots.`,
   area: hewArea,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
@@ -2249,15 +2266,9 @@ const hew: AbilityDef = {
     log(ctx, `${unitName(user)} hews.`);
     const enemies = caught.filter((u) => hostile(u, user)).length;
     for (const u of caught) hit(ctx, user, u, 'The axe');
-    const amount = enemies * ABILITY.hew.empowerPerHit;
-    if (!user.alive || amount <= 0) return;
-    // Over any Empower he has, for Hew's own slots.
-    user.empower = Math.max(user.empower ?? 0, amount);
-    user.empowerUntil = Math.max(
-      user.empowerUntil ?? 0,
-      lastsThrough(ctx.state, ABILITY.hew.slots)
-    );
-    log(ctx, `${unitName(user)} is Empowered ${user.empower}.`);
+    const amount = enemies * ABILITY.hew.shieldPerHit;
+    // Added to any Shield he has, for Hew's own slots.
+    if (user.alive && amount > 0) shield(ctx, user, amount, false, ABILITY.hew.slots);
   },
 };
 

@@ -916,11 +916,12 @@ export const ABILITY = {
    * Hew (owner, 2026-10-31; the test stage's Barbarian as a tank, no hero's
    * in runs): a funnel, the two spaces next to him either side of one way
    * and the space past them that touches both, every unit there hit for his
-   * power, allies and Humphrey too. He is Empowered `empowerPerHit` for each
-   * enemy hit, for `slots` slots: 10, his own turn's at speed 1, so it
-   * lasts to his next turn (8, `RULES.durations.turn`, ends before it).
+   * power, allies and Humphrey too. He gains Shield `shieldPerHit` for each
+   * enemy hit (owner, later 2026-10-31, in place of an Empower of 1 each),
+   * added to any he has, for `slots` slots: 10, his own turn's at speed 1,
+   * so it lasts to his next turn (8, `RULES.durations.turn`, ends before it).
    */
-  hew: {empowerPerHit: 1 as number, slots: 10 as number},
+  hew: {shieldPerHit: 1 as number, slots: 10 as number},
   /**
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the
@@ -931,7 +932,18 @@ export const ABILITY = {
    * "The slam without Armour": 74.7% in China's tank seat); `none`, no slam
    * (owner, 2026-10-31: the slam's Delay taken off).
    */
-  charge: {slam: 'none' as 'delay' | 'stun' | 'none', delay: 6 as number},
+  /**
+   * `armour` (owner, later 2026-10-31; the test stage's Cataphract as damage,
+   * 0 in runs): Armour that many after every charge, for `armourSlots` (8)
+   * slots, so he holds out where it leaves him in melee. A unit's own
+   * (`Unit.chargeArmour`, the test stage's `charge`) comes first.
+   */
+  charge: {
+    slam: 'none' as 'delay' | 'stun' | 'none',
+    delay: 6 as number,
+    armour: 0 as number,
+    armourSlots: 8 as number,
+  },
   /**
    * Axe Throw (owner, 2026-10-28; roster.md), the Barbarian's: any unit on
    * one of the six straight lines from him, 1 to `range` (3) spaces away,

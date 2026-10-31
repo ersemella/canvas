@@ -84,6 +84,8 @@ interface TestSetup {
   heroes: Partial<Record<HeroId, {loadout: Loadout; caution?: number}>>;
   /** Every Leap's shape and Shield for each enemy hit (`Unit.leapShape`, `.leapShieldPerHit`). */
   leap: {shape?: LeapShape; shieldPerHit?: number};
+  /** Every Charge's Armour after it, for 8 slots (`Unit.chargeArmour`). */
+  charge: {armour?: number};
 }
 
 /** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
@@ -192,6 +194,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     'elixir',
     'heroes',
     'leap',
+    'charge',
   ]);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
@@ -339,6 +342,17 @@ export function parseTestStage(raw: unknown): TestSetup {
       leap.shieldPerHit = l.shieldPerHit as number;
     }
   }
+  const charge: TestSetup['charge'] = {};
+  if (v.charge !== undefined) {
+    if (!isObject(v.charge)) fail('charge must be an object.');
+    const c = v.charge as Record<string, unknown>;
+    onlyKeys('charge', c, ['armour']);
+    if (c.armour !== undefined) {
+      if (!Number.isInteger(c.armour) || (c.armour as number) < 0 || (c.armour as number) > 8)
+        fail('charge.armour must be a whole number from 0 to 8.');
+      charge.armour = c.armour as number;
+    }
+  }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -354,6 +368,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     elixir,
     heroes,
     leap,
+    charge,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -452,6 +467,7 @@ export function createTestFight(
   for (const u of units) {
     if (setup.leap.shape !== undefined) u.leapShape = setup.leap.shape;
     if (setup.leap.shieldPerHit !== undefined) u.leapShieldPerHit = setup.leap.shieldPerHit;
+    if (setup.charge.armour !== undefined) u.chargeArmour = setup.charge.armour;
     const caution = setup.heroes[u.hero]?.caution;
     if (caution !== undefined) u.caution = caution;
   }

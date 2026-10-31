@@ -37,12 +37,15 @@ him as one (`"caution": 0`), with **Hew** in place of Leap (later
 2026-10-31): his axe through a funnel, the two spaces next to him either
 side of one way and the space past them that touches both (2 away, off
 his lines; where Hew is aimed), every unit there hit for his power,
-allies too, and he is Empowered 1 for each enemy hit, for 10 slots (his
-turn's at speed 1, so it lasts to his next; `ABILITY.hew`). Leap with
+allies too, and he gains Shield 1 for each enemy hit, added to any he
+has, for 10 slots (his turn's at speed 1, so it lasts to his next;
+`ABILITY.hew`; an Empower of 1 each until later 2026-10-31). Leap with
 the four spaces in front and Shield 1 an enemy hit for 8 slots
 (`"leap"`, below) until then. The
 Cataphract Byzantium's damage hero, speed 2, defence 2 (health 6), power
-2, without Armoured, Charge as built. The Steppe's three were the enemy
+2, without Armoured, Charge as built, and Armour 1 for 8 slots after
+each charge (`"charge"`, below; owner, later 2026-10-31), where it leaves
+him in melee. The Steppe's three were the enemy
 until 2026-10-31.
 
 ```json
@@ -55,6 +58,7 @@ until 2026-10-31.
     "varangian": {"speed": 1, "defence": 3, "power": 2, "abilities": ["hew"], "caution": 0},
     "cataphract": {"speed": 2, "defence": 2, "power": 2, "passives": [], "caution": 1}
   },
+  "charge": {"armour": 1},
   "yurts": "none",
   "camel": {},
   "player": [
@@ -128,6 +132,7 @@ it, unhurt.
 | `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. `overdose`, a number from 0 to 20: above 0, the unit given it, ally or enemy, is Empowered until its hits deal that much, for 8 slots, then hit for its user's power, no heal, hit or Weaken besides (6 as built); `0`, the Elixir before it (an ally healed his power and Empowered 2, an enemy hit and Weakened 2), at the built range of 3. | Elixir as built: an overdose to 6, any unit within 3, himself too |
 | `heroes` | Every unit of a hero, both sides, the party picked on the start menu too, by the hero's id: `speed`, `defence`, `power`, `abilities` as a unit's (below), each under a unit's own; `passives`, its hero's own in place of config.ts's (`[]`: none, the Cataphract without Armoured; a unit's `passives` are added beside them); `caution`, how much the AI shies from enemy reach with it, 0 (a tank's: it walks into reach) to 5, 1 the other heroes'. E.g. `{"cataphract": {"power": 2, "passives": []}}`. | each hero as config.ts has it |
 | `leap` | Every Leap, both sides, a hero's or one given in `abilities`: `shape`, the spaces its axe strikes next to where he lands, `"front"` (the two ahead), `"forward"` (four, all but the two he flew over) or `"splash"` (the front two for his power, the other four for 1); `shieldPerHit`, 0 to 8, the Shield he gains for each enemy hit, Humphrey and allies not counted, for 8 slots, added to any he has. | Leap as built: `"front"`, no Shield |
+| `charge` | Every Charge, both sides, a hero's or one given in `abilities`: `armour`, 0 to 8, the Armour its user gains after each charge, for 8 slots (a hit on it that much less, unless it Pierces). | Charge as built: no Armour after it |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 

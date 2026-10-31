@@ -515,13 +515,19 @@ export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
 
 /**
  * Shields `u` by `amount` more (keywords.md, 17.6; the Priest's Blessing),
- * added to any Shield it has, for `RULES.durations.turn` slots (a lasting
- * one until spent).
+ * added to any Shield it has, for `slots` (`RULES.durations.turn`) slots
+ * (a lasting one until spent).
  */
-export function shield(ctx: Ctx, u: Unit, amount: number, lasting = false): void {
+export function shield(
+  ctx: Ctx,
+  u: Unit,
+  amount: number,
+  lasting = false,
+  slots: number = RULES.durations.turn
+): void {
   if (!u.alive || amount <= 0) return;
   u.shield = (u.shield ?? 0) + amount;
-  u.shieldUntil = Math.max(u.shieldUntil ?? 0, lastsThrough(ctx.state));
+  u.shieldUntil = Math.max(u.shieldUntil ?? 0, lastsThrough(ctx.state, slots));
   if (lasting) u.lastingShield = (u.lastingShield ?? 0) + amount;
   log(ctx, `${unitName(u)} gains Shield ${amount}: Shield ${u.shield}.`);
 }

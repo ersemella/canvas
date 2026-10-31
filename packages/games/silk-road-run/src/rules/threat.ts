@@ -246,7 +246,9 @@ export function threatDamage(threats: Threat[], after: FightState, me: Unit): nu
     // Armoured's Armour takes off each enemy's hit.
     const hits = t.hexes.get(key) ?? 0;
     const hit =
-      hits > 0 ? Math.max(0, hits - (hasPassive(me, 'armoured') ? ARMOURED.armour : 0)) : 0;
+      hits > 0
+        ? Math.max(0, hits - (hasPassive(me, 'armoured') ? ARMOURED.armour : 0) - (me.armour ?? 0))
+        : 0;
     if (e.slot > (me.shieldUntil ?? -1)) late += hit;
     else total += hit;
   }
