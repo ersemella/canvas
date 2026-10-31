@@ -256,6 +256,8 @@ their revision.
 of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
 support seat of the three other regions' mirrors, each other support in
 his seat of Persia's, and his skill as `skill-fights.mjs`.
+`full-check.mjs` (later 2026-10-31) a full check on the game as built, no patch: region against region, every role seat of `roles-twelve.mjs` (Byzantium's party ordered tank, damage, support since the swap) and every skill row of `skill-fights.mjs`. See balance.md, "Full balance check, the game as built".
+
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

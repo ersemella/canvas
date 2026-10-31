@@ -6415,6 +6415,121 @@ rows), Hold (a Wait, in runs now) 29–39%, against Omen's 58–74%.
   card forward, never sends one back), which leaves him the one trade that
   is always on offer without the extra turns.
 
+### Full balance check, the game as built (later 2026-10-31)
+
+Asked for: a full balance check on the game as built, with each hero in
+its role and the skill gap. As built: Wait in runs (2/3) with the AI that
+plays it and the kept Wait; the Barbarian Byzantium's tank (Lunge, Fury
+5), the Cataphract its damage hero (braced after a charge, no Armoured);
+the Priest's Invocation at 6 slots; the Alchemist's Overdose and
+Sedative; the Duelist's dash; Longshot without Pierce; the Magus's Omen.
+`experiments/full-check.mjs` (no patch): region against region,
+`roles-twelve.mjs`'s role seats (Byzantium's party ordered tank, damage,
+support since the swap) and `skill-fights.mjs`'s skill rows, `modWinPct`,
+400 fights a row (about ±2.5 a cell, ±3.5 a span), seeds from 1000, on
+`9ccc0fa`. Unfinished fights 0–1.3%, 2.3% with an expert's Magus.
+
+Party against party (the second side's wins):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| China | **25.8%** | | |
+| Persia | 60.8% | **71.3%** | |
+| Byzantium | 32.5% | 39% | 60.9% |
+
+Each region's mean against the other three: the Steppe 60.3%, Persia
+57.1%, Byzantium 44.1%, **China 38.5%**.
+
+Each hero in its role's seat of the other regions' mirrors (the side with
+the swap wins); *others'* its mean there, *kept* its side's wins when the
+other three of its role take its seat, *score* the two together:
+
+| Tank seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Grappler | | 50.1% | 48% | 81% | 59.7% | 50% | 54.8% |
+| Vanguard | 45.3% | | 57.4% | 72.5% | 58.4% | 46% | 52.2% |
+| Juggernaut | 65% | 52.3% | | 64.8% | 60.7% | 47.7% | 54.2% |
+| **Barbarian** | 39.8% | 59.5% | 51.6% | | 50.3% | **27.2%** | **38.8%** |
+
+| Damage seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Outrider | | 56.6% | 46.2% | 36.3% | 46.4% | 48% | 47.2% |
+| Duelist | 46.8% | | 46.7% | 43.8% | 45.8% | 48.3% | 47% |
+| Ranger | 55.4% | 47% | | 32.8% | 45.1% | 50% | 47.5% |
+| **Cataphract** | 53.8% | 51.5% | 57% | | 54.1% | **62.4%** | **58.2%** |
+
+| Support seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Storm Caller | | 62.8% | 42.3% | 51.5% | 52.2% | 56.9% | 54.5% |
+| **Alchemist** | 35.3% | | 43.9% | 61% | 46.7% | **40.3%** | **43.5%** |
+| Magus | 46.7% | 64.3% | | 43.3% | 51.4% | 53.2% | 52.3% |
+| Priest | 47.3% | 52% | 54.3% | | 51.2% | 48.1% | 49.6% |
+
+Skill: one hero played by a novice (depth 1) or an expert (depth 4, 4x
+work) in its role's seat of a Steppe mirror, the rest of both sides by
+production; and each region's whole party so (in brackets, "Skill on all
+twelve heroes and whole runs", 2026-10-29, on other kits for many):
+
+| Hero | Novice | Expert | Span |
+|---|---:|---:|---:|
+| **Magus (Omen)** | 27.3% | 55.8% | **28.5** (12.8) |
+| **Alchemist (Overdose, Sedative)** | 31.8% | 54.3% | **22.5** (4.8) |
+| Duelist (dash) | 40.3% | 58% | 17.7 (4.7) |
+| Grappler | 39.3% | 53.8% | 14.5 (6.7) |
+| Juggernaut (Stomp) | 41% | 52.3% | 11.3 (13) |
+| Storm Caller | 44.5% | 55.3% | 10.8 (10.5) |
+| Vanguard | 39.5% | 49.5% | 10 (8) |
+| Cataphract (damage) | 44.8% | 54.3% | 9.5 (6.8 as a tank) |
+| Ranger | 45.3% | 53.3% | 8 (7.1) |
+| Priest (Invocation) | 45.3% | 52.5% | 7.2 (1.1 with Blessing) |
+| **Barbarian (tank, Lunge)** | 46.8% | 51% | **4.2** (3.5, Axe Throw) |
+| **Outrider** | 47.3% | 51.3% | **4** (4.2) |
+
+| Whole party | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Persia | 17.2% | 58.7% | **41.5** (31.4) |
+| Steppe | 28.5% | 61.3% | 32.8 (24.3) |
+| China | 27.3% | 56.5% | 29.2 (19.4) |
+| Byzantium | 34.8% | 55.8% | 21 (18.9) |
+
+- **China is the weak region**: 25.8% against the Steppe (30.6% in
+  "Wait in runs"), 28.7% against Persia, 61% against Byzantium only. Its
+  loss is mostly **the Alchemist's**: the weakest support (43.5%), 35.3%
+  in the Steppe's seat, and the Storm Caller (62.8%) and the Magus (64.3%)
+  both win in China's. China's tank and damage seats are nearer even
+  (other tanks 50.1–59.5% in them, other damage heroes 47–56.6%).
+- **Byzantium's party is lopsided**: its tank seat is the weakest seat in
+  the game (other tanks win 64.8–81% in it; the Barbarian 27.2% kept),
+  its damage seat the strongest (other damage heroes 32.8–43.8% in it;
+  the Cataphract 62.4% kept). Abroad both are about even or a little over
+  (the Barbarian 50.3%, the Cataphract 54.1%), so the trouble is the pair
+  together: two melee heroes beside a slow Priest, and the Cataphract
+  doing the work a tank's seat there would.
+- **The Priest is even on Invocation** (49.6%, 47–54% in every support
+  seat), as "Invocation at 6 slots, as built" found (48.7%); the 24–33%
+  of "Hew as a line, with Fury" was Invocation's charge of 10.
+- **The rest are within about 5 points**: tanks 52.2–54.8% but the
+  Barbarian; damage 47–47.5% but the Cataphract (+8.2); supports 49.6–54.5%
+  but the Alchemist (−6.5). The Ranger without Pierce is even (47.5%), but
+  32.8% in Byzantium's seat, where the Cataphract out-does every other
+  damage hero.
+- **Play is worth more than ever**: 21–41.5 points a party (19–31 on
+  2026-10-29), Persia's novices winning only 17.2%. The Magus (28.5) and
+  the Alchemist (22.5) reward play most, both a lot more than before, and
+  both by their novices playing badly (27.3%, 31.8%) more than their
+  experts well (55.8%, 54.3%). The Duelist's dash (17.7, from 4.7) and the
+  Grappler (14.5, from 6.7) rose too; Wait in runs and the AI's reach
+  are likely part of every rise (a novice, one decision deep, prices
+  neither).
+- **Least skill: the Outrider (4.0) and the Barbarian (4.2)**, a novice
+  nearly an expert's equal; the Priest (7.2) is no longer the lowest.
+
+Not changed: the numbers are the owner's. Likeliest to help, in order:
+the Alchemist (China's loss; his score, 43.5%, is 3.9 under the 47.4%
+Sedative was measured at, before Wait in runs); Byzantium's tank seat
+(the Barbarian and the Cataphract together, not either alone); a choice
+for the Outrider and the Barbarian (Lunge). Whole runs not measured here.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
