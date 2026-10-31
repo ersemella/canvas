@@ -1,15 +1,15 @@
-// Syzygy (owner, 2026-10-31; the test stage's Magus's in place of Omen): one
+// Alignment (owner, 2026-10-31; the test stage's Magus's in place of Omen): one
 // of his six lines, any distance, through anything, and the cards of every
 // unit on it rearranged on the track (each on a blank card of the deck, or
-// swapped among themselves; `ABILITY.syzygy`). A `patch`, both sides, beside
+// swapped among themselves; `ABILITY.alignment`). A `patch`, both sides, beside
 // Omen as built (`omen-` rows, no patch).
 // Roles, as roles-twelve.mjs: the Magus in the support seat of the three
 // other regions' mirrors, and each other support in his seat of Persia's.
 // Skill, as skill-fights.mjs: the Magus played by a novice (depth 1) or an
 // expert (depth 4, 4x work) in the support seat of a Steppe mirror, against
 // the same Magus at production's search. `modWinPct` throughout.
-const syzygy = (c) => {
-  c.HEROES.magus.abilities = ['syzygy', 'hold'];
+const alignment = (c) => {
+  c.HEROES.magus.abilities = ['alignment', 'hold'];
 };
 const steppe = ['bokh', 'mangudai', 'storm'];
 const regions = {
@@ -24,7 +24,7 @@ const expert = {depth: 4, work: 4 * 220};
 export const experiments = {};
 for (const [variant, patch] of [
   ['omen', undefined],
-  ['syzygy', syzygy],
+  ['alignment', alignment],
 ]) {
   const p = patch ? {patch} : {};
   for (const [name, party] of Object.entries(regions)) {

@@ -11,8 +11,9 @@ import {
   offeredTargets,
   previewTurn,
   reachableHexes,
-  syzygyBlanks,
-  syzygyUnits,
+  alignmentBlanks,
+  alignmentDeck,
+  alignmentUnits,
   targetAt,
 } from '@canvas/games-silk-road-run';
 import type {
@@ -40,7 +41,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   axeThrow: 'No one within 3 in a straight line.',
   leap: 'No free space to land on.',
   omen: 'No unit within 3 whose turn comes before your next.',
-  syzygy: 'No unit on any of your lines with a card to move.',
+  alignment: 'No unit on any of your lines with a card to move.',
   stomp: 'Nowhere to Stomp.',
   charge: 'Nowhere to charge.',
   longshot: 'No one in any of your lanes.',
@@ -88,7 +89,7 @@ interface Picks {
    * confirms, as on the target.
    */
   tapped: Hex | null;
-  /** Syzygy: the unit whose card is picked up off the track, to be put on another. */
+  /** Alignment: the unit whose card is picked up off the track, to be put on another. */
   held: string | null;
 }
 
@@ -151,26 +152,29 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   }, [ability, fight, acting]);
 
   /**
-   * Syzygy, its line picked: the units on it whose cards it may move, and
+   * Alignment, its line picked: the units on it whose cards it may move, and
    * where each card is in the arrangement so far.
    */
   const arranging = useMemo(() => {
-    if (ability !== 'syzygy' || !target?.hex || !fight || !acting?.hex) return null;
-    const units = syzygyUnits(fight, mapOf(fight), acting, acting.hex, target.hex);
+    if (ability !== 'alignment' || !target?.hex || !fight || !acting?.hex) return null;
+    const units = alignmentUnits(fight, mapOf(fight), acting, acting.hex, target.hex);
     const cards = target.cards ?? [];
     const slotOf = (id: string) => {
       const u = units.find((v) => v.id === id)!;
       return cards.find((c) => hexEquals(c.hex, u.hex!))?.slot ?? u.slot!;
     };
     const ends = new Set(units.map((u) => slotOf(u.id)));
+    // Where a moved card may land: before his next turn (`alignmentDeck`).
+    const {first, last} = alignmentDeck(fight, acting);
+    const inDeck = (slot: number) => slot >= first && slot <= last;
     // The slots a card may go on: the blank cards now, and those the line's cards leave.
-    const open = [...syzygyBlanks(fight), ...units.map((u) => u.slot!)]
-      .filter((slot) => !ends.has(slot))
+    const open = [...alignmentBlanks(fight, acting), ...units.map((u) => u.slot!)]
+      .filter((slot) => !ends.has(slot) && inDeck(slot))
       .sort((a, b) => a - b);
-    return {units, slotOf, open};
+    return {units, slotOf, open, inDeck};
   }, [ability, target, fight, acting]);
 
-  /** Syzygy's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
+  /** Alignment's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
   const arrange = useMemo(
     () =>
       arranging ? {movable: arranging.units.map((u) => u.id), held, open: arranging.open} : null,
@@ -269,13 +273,13 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   );
 
   /**
-   * Syzygy: the line's card `id` put on `slot`: on a blank card, or swapped
+   * Alignment: the line's card `id` put on `slot`: on a blank card, or swapped
    * with the line's card there. False when `slot` is neither.
    */
   const putCard = useCallback(
     (id: string, slot: number): boolean => {
       if (!arranging || !target?.hex) return false;
-      const {units, slotOf, open} = arranging;
+      const {units, slotOf, open, inDeck} = arranging;
       const there = units.find((u) => slotOf(u.id) === slot);
       if (there?.id === id) {
         pick({held: null});
@@ -287,24 +291,24 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         ends.set(id, slot);
       } else if (open.includes(slot)) ends.set(id, slot);
       else return false;
-      // Only the cards that end elsewhere than they are.
-      const cards: CardPlacement[] = units
-        .filter((u) => ends.get(u.id) !== u.slot)
-        .map((u) => ({hex: {...u.hex!}, slot: ends.get(u.id)!}));
+      // Only the cards that end elsewhere than they are, each before his next turn.
+      const moved = units.filter((u) => ends.get(u.id) !== u.slot);
+      if (moved.some((u) => !inDeck(ends.get(u.id)!))) return false;
+      const cards: CardPlacement[] = moved.map((u) => ({hex: {...u.hex!}, slot: ends.get(u.id)!}));
       pick({target: {hex: target.hex, cards}, held: null});
       return true;
     },
     [arranging, target, pick]
   );
 
-  /** Syzygy: the line's card at `slot` in the arrangement so far, if any. */
+  /** Alignment: the line's card at `slot` in the arrangement so far, if any. */
   const cardAtSlot = useCallback(
     (slot: number) => arranging?.units.find((u) => arranging.slotOf(u.id) === slot),
     [arranging]
   );
 
   /**
-   * Syzygy: a tap on the track's deck, at `slot`. With no card picked up, a
+   * Alignment: a tap on the track's deck, at `slot`. With no card picked up, a
    * card of the line's picks it up; with one, a blank card puts it there,
    * another of the line's swaps the two, and its own puts it back down.
    * False when the tap does nothing.
@@ -322,7 +326,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   );
 
   /**
-   * Syzygy: a press on the track's deck at `slot`, before it's known to be
+   * Alignment: a press on the track's deck at `slot`, before it's known to be
    * a tap or a drag: with no card picked up, a card of the line's there is
    * picked up at once, so it can be dragged. True when it picked one up.
    */
@@ -337,7 +341,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     [arranging, held, cardAtSlot, pick]
   );
 
-  /** Syzygy: the line's card at `from` dragged and dropped on `to`. */
+  /** Alignment: the line's card at `from` dragged and dropped on `to`. */
   const arrangeDrop = useCallback(
     (from: number, to: number): boolean => {
       const there = cardAtSlot(from);
@@ -370,7 +374,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
-      if (ability === 'syzygy') {
+      if (ability === 'alignment') {
         // A line: a tap anywhere on it picks it, and the cards are arranged on the track.
         const match =
           fight &&
@@ -461,7 +465,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    * destination, then the ability or Move. False when nothing is picked.
    */
   const stepBack = useCallback((): boolean => {
-    // Syzygy: the card picked up put down, then the arrangement undone, then the line.
+    // Alignment: the card picked up put down, then the arrangement undone, then the line.
     if (held) pick({held: null});
     else if (target?.cards?.length) pick({target: {hex: target.hex!, cards: []}});
     else if (target?.also) pick({target: {hex: target.hex!}});
@@ -519,7 +523,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     arrangeTap,
     arrangeDown,
     arrangeDrop,
-    /** Syzygy's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
+    /** Alignment's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
     arrange,
     slotsLater,
     outOfReach,

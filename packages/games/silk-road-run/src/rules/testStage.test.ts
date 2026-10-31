@@ -23,26 +23,26 @@ describe('the test stage', () => {
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 
-  it('gives the Magus Syzygy in place of Omen, the party picked on the start menu too', () => {
+  it('gives the Magus Alignment in place of Omen, the party picked on the start menu too', () => {
     const s = createTestFight(1, undefined, ['magus', 'youxia', 'alchemist']);
     const m = s.units.find((u) => u.id === 'p-magus')!;
-    expect(abilitiesOf(m).map((a) => a.id)).toEqual(['syzygy', 'hold']);
+    expect(abilitiesOf(m).map((a) => a.id)).toEqual(['alignment', 'hold']);
   });
 
-  it("carries Syzygy's arrangement through the run's actions, as the page sends it", () => {
+  it("carries Alignment's arrangement through the run's actions, as the page sends it", () => {
     let run = createRun(1, {test: true, party: ['magus']});
     for (let i = 0; i < 40 && run.fight.awaiting !== 'p-magus'; i++)
       run = handleRunAction(run, {type: 'continue'});
     const m = run.fight.units.find((u) => u.id === 'p-magus')!;
     expect(run.fight.awaiting).toBe('p-magus');
-    const line = ABILITIES.syzygy
+    const line = ABILITIES.alignment
       .targets(run.fight, mapOf(run.fight), m, m.hex!)
       .find((t) => t.cards?.length)!;
     const [card] = line.cards!;
     run = handleRunAction(run, {
       type: 'turn',
       action: {
-        ability: 'syzygy',
+        ability: 'alignment',
         target: JSON.parse(JSON.stringify({hex: line.hex, cards: [card]})),
       },
     });

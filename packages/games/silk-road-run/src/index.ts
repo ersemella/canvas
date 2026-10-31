@@ -75,8 +75,9 @@ export {
   forks,
   longshotLanes,
   longshotLines,
-  syzygyBlanks,
-  syzygyUnits,
+  alignmentBlanks,
+  alignmentDeck,
+  alignmentUnits,
   unusableReason,
 } from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';

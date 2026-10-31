@@ -44,7 +44,7 @@ export interface BoardScene {
    */
   displaced?: [Hex, Hex][];
   /**
-   * Syzygy's arranging on the track: the units whose cards it may move
+   * Alignment's arranging on the track: the units whose cards it may move
    * (outlined), the one picked up (raised), and, while one is, the blank
    * slots it may go on (lit). Taps on the track then name a slot
    * (`tactics:slot`), blank cards included.

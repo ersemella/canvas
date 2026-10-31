@@ -26,7 +26,7 @@ const ADVANCE_MAX_SECONDS = 1.2;
 
 /** Seconds a card takes to slide back to the slot of its unit's next turn. */
 export const CARD_SLIDE_SECONDS = 0.55;
-/** How many pixels the card Syzygy has picked up stands above the deck. */
+/** How many pixels the card Alignment has picked up stands above the deck. */
 const ARRANGE_RAISE = 5;
 /** How many pixels the front card grows above and below while its unit acts. */
 const FRONT_CARD_GROW = 5;
@@ -178,7 +178,7 @@ export function drawTrack(
     );
   }
   if (!advance && previewSlot !== null) drawMoves(ctx, deck, trackMoves(fight, previewSlot, bumps));
-  // The card Syzygy has picked up, dragged: over everything, centred under the pointer.
+  // The card Alignment has picked up, dragged: over everything, centred under the pointer.
   const dragged = opts.arrange?.held && fight.units.find((u) => u.id === opts.arrange!.held);
   if (dragged && opts.dragX != null) {
     const i = Math.max(
@@ -189,7 +189,7 @@ export function drawTrack(
   }
 }
 
-/** What the track marks: the card selected and hovered, and Syzygy's arranging (`BoardScene.arrange`). */
+/** What the track marks: the card selected and hovered, and Alignment's arranging (`BoardScene.arrange`). */
 export interface TrackOpts {
   selected: string | null;
   hovered: string | null;
@@ -198,7 +198,7 @@ export interface TrackOpts {
   dragX?: number | null;
 }
 
-/** How Syzygy's arranging marks a card: one it may move, the one picked up, or a blank one it may go on. */
+/** How Alignment's arranging marks a card: one it may move, the one picked up, or a blank one it may go on. */
 type ArrangeMark = 'movable' | 'held' | 'open';
 
 function arrangeMark(
@@ -270,7 +270,7 @@ function drawCard(
   const acting = Boolean(card.acting);
   const cx = deck.x0 + i * deck.w;
   const h = deck.h + 2 * FRONT_CARD_GROW * grow;
-  // The card Syzygy has picked up stands raised, out of the deck.
+  // The card Alignment has picked up stands raised, out of the deck.
   const raise = mark === 'held' ? ARRANGE_RAISE : 0;
   const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4) - raise;
   ctx.save();

@@ -291,8 +291,8 @@ const ICON: Record<IconId, Icon> = {
       '...=........',
     ],
   },
-  // Syzygy: three stars in a line, the middle one the accent.
-  syzygy: {
+  // Alignment: three stars in a line, the middle one the accent.
+  alignment: {
     kind: 'control',
     rows: [
       '............', //

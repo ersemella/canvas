@@ -284,7 +284,7 @@ export function TacticsPage() {
   const onHexRef = useRef(onHex);
   onHexRef.current = onHex;
   /**
-   * Syzygy: presses, taps and drags on the track's deck arrange its line's
+   * Alignment: presses, taps and drags on the track's deck arrange its line's
    * cards. A press on a card of the line picks it up at once (so it can be
    * dragged); the tap that press ends in then leaves it picked up.
    */
@@ -447,7 +447,7 @@ export function TacticsPage() {
         if (i < 0 || i >= d.count) return null;
         return {x: d.x0 + i * d.w + d.cardW - d.w / 2, y: d.y + d.h / 2};
       },
-      /** Syzygy's arranging on the track, once its line is picked. */
+      /** Alignment's arranging on the track, once its line is picked. */
       arrange: plan.arrange,
       /** The planned turn, if one is ready. */
       input,

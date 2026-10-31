@@ -1,10 +1,10 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against Byzantium's, on the Cyclops's Cave, a map with no obstacles or mountains, with Wait on (a Skip turn comes back after two thirds of a turn); the Priest with Invocation in place of Blessing (owner, 2026-10-31); and Byzantium's three as in a run since 2026-10-31 (owner): the Barbarian its tank, with Wade In and Fury, the Cataphract its damage hero, braced after each charge. And the Magus with Syzygy in place of Omen (owner, 2026-10-31): one of his six lines, any distance, through anything, the cards of every unit on it rearranged on the track, each on any blank card or swapped among themselves; pick him on the start menu to play it.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against Byzantium's, on the Cyclops's Cave, a map with no obstacles or mountains, with Wait on (a Skip turn comes back after two thirds of a turn); the Priest with Invocation in place of Blessing (owner, 2026-10-31); and Byzantium's three as in a run since 2026-10-31 (owner): the Barbarian its tank, with Wade In and Fury, the Cataphract its damage hero, braced after each charge. And the Magus with Alignment in place of Omen (owner, 2026-10-31): one of his six lines, any distance, through anything, the cards of every unit on it rearranged on the track, each on any blank card before his next turn or swapped among themselves there; pick him on the start menu to play it.",
   "seed": null,
   "map": "cave",
   "wait": true,
   "heroes": {
-    "magus": {"abilities": ["syzygy"]}
+    "magus": {"abilities": ["alignment"]}
   },
   "yurts": "none",
   "camel": {},

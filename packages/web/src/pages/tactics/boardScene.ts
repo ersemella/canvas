@@ -86,7 +86,7 @@ export interface SceneInput {
   inspected?: Unit | undefined;
   /** The inspected enemy's ability explained on its stat sheet, if any. */
   inspectedAbility?: AbilityId | null;
-  /** Syzygy's arranging on the track, once its line is picked (`BoardScene.arrange`). */
+  /** Alignment's arranging on the track, once its line is picked (`BoardScene.arrange`). */
   arrange?: BoardScene['arrange'];
 }
 
@@ -240,10 +240,10 @@ export function buildScene(input: SceneInput): BoardScene {
       };
     // Blessing in a line: its six lines, each to the map's edge through
     // everything, as a lane to aim along; the one aimed, or hovered, alone once picked.
-    // Syzygy's too, only the lines with a card it can move.
+    // Alignment's too, only the lines with a card it can move.
     if (
       from &&
-      (ability === 'syzygy' || (ability === 'blessing' && ABILITY.blessing.shape === 'line'))
+      (ability === 'alignment' || (ability === 'blessing' && ABILITY.blessing.shape === 'line'))
     ) {
       const aimed =
         target?.hex ??

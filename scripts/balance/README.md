@@ -246,7 +246,7 @@ Since the Barbarian took it in runs (2026-10-31), Hew is Wade In
 built as the swap; the four `byzantium-*.mjs` files reproduce only at
 their revision.
 
-`syzygy.mjs` (2026-10-31) the Magus's Syzygy (the test stage's in place
+`alignment.mjs` (2026-10-31) the Magus's Alignment (the test stage's in place
 of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
 support seat of the three other regions' mirrors, each other support in
 his seat of Persia's, and his skill as `skill-fights.mjs`.
