@@ -596,7 +596,7 @@ function candidateInputs(state: FightState, unit: Unit): TurnInput[] {
         !state.units.some((u) => u.alive && u.hex && hexDistance(u.hex, target.hex!) <= def.radius!)
       )
         continue;
-      const key = `${def.id}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}`;
+      const key = `${def.id}:${target.hex ? hexKey(target.hex) : ''}:${target.to ? hexKey(target.to) : ''}:${(target.cards ?? []).map((c) => `${hexKey(c.hex)}=${c.slot}`).join(',')}`;
       if (tried.has(key)) continue;
       tried.add(key);
       // A pair either way round is one turn (Omen as `bracket` or `swap`).
@@ -871,6 +871,17 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
             Math.max(a.shieldUntil ?? 0, lastsThrough(state))
           ) -
           lastingWorth(state, a, a.shield ?? 0, a.lastingShield ?? 0, a.shieldUntil));
+    }
+    return closing + value;
+  }
+  // Syzygy: the share of a turn each card it places loses (an enemy's, a
+  // gain) or gains (an ally's), as Omen's.
+  if (ability === 'syzygy') {
+    let value = 0;
+    for (const c of target?.cards ?? []) {
+      const u = unitAt(state, c.hex);
+      if (!u || u.slot === null) continue;
+      value += ((hostile(u, unit) ? 1 : -1) * turnValue(u) * (c.slot - u.slot)) / cardCost(u);
     }
     return closing + value;
   }

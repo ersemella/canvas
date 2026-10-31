@@ -517,7 +517,7 @@ export function parseAction(raw: unknown): RunAction {
   if (a.type === 'continue') return {type: 'continue'};
   if (a.type === 'turn') {
     const action = a.action as
-      | {ability?: unknown; target?: {hex?: unknown; to?: unknown}}
+      | {ability?: unknown; target?: {hex?: unknown; to?: unknown; cards?: unknown}}
       | undefined;
     if (
       !action ||
@@ -531,6 +531,16 @@ export function parseAction(raw: unknown): RunAction {
       const target: ActionTarget = {};
       if (action.target.hex !== undefined) target.hex = parseHex(action.target.hex);
       if (action.target.to !== undefined) target.to = parseHex(action.target.to);
+      // Syzygy's arrangement: each card's unit by its space, and its slot.
+      const {cards} = action.target;
+      if (cards !== undefined) {
+        if (!Array.isArray(cards) || cards.length > 12) throw new RuleError('Malformed cards.');
+        target.cards = cards.map((c: {hex?: unknown; slot?: unknown} | null) => {
+          if (!c || typeof c !== 'object' || !Number.isInteger(c.slot))
+            throw new RuleError('Malformed cards.');
+          return {hex: parseHex(c.hex), slot: c.slot as number};
+        });
+      }
       out.action.target = target;
     }
     if (a.move !== undefined) {

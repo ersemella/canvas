@@ -52,7 +52,7 @@ export default silkRoadRun;
 // rules, run locally for previews (D11).
 export {BOARD_LAYOUT, SCENE_SIZE, TacticsBoardSystem};
 export {HERO_ART, HERO_PORTRAIT, HERO_SPRITE, hexOverlaySpan} from './client/board/units';
-export {TRACK_AREA, trackCards} from './client/layout';
+export {TRACK_AREA, trackCards, trackSlots} from './client/layout';
 export {openingPlayback} from './client/playback';
 export type {PlaybackPayload} from './client/playback';
 export {PALETTE, PIXEL_FONT} from './client/palette';
@@ -61,6 +61,7 @@ export type {BoardScene, HighlightKind} from './client/board/scene';
 export type {
   TacticsCardPayload,
   TacticsHoverPayload,
+  TacticsSlotPayload,
   TacticsTapPayload,
 } from './client/TacticsInputSystem';
 export {
@@ -74,6 +75,8 @@ export {
   forks,
   longshotLanes,
   longshotLines,
+  syzygyBlanks,
+  syzygyUnits,
   unusableReason,
 } from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';

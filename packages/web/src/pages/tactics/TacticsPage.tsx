@@ -20,6 +20,7 @@ import {
   mapOf,
   plainSand,
   trackCards,
+  trackSlots,
   unitAt,
 } from '@canvas/games-silk-road-run';
 import type {
@@ -28,6 +29,7 @@ import type {
   FightState,
   TacticsCardPayload,
   TacticsHoverPayload,
+  TacticsSlotPayload,
   TacticsTapPayload,
   TurnInput,
 } from '@canvas/games-silk-road-run';
@@ -281,6 +283,17 @@ export function TacticsPage() {
 
   const onHexRef = useRef(onHex);
   onHexRef.current = onHex;
+  /** Syzygy: a tap on the track's deck arranges its line's cards. */
+  const {arrangeTap} = plan;
+  const onSlot = useCallback(
+    (slot: number) => {
+      if (playing || busy) return;
+      arrangeTap(slot);
+    },
+    [playing, busy, arrangeTap]
+  );
+  const onSlotRef = useRef(onSlot);
+  onSlotRef.current = onSlot;
 
   // ── What the board draws ───────────────────────────────────────────────────
 
@@ -340,6 +353,7 @@ export function TacticsPage() {
         reaches,
         inspected,
         inspectedAbility,
+        arrange: plan.arrange,
       }),
     [
       fight,
@@ -359,6 +373,7 @@ export function TacticsPage() {
       reaches,
       inspected,
       inspectedAbility,
+      plan.arrange,
     ]
   );
 
@@ -387,6 +402,7 @@ export function TacticsPage() {
         setPinnedHex(null);
         setSelectedId(unitId);
       });
+      events.on<TacticsSlotPayload>('tactics:slot', ({slot}) => onSlotRef.current(slot));
       events.on<TacticsHoverPayload>('tactics:hover', setHover);
       events.on('tactics:playback-done', playbackDone);
       boardReady();
@@ -411,6 +427,18 @@ export function TacticsPage() {
           );
         return c ? {x: c.x + c.w / 2, y: c.y + c.h / 2} : null;
       },
+      /** The middle of the strip of the deck card at `slot` that shows, blank or not, in scene pixels. */
+      slotCenter: (slot: number) => {
+        if (!fight) return null;
+        const d = trackSlots(fight, preview?.slot ?? null, fight.currentSlot, preview?.bumped);
+        const i = slot - d.start;
+        if (i < 0 || i >= d.count) return null;
+        return {x: d.x0 + i * d.w + d.cardW - d.w / 2, y: d.y + d.h / 2};
+      },
+      /** Syzygy's arranging on the track, once its line is picked. */
+      arrange: plan.arrange,
+      /** The planned turn, if one is ready. */
+      input,
       /** Where the previewed turn lands the acting unit's card on the track, if anything is previewed. */
       previewSlot: preview?.slot ?? null,
       /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */
@@ -429,7 +457,20 @@ export function TacticsPage() {
         return true;
       },
     };
-  }, [run, busy, playing, fight, acting, commit, targets, reaches, preview, scene]);
+  }, [
+    run,
+    busy,
+    playing,
+    fight,
+    acting,
+    commit,
+    targets,
+    reaches,
+    preview,
+    scene,
+    plan.arrange,
+    input,
+  ]);
 
   // ── Layout ─────────────────────────────────────────────────────────────────
 

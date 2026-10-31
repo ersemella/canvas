@@ -140,6 +140,28 @@ export function trackCards(
   }));
 }
 
+/**
+ * The deck card under a point, blank ones included, by slot (Syzygy's
+ * arranging, which places cards on blank ones): the front card whole, each
+ * later one by the strip of it that shows. Null off the deck.
+ */
+export function slotAt(
+  fight: FightState,
+  previewSlot: number | null,
+  bumps: TrackBumps,
+  p: {x: number; y: number}
+): number | null {
+  const {start, count, x0, w, cardW, y, h} = trackSlots(
+    fight,
+    previewSlot,
+    fight.currentSlot,
+    bumps
+  );
+  if (p.y < y || p.y > y + h || p.x < x0 || p.x > x0 + (count - 1) * w + cardW) return null;
+  const i = Math.max(0, Math.floor((p.x - x0 - cardW + w) / w));
+  return i < count ? start + i : null;
+}
+
 export function cardAt(cards: TrackCard[], p: {x: number; y: number}): TrackCard | undefined {
   return cards.find((c) => p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h);
 }

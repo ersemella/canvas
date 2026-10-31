@@ -291,6 +291,24 @@ const ICON: Record<IconId, Icon> = {
       '...=........',
     ],
   },
+  // Syzygy: three stars in a line, the middle one the accent.
+  syzygy: {
+    kind: 'control',
+    rows: [
+      '............', //
+      '.........#..',
+      '........###.',
+      '.........#..',
+      '......=.....',
+      '.....+......',
+      '....+++.....',
+      '.....+......',
+      '....=.......',
+      '..#.........',
+      '.###........',
+      '..#.........',
+    ],
+  },
   // An arrow flying over a block in its way, its fletching the accent.
   longshot: {
     kind: 'attack',

@@ -43,6 +43,13 @@ export interface BoardScene {
    * Gale): a move's arrow from where it stands to where it would end.
    */
   displaced?: [Hex, Hex][];
+  /**
+   * Syzygy's arranging on the track: the units whose cards it may move
+   * (outlined), the one picked up (raised), and, while one is, the blank
+   * slots it may go on (lit). Taps on the track then name a slot
+   * (`tactics:slot`), blank cards included.
+   */
+  arrange?: {movable: string[]; held: string | null; open: number[]} | null;
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** Cards the planned turn's landing moves on, by unit id (`TurnPreview.bumped`). */

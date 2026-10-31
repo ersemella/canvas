@@ -233,6 +233,10 @@ with Byzantium in them, the rest from `byzantium-swap.mjs`.
 Cataphract with Armour after a charge (`ABILITY.charge.armour`), Hew's
 Shield (`ABILITY.hew.shieldPerHit`); every role-seat row and their skill.
 
+`syzygy.mjs` (2026-10-31) the Magus's Syzygy (the test stage's in place
+of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
+support seat of the three other regions' mirrors, each other support in
+his seat of Persia's, and his skill as `skill-fights.mjs`.
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

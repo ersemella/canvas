@@ -955,6 +955,17 @@ export const ABILITY = {
     slots: 10 as number,
   },
   /**
+   * Syzygy (owner, 2026-10-31; the test stage's Magus's in place of Omen,
+   * no hero's in runs): one of his six lines, to the map's edge through
+   * anything, and the cards of every unit on it, of either side, Humphrey
+   * too, not Inevitable and on the track, rearranged as he likes: each put
+   * on any blank card of the deck, or several swapped among themselves in
+   * any order. The deck (the track as drawn) runs from the slot after his
+   * turn to `deck` slots on (12, the camel's start; a whole turn of the
+   * slowest), or to the furthest card on it if that is further.
+   */
+  syzygy: {deck: 12 as number},
+  /**
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the
    * map's edge right behind it, along the charge, is slammed into them,

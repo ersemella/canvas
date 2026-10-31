@@ -26,6 +26,8 @@ const ADVANCE_MAX_SECONDS = 1.2;
 
 /** Seconds a card takes to slide back to the slot of its unit's next turn. */
 export const CARD_SLIDE_SECONDS = 0.55;
+/** How many pixels the card Syzygy has picked up stands above the deck. */
+const ARRANGE_RAISE = 5;
 /** How many pixels the front card grows above and below while its unit acts. */
 const FRONT_CARD_GROW = 5;
 
@@ -117,7 +119,7 @@ export function drawTrack(
   bumps: TrackBumps,
   advance: TrackAdvance | null,
   slides: Map<string, CardSlide>,
-  opts: {selected: string | null; hovered: string | null}
+  opts: TrackOpts
 ): void {
   const {x, y, width, height} = TRACK_AREA;
   const start = advance ? trackStart(advance) : fight.currentSlot;
@@ -161,7 +163,8 @@ export function drawTrack(
     const grow = acting ? Math.max(0, 1 - i) : 0;
     // A charging card, or one a grapple holds off the track, greyed.
     const charging = Boolean(u && !ghost && !spent && (card?.held || isCharging(fight, u)));
-    drawCard(ctx, deck, u, {i, lift, ghost, acting, grow, charging}, opts);
+    const mark = passed ? undefined : arrangeMark(opts, u, slot, ghost);
+    drawCard(ctx, deck, u, {i, lift, ghost, acting, grow, charging, mark}, opts);
   }
   for (const {u, i} of sliding) {
     const acting = u.id === fight.awaiting;
@@ -175,6 +178,28 @@ export function drawTrack(
     );
   }
   if (!advance && previewSlot !== null) drawMoves(ctx, deck, trackMoves(fight, previewSlot, bumps));
+}
+
+/** What the track marks: the card selected and hovered, and Syzygy's arranging (`BoardScene.arrange`). */
+export interface TrackOpts {
+  selected: string | null;
+  hovered: string | null;
+  arrange?: {movable: string[]; held: string | null; open: number[]} | null;
+}
+
+/** How Syzygy's arranging marks a card: one it may move, the one picked up, or a blank one it may go on. */
+type ArrangeMark = 'movable' | 'held' | 'open';
+
+function arrangeMark(
+  opts: TrackOpts,
+  u: Unit | null,
+  slot: number,
+  ghost: boolean
+): ArrangeMark | undefined {
+  const a = opts.arrange;
+  if (!a || ghost) return undefined;
+  if (u) return a.held === u.id ? 'held' : a.movable.includes(u.id) ? 'movable' : undefined;
+  return a.held && a.open.includes(slot) ? 'open' : undefined;
 }
 
 /** A card the planned turn moves on the track, from the slot it holds to where it lands. */
@@ -226,14 +251,17 @@ function drawCard(
     acting?: boolean;
     grow: number;
     charging?: boolean;
+    mark?: ArrangeMark | undefined;
   },
-  opts: {selected: string | null; hovered: string | null}
+  opts: TrackOpts
 ): void {
-  const {i, lift, ghost, grow} = card;
+  const {i, lift, ghost, grow, mark} = card;
   const acting = Boolean(card.acting);
   const cx = deck.x0 + i * deck.w;
   const h = deck.h + 2 * FRONT_CARD_GROW * grow;
-  const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4);
+  // The card Syzygy has picked up stands raised, out of the deck.
+  const raise = mark === 'held' ? ARRANGE_RAISE : 0;
+  const cy = deck.y - FRONT_CARD_GROW * grow - lift * (deck.y + deck.h + 4) - raise;
   ctx.save();
   ctx.globalAlpha = 1 - lift * 0.6;
   pixelShadow(ctx);
@@ -241,24 +269,31 @@ function drawCard(
   // The ghost is just an outline where the acting card lands: no portrait,
   // so the acting unit doesn't show twice.
   if (!u || ghost) {
-    ctx.fillStyle = PALETTE.dusk1;
+    ctx.fillStyle = mark === 'open' ? PALETTE.dusk2 : PALETTE.dusk1;
     ctx.fill();
   } else {
     bandCard(ctx, cx, cy, deck.cardW, h, u.side);
   }
   ctx.shadowColor = 'transparent';
   const strokeBorder = () => {
-    ctx.setLineDash(ghost ? [3, 2] : []);
-    ctx.strokeStyle = !u
-      ? PALETTE.dusk2
-      : acting
-        ? PALETTE.goldLight
-        : ghost
-          ? PALETTE.lapisLight
-          : u.id === opts.selected || u.id === opts.hovered
-            ? PALETTE.ivory
-            : SIDE_LIGHT[u.side];
-    ctx.lineWidth = acting || ghost ? 2.5 : 1.25;
+    ctx.setLineDash(ghost || mark === 'open' ? [3, 2] : []);
+    ctx.strokeStyle =
+      mark === 'open'
+        ? PALETTE.jade
+        : mark === 'held'
+          ? PALETTE.ivory
+          : mark === 'movable'
+            ? PALETTE.goldLight
+            : !u
+              ? PALETTE.dusk2
+              : acting
+                ? PALETTE.goldLight
+                : ghost
+                  ? PALETTE.lapisLight
+                  : u.id === opts.selected || u.id === opts.hovered
+                    ? PALETTE.ivory
+                    : SIDE_LIGHT[u.side];
+    ctx.lineWidth = acting || ghost || mark ? 2.5 : 1.25;
     // The ghost's thick dashes sit inside its edge, so none show past the card in front.
     if (ghost) pixelRect(ctx, cx + 1.25, cy + 1.25, deck.cardW - 2.5, h - 2.5, 4);
     ctx.stroke();
