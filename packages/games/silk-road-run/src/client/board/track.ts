@@ -163,7 +163,7 @@ export function drawTrack(
     const grow = acting ? Math.max(0, 1 - i) : 0;
     // A charging card, or one a grapple holds off the track, greyed.
     const charging = Boolean(u && !ghost && !spent && (card?.held || isCharging(fight, u)));
-    const mark = passed ? undefined : arrangeMark(opts, u, slot, ghost);
+    const mark = passed ? undefined : arrangeMark(opts, u, slot, ghost, acting);
     drawCard(ctx, deck, u, {i, lift, ghost, acting, grow, charging, mark}, opts);
   }
   for (const {u, i} of sliding) {
@@ -193,7 +193,13 @@ export function drawTrack(
 export interface TrackOpts {
   selected: string | null;
   hovered: string | null;
-  arrange?: {movable: string[]; held: string | null; open: number[]} | null;
+  arrange?: {
+    movable: string[];
+    held: string | null;
+    open: number[];
+    /** Alignment's swaps: the slot his own next turn's card takes in the arrangement, shown as the landing card. */
+    own?: number | null;
+  } | null;
   /** Where the picked-up card is being dragged along the track, in scene pixels; null when it isn't. */
   dragX?: number | null;
 }
@@ -205,10 +211,12 @@ function arrangeMark(
   opts: TrackOpts,
   u: Unit | null,
   slot: number,
-  ghost: boolean
+  ghost: boolean,
+  acting: boolean
 ): ArrangeMark | undefined {
   const a = opts.arrange;
-  if (!a || ghost) return undefined;
+  // The acting card in front isn't moved; its next turn's, the landing card, is (Alignment's swaps).
+  if (!a || acting || (ghost && a.own == null)) return undefined;
   if (u) return a.held === u.id ? 'held' : a.movable.includes(u.id) ? 'movable' : undefined;
   return a.held && a.open.includes(slot) ? 'open' : undefined;
 }
@@ -279,7 +287,9 @@ function drawCard(
   pixelRect(ctx, cx, cy, deck.cardW, h, 3);
   // The ghost is just an outline where the acting card lands: no portrait,
   // so the acting unit doesn't show twice.
-  if (!u || ghost) {
+  // Alignment's swaps mark the landing card, his next turn's: it shows his portrait then.
+  const blankGhost = ghost && !mark;
+  if (!u || blankGhost) {
     ctx.fillStyle = mark === 'open' ? PALETTE.dusk2 : PALETTE.dusk1;
     ctx.fill();
   } else {
@@ -319,7 +329,7 @@ function drawCard(
     ctx.fillRect(Math.round(cx + deck.cardW - 3), Math.round(cy + 3), 2, Math.round(h - 6));
   }
 
-  if (u && !ghost) {
+  if (u && !blankGhost) {
     // The unit sits in the strip that shows; the front card shows whole,
     // and a card sliding to the front carries its unit across to the middle.
     const back = Math.min(1, i);

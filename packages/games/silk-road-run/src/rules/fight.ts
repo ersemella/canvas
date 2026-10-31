@@ -386,6 +386,14 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId, stunn
   delete unit.jumped;
   if (!unit.alive) return;
   const now = state.currentSlot;
+  // Its own card swapped by Alignment: that slot exactly.
+  if (unit.cardDue !== undefined) {
+    const due = unit.cardDue;
+    delete unit.cardDue;
+    placeCard(state, unit, due, true);
+    takeHasteDue(state, unit);
+    return;
+  }
   let slot = aimSlot(state, unit, now, ability, idle && !stunned);
   if (idle && hasPassive(unit, 'patient')) slot = Math.max(now + 1, slot - RULES.patientSlots);
   placeCard(state, unit, slot, ability !== undefined && chargeOf(unit, ability) > 0);

@@ -38,16 +38,17 @@ describe('the test stage', () => {
     const line = ABILITIES.alignment
       .targets(run.fight, mapOf(run.fight), m, m.hex!)
       .find((t) => t.cards?.length)!;
-    const [card] = line.cards!;
     run = handleRunAction(run, {
       type: 'turn',
       action: {
         ability: 'alignment',
-        target: JSON.parse(JSON.stringify({hex: line.hex, cards: [card]})),
+        target: JSON.parse(JSON.stringify({hex: line.hex, cards: line.cards})),
       },
     });
     expect(
-      run.fight.log.some((l) => /card moves to/.test(String((l as {text?: string}).text ?? l)))
+      run.fight.log.some((l) =>
+        /(card|next turn) moves to/.test(String((l as {text?: string}).text ?? l))
+      )
     ).toBe(true);
   });
 

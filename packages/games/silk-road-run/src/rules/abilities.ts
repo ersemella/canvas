@@ -68,7 +68,7 @@ import {
 } from './resolve';
 import type {Ctx} from './resolve';
 import {blocks, onMap, tileAt} from './map';
-import {aimSlot, chargeOf, placeCard, simultaneousOrder} from './track';
+import {aimSlot, chargeOf, freeSlotFrom, placeCard, simultaneousOrder} from './track';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
 import type {AbilityId, ActionTarget, CardPlacement, FightState, LeapShape, Unit} from './types';
@@ -1906,6 +1906,77 @@ export function alignmentUnits(
 }
 
 /**
+ * Where the Magus's own card goes after this turn if Alignment leaves it
+ * alone: his action cost on, or the first free slot after it.
+ */
+export function alignmentSelfSlot(state: FightState, user: Unit): number {
+  return freeSlotFrom(state, aimSlot(state, user), user);
+}
+
+/** One card an Alignment may move: its unit, the space it's known by, and its slot now. */
+export interface AlignmentCard {
+  unit: Unit;
+  hex: Hex;
+  slot: number;
+}
+
+/**
+ * The cards an Alignment from `from` toward `toward` may move, and where
+ * each is now: the line's units' (`alignmentUnits`); with
+ * `ABILITY.alignment.swaps`, his own next turn's too (`alignmentSelfSlot`)
+ * and Humphrey's, on the line or not. In slot order.
+ */
+export function alignmentPool(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  toward: Hex
+): AlignmentCard[] {
+  const units = alignmentUnits(state, map, user, from, toward);
+  const out: AlignmentCard[] = units.map((u) => ({unit: u, hex: u.hex!, slot: u.slot!}));
+  if (ABILITY.alignment.swaps && units.length > 0) {
+    const camel = state.units.find(
+      (u) =>
+        u.alive &&
+        u.hero === CAMEL &&
+        u !== user &&
+        u.hex !== null &&
+        u.slot !== null &&
+        u.slot > state.currentSlot &&
+        !units.includes(u)
+    );
+    if (camel) out.push({unit: camel, hex: camel.hex!, slot: camel.slot!});
+    out.push({unit: user, hex: from, slot: alignmentSelfSlot(state, user)});
+  }
+  return out.sort((a, b) => a.slot - b.slot);
+}
+
+/** Why a swaps-only Alignment's arrangement can't be made: each card of the pool, once, on a pool card's slot, no two on one. */
+function alignmentSwapProblem(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  target: ActionTarget
+): string | null {
+  const pool = alignmentPool(state, map, user, user.hex!, target.hex!);
+  const slots = new Set(pool.map((c) => c.slot));
+  const ends = new Map(pool.map((c) => [c.unit, c.slot]));
+  const placed = new Set<Unit>();
+  for (const c of target.cards ?? []) {
+    const card = pool.find((p) => hexEquals(p.hex, c.hex));
+    if (!card)
+      return 'Alignment moves only the cards of the units on its line, yours and Humphrey’s.';
+    if (placed.has(card.unit)) return 'Alignment places each card once.';
+    if (!slots.has(c.slot)) return 'Alignment only swaps cards among themselves.';
+    placed.add(card.unit);
+    ends.set(card.unit, c.slot);
+  }
+  if (new Set(ends.values()).size !== ends.size) return 'Two cards can’t share a slot.';
+  return null;
+}
+
+/**
  * Why an Alignment's arrangement can't be made, or null if it can: each card
  * placed is a unit on the line, once, on a slot of the deck if it moves
  * (`alignmentDeck`: before the Magus's next turn), and no two
@@ -1918,6 +1989,7 @@ export function alignmentProblem(
   target: ActionTarget
 ): string | null {
   if (!user.hex || !target.hex) return 'Alignment needs a line.';
+  if (ABILITY.alignment.swaps) return alignmentSwapProblem(state, map, user, target);
   const units = alignmentUnits(state, map, user, user.hex, target.hex);
   const {first, last} = alignmentDeck(state, user);
   const ends = new Map(units.map((u) => [u, u.slot!]));
@@ -1944,6 +2016,50 @@ export function alignmentProblem(
 }
 
 /**
+ * The swaps the AI tries for a swaps-only Alignment (the player may make
+ * any permutation): its side's cards (his own among them) on the earliest
+ * of the pool's slots and the other side's on the latest, each side in its
+ * order; and each single swap of an enemy's card before an ally's.
+ */
+function alignmentSwaps(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  toward: Hex
+): CardPlacement[][] {
+  const pool = alignmentPool(state, map, user, from, toward);
+  const slots = pool.map((c) => c.slot);
+  const mine = pool.filter((c) => !hostile(c.unit, user));
+  const theirs = pool.filter((c) => hostile(c.unit, user));
+  const variants: (readonly [AlignmentCard, number])[][] = [
+    [
+      ...mine.map((c, i) => [c, slots[i]!] as const),
+      ...theirs.map((c, i) => [c, slots[mine.length + i]!] as const),
+    ],
+  ];
+  for (const e of theirs)
+    for (const a of mine)
+      if (e.slot < a.slot)
+        variants.push([
+          [e, a.slot],
+          [a, e.slot],
+        ]);
+  const out: CardPlacement[][] = [];
+  const seen = new Set<string>();
+  for (const v of variants) {
+    const cards = v
+      .filter(([c, slot]) => slot !== c.slot)
+      .map(([c, slot]) => ({hex: {...c.hex}, slot}));
+    const key = cards.map((c) => `${hexKey(c.hex)}=${c.slot}`).join(',');
+    if (cards.length === 0 || seen.has(key)) continue;
+    seen.add(key);
+    out.push(cards);
+  }
+  return out;
+}
+
+/**
  * The arrangements the AI tries for an Alignment along the line toward
  * `toward` (the player may make any): its allies' cards on the earliest
  * of the slots open to them (the blank cards and their own), its enemies'
@@ -1957,6 +2073,7 @@ export function alignmentArrangements(
   from: Hex,
   toward: Hex
 ): CardPlacement[][] {
+  if (ABILITY.alignment.swaps) return alignmentSwaps(state, map, user, from, toward);
   const units = alignmentUnits(state, map, user, from, toward).sort((a, b) => a.slot! - b.slot!);
   const blanks = alignmentBlanks(state, user);
   const {last} = alignmentDeck(state, user);
@@ -2010,9 +2127,11 @@ const alignment: AbilityDef = {
   bothSides: true,
   area: (map, from, target) => blessingLine(map, from, target),
   summary: () =>
-    ABILITY.alignment.beforeNext
-      ? 'A line from you, any distance, through anything: rearrange the cards of the units on it, each on a blank card before your next turn, or swapped among themselves there.'
-      : 'A line from you, any distance, through anything: rearrange the cards of the units on it, each on any blank card of the track, or swapped among themselves.',
+    ABILITY.alignment.swaps
+      ? 'A line from you, any distance, through anything: swap the cards of the units on it, your next turn’s and Humphrey’s among themselves, in any order.'
+      : ABILITY.alignment.beforeNext
+        ? 'A line from you, any distance, through anything: rearrange the cards of the units on it, each on a blank card before your next turn, or swapped among themselves there.'
+        : 'A line from you, any distance, through anything: rearrange the cards of the units on it, each on any blank card of the track, or swapped among themselves.',
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
     for (const l of blessingLines(map, from)) {
@@ -2020,7 +2139,7 @@ const alignment: AbilityDef = {
       // A line with a card that can move: onto a blank card, or two in the deck to swap.
       const units = alignmentUnits(state, map, user, from, l[0]!);
       const {last} = alignmentDeck(state, user);
-      const swappable = units.filter((u) => u.slot! <= last).length >= 2;
+      const swappable = ABILITY.alignment.swaps || units.filter((u) => u.slot! <= last).length >= 2;
       if (units.length === 0 || (!swappable && alignmentBlanks(state, user).length === 0)) continue;
       const hex = {...l[0]!};
       const ways = alignmentArrangements(state, map, user, from, hex);
@@ -2035,6 +2154,18 @@ const alignment: AbilityDef = {
     const moves = (target.cards ?? [])
       .map((c) => ({u: unitAt(ctx.state, c.hex)!, slot: c.slot}))
       .filter(({u, slot}) => u && u.slot !== slot);
+    // Swaps: his own card takes its slot as his turn ends.
+    const own = moves.find(({u}) => u === user);
+    if (own) {
+      if (own.slot !== alignmentSelfSlot(ctx.state, user)) {
+        user.cardDue = own.slot;
+        log(
+          ctx,
+          `${unitName(user)}'s next turn moves to ${own.slot - ctx.state.currentSlot} slots on.`
+        );
+      }
+      moves.splice(moves.indexOf(own), 1);
+    }
     // Every card off first, so a swap never lands on a card still there.
     for (const {u} of moves) u.slot = null;
     for (const {u, slot} of moves) {

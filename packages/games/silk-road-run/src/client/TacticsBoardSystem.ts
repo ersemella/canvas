@@ -513,7 +513,7 @@ export class TacticsBoardSystem extends BaseSystem {
       held &&
       mouseService.isDown &&
       trackDrag.from !== null &&
-      cards.some((c) => c.unitId === held && !c.ghost && c.slot === trackDrag.from);
+      cards.some((c) => c.unitId === held && c.slot === trackDrag.from);
     drawTrack(
       ctx,
       fight,

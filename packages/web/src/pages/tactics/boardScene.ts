@@ -124,7 +124,8 @@ export function buildScene(input: SceneInput): BoardScene {
     // Phones show whose turn it is in the action bar instead (see `TurnControls`).
     turnArrow: !phone,
     preview: [],
-    previewSlot: preview?.slot ?? null,
+    // Alignment's swaps: his own next turn's card shows (the landing card) to be swapped, before any preview.
+    previewSlot: preview?.slot ?? input.arrange?.own ?? null,
     previewBumps: preview?.bumped ?? {},
     arrange: input.arrange ?? null,
   };

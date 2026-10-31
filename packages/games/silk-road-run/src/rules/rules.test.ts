@@ -51,6 +51,7 @@ import {
   ridePlan,
   stompPlan,
   alignmentArrangements,
+  alignmentPool,
   alignmentUnits,
   trackBlessing,
   unusableReason,
@@ -2267,6 +2268,10 @@ describe('the Magus', () => {
   });
 
   describe("Alignment (the test stage's, in place of Omen)", () => {
+    // The tests below place cards on blank ones (`swaps` off); the swaps after.
+    const was = {...ABILITY.alignment};
+    beforeEach(() => Object.assign(ABILITY.alignment, {swaps: false}));
+    afterEach(() => Object.assign(ABILITY.alignment, was));
     const along = (h: Hex, dir: number, n: number): Hex => {
       let out = h;
       for (let i = 0; i < n; i++) out = hexNeighbor(out, dir);
@@ -2381,6 +2386,94 @@ describe('the Magus', () => {
       expect(alignmentArrangements(s, mapOf(s), m, c, along(c, 3, 1))).toEqual([
         [{hex: along(c, 3, 2), slot: 1}],
       ]);
+    });
+
+    describe("as swaps only, with his own card and Humphrey's (`swaps`)", () => {
+      beforeEach(() => Object.assign(ABILITY.alignment, {swaps: true}));
+      /** The two enemies up line 0, Humphrey off every line at slot 12. */
+      const swapping = () => {
+        const s = setup(
+          {
+            'p-magus': c,
+            'e-mangudai': along(c, 0, 1),
+            'e-bokh': along(c, 0, 3),
+            'p-camel': along(c, 4, 3),
+          },
+          party
+        );
+        const m = unit(s, 'p-magus');
+        m.loadout = {...m.loadout, abilities: ['alignment', 'hold']};
+        m.slot = s.currentSlot;
+        unit(s, 'e-mangudai').slot = 2;
+        unit(s, 'e-bokh').slot = 5;
+        unit(s, 'p-camel').slot = 12;
+        return {s, m};
+      };
+
+      it("pools the line's cards with his next turn's and Humphrey's, on the line or not", () => {
+        const {s, m} = swapping();
+        const pool = alignmentPool(s, mapOf(s), m, c, along(c, 0, 1));
+        expect(pool.map((p) => [p.unit.id, p.slot])).toEqual([
+          ['e-mangudai', 2],
+          ['e-bokh', 5],
+          ['p-magus', actionCost(m)],
+          ['p-camel', 12],
+        ]);
+        // A line with no unit on it is no target, whatever the pool would hold.
+        expect(ABILITIES.alignment.targets(s, mapOf(s), m, c).map((t) => hexKey(t.hex!))).toEqual(
+          expect.arrayContaining([hexKey(along(c, 0, 1))])
+        );
+      });
+
+      it("swaps an enemy's card with his own: it waits where his next turn was, he acts at its slot", () => {
+        const {s, m} = swapping();
+        const line = along(c, 0, 1);
+        applyTurn(s, m, {
+          action: {
+            ability: 'alignment',
+            target: {
+              hex: line,
+              cards: [
+                {hex: line, slot: actionCost(m)},
+                {hex: c, slot: 2},
+              ],
+            },
+          },
+        });
+        expect(unit(s, 'e-mangudai').slot).toBe(actionCost(m));
+        expect(m.slot).toBe(2);
+      });
+
+      it('swaps with Humphrey off the line, and refuses a blank card', () => {
+        const {s, m} = swapping();
+        const line = along(c, 0, 1);
+        const c1 = cloneFight(s);
+        applyTurn(c1, unit(c1, 'p-magus'), {
+          action: {
+            ability: 'alignment',
+            target: {
+              hex: line,
+              cards: [
+                {hex: along(c, 0, 3), slot: 12},
+                {hex: along(c, 4, 3), slot: 5},
+              ],
+            },
+          },
+        });
+        expect([unit(c1, 'e-bokh').slot, unit(c1, 'p-camel').slot]).toEqual([12, 5]);
+        expect(
+          tryTurn(s, 'p-magus', {
+            action: {ability: 'alignment', target: {hex: line, cards: [{hex: line, slot: 4}]}},
+          })
+        ).toThrow(RuleError);
+        // The AI's: its side's cards first, the enemy's last.
+        expect(alignmentArrangements(s, mapOf(s), m, c, line)).toContainEqual([
+          {hex: c, slot: 2},
+          {hex: along(c, 4, 3), slot: 5},
+          {hex: line, slot: actionCost(m)},
+          {hex: along(c, 0, 3), slot: 12},
+        ]);
+      });
     });
   });
 
