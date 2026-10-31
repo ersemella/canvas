@@ -6590,7 +6590,7 @@ with 4x work, the rest production):
   novice still nearly an expert's equal. Pushing is a choice of where, and
   every Lunge has only one way to push, so it adds no decision.
 - **The party's gap widens**: 27.5 from 21, all of it the novices', who
-  lose 7 points (27.8% from 34.8%) while experts are unchanged. A shallow
+  lose 7 points (27.8% from 34.8%) while experts are unchanged. Likely (not measured), a shallow
   search pushes units out of the Cataphract's charge lanes and the
   Priest's Invocation without seeing it; this is the one row clearly over
   noise.
