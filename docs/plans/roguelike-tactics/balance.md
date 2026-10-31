@@ -6600,6 +6600,59 @@ wants a Push on Lunge, the likelier shapes are untried: a Push only when he
 didn't step in (a struck unit 1 away sent back, so it never undoes his
 step), or a Pull (the unit 2 away drawn in, in place of his stepping in).
 
+### Bloodlust beside Fury, on the test stage (later 2026-10-31)
+
+Asked for: another passive for the Barbarian, his hits landing
+Empowering him, in addition to Fury. Built as **Bloodlust** (`BLOODLUST`,
+a passive no hero has in runs, not offered): whenever his hit damages an
+enemy (a Shield taking it too; Armour stopping all of it not), he is
+Empowered 1 for 10 slots, his own turn at speed 1, so to his next turn.
+Two versions: `bl`, refreshed, never above 1 (as built); `bls`, stacking,
+1 more a hit, at most 3 (`BLOODLUST.stacks`). The test stage gives him
+Fury and Bloodlust (`bl`). `experiments/bloodlust.mjs`: the rows of
+"Lunge with Push 1" above, on top of the test stage's Push 1, so beside
+those (same seeds; *Push 1* is its baseline), 400 fights a row (about
+±2.5 a cell, ±3.5 a span), on `7b80352`. Unfinished 0–1.3%.
+
+| | Push 1 | + Bloodlust | + Bloodlust, stacking to 3 |
+|---|---:|---:|---:|
+| Byzantium against the Steppe | 33.8% | 34.5% | 34.8% |
+| against China | 40.3% | 40.3% | 41% |
+| against Persia | 60.8% | 59.5% | 60.3% |
+| Barbarian abroad: Steppe, China, Persia | 37.5, 57.5, 49.4% | 36, 57.8, 50.9% | 36.5, 58, 53.8% |
+| Others' (his mean abroad) | 48.1% | 48.2% | 49.4% |
+| Grappler, Vanguard, Juggernaut in his seat | 77.5, 69.3, 59.8% | 76.3, 68, 56.5% | 75.3, 65, 53.5% |
+| Kept | 31.1% | 33.1% | 35.4% |
+| **Score** (tanks 52.2–54.8%) | 39.6% | **40.7%** | **42.4%** |
+| Cataphract's seat kept | 61.1% | 61.5% | 61.5% |
+| Priest's seat kept | 46.4% | 46.6% | 43.5% |
+| Novice Barbarian | 46% | 44.5% | 45% |
+| Expert Barbarian | 50.8% | 50.8% | 51% |
+| **His skill span** | 4.8 | **6.3** | **6.0** |
+| Novice Byzantine party | 27.8% | 34% | 30.8% |
+| Expert Byzantine party | 55.3% | 60% | 58.5% |
+| Party's span | 27.5 | 26 | 27.7 |
+
+- **A small gain**: +1.1 as a score refreshed, +2.8 stacking, both
+  inside or at the edge of noise, still 10–14 under the other tanks. Most
+  of it is in his own seat (the other tanks win 2 to 4 points less in
+  it); abroad he is unchanged refreshed, +1.3 stacking (Persia's seat
+  +4.4).
+- **Byzantium's party is unchanged** against every region (±1.3). The
+  expert party is 3–5 points stronger and the novice party back where it
+  was before the Push (34% against 34.8% in the full check), but neither
+  span moves past noise.
+- **His skill span is 6.0–6.3 from 4.8**, inside noise, still the
+  lowest of any hero but the Outrider. Keeping an Empower going asks for
+  a hit every turn, which a tank that lunges each turn gives anyway, so
+  the AI has nothing to choose.
+- **Likely why so little** (not measured): at power 2 an Empower of 1 is
+  a 50% bigger hit, but he lunges only some of his turns, and the
+  Empower lasts one turn; a tank's worth here is holding the line more
+  than his damage.
+
+Not built into runs. The test stage plays the refreshed version.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
