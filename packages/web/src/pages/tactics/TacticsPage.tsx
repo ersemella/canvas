@@ -142,7 +142,10 @@ export function TacticsPage() {
   const {boardRef, boardSlotRef, boardSize, fitWidth} = useBoardFit(phone, hasBoard);
 
   const plan = useTurnPlan(fight, phone, hover.hex);
-  const {acting, ability, plannedMove, moving, reaches, targets, input, preview} = plan;
+  const {acting, ability, plannedMove, moving, reaches, targets, input} = plan;
+  // Skip turn armed (its first tap): the board previews the Hold, where the card lands.
+  const [skipArmed, setSkipArmed] = useState(false);
+  const preview = skipArmed && !input ? plan.skipPreview : plan.preview;
   // While AI turns are due (one request each) there's no unit to control:
   // the controls stay up, greyed, for the party's unit whose card comes
   // next, so the page doesn't jump.
@@ -408,6 +411,8 @@ export function TacticsPage() {
           );
         return c ? {x: c.x + c.w / 2, y: c.y + c.h / 2} : null;
       },
+      /** Where the previewed turn lands the acting unit's card on the track, if anything is previewed. */
+      previewSlot: preview?.slot ?? null,
       /** What a looked-at hex takes up (its unit's health bar and statuses included), in scene pixels. */
       overlaySpan: (h: Hex) => (fight ? hexOverlaySpan(fight, h) : null),
       /** Every hex of plain sand now (nothing on it to explain: no unit, tile, hail or exit). */
@@ -550,6 +555,7 @@ export function TacticsPage() {
           onCancel={input ? () => chooseAbility(null) : undefined}
           size={phone ? 'lg' : 'sm'}
           hotkey={phone ? undefined : 's'}
+          onArmedChange={setSkipArmed}
         />
       </TurnControls>
     )

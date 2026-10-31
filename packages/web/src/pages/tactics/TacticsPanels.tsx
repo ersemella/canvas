@@ -82,7 +82,8 @@ const SKIP_ARMED_MS = 3000;
  * `SKIP_ARMED_MS`, on a tap anywhere else (which still does what it does),
  * or when the turn changes (the page keys it by turn). Once Move's hex or
  * an ability's target is picked, it is Cancel instead (`onCancel`): one tap
- * puts the choice down (owner, 2026-10-25).
+ * puts the choice down (owner, 2026-10-25). While armed, the track shows
+ * where the unit's card would land (`onArmedChange`).
  */
 export function SkipButton(props: {
   fight: FightState;
@@ -96,8 +97,17 @@ export function SkipButton(props: {
   onCancel?: (() => void) | undefined;
   /** Desktop: a key that presses it (twice to skip, as with taps), shown on it. */
   hotkey?: string | undefined;
+  /** Told when it arms or disarms, so the track can preview where a Hold lands. */
+  onArmedChange?: ((armed: boolean) => void) | undefined;
 }) {
   const [armed, setArmed] = useState(false);
+  const onArmedChangeRef = useRef(props.onArmedChange);
+  onArmedChangeRef.current = props.onArmedChange;
+  useEffect(() => {
+    onArmedChangeRef.current?.(armed && !props.onCancel);
+  }, [armed, props.onCancel]);
+  // Unmounted (a new turn keys a new button): nothing armed any more.
+  useEffect(() => () => onArmedChangeRef.current?.(false), []);
   const ref = useRef<HTMLButtonElement>(null);
   const press = () => {
     if (props.onCancel) {

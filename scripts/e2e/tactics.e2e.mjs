@@ -457,11 +457,20 @@ try {
     await skip.textContent()
   );
   // Its first tap only arms it, and it disarms on its own.
+  const previewSlot = () => page.evaluate(() => window.__tactics?.previewSlot);
+  const slotBefore = await previewSlot();
   await skip.click();
   check(
     'a first tap on Skip turn only arms it',
     (await skip.textContent()) === 'Tap again to skip' && (await state()).view.version === before,
     await skip.textContent()
+  );
+  await sleep(100);
+  const slotArmed = await previewSlot();
+  check(
+    'an armed Skip turn previews where the card lands on the track',
+    slotBefore === null && typeof slotArmed === 'number',
+    JSON.stringify({slotBefore, slotArmed})
   );
   // A tap anywhere else disarms it (here, on the board: the unit, or an enemy).
   const enemyHexes = (await state()).view.fight.units
@@ -472,6 +481,12 @@ try {
     'a tap elsewhere disarms Skip turn',
     /^Skip turn/.test(await skip.textContent()) && (await state()).view.version === before,
     await skip.textContent()
+  );
+  await sleep(100);
+  check(
+    'a disarmed Skip turn puts the track preview away',
+    (await previewSlot()) === null,
+    await previewSlot()
   );
   await skip.click();
   await sleep(3300);
