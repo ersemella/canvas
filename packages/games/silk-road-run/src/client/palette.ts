@@ -4,7 +4,8 @@
  * pixel art, the canvas and the HTML read as one game. The terrain and
  * effect art keep their own hand-picked shades.
  *
- * Ramps, darkest first: dusk (the night panels and the track), sand (the
+ * Ramps, darkest first: dusk (the night panels and the track: warm
+ * walnut and umber, a lamp-lit caravanserai after dark, owner 2026-10-31), sand (the
  * board), gold (warnings: harmful statuses; the acting unit's border and
  * arrow), lapis (your side: deep for your units, light for your actions:
  * targeting, Confirm),
@@ -14,12 +15,12 @@
 export const PALETTE = {
   /** The sprites' outline: every UI frame's edge. */
   ink: '#221816',
-  dusk0: '#1c1622',
-  dusk1: '#2b2333',
-  dusk2: '#3e3349',
-  dusk3: '#5b4c68',
+  dusk0: '#1e1510',
+  dusk1: '#2e2018',
+  dusk2: '#443024',
+  dusk3: '#654a36',
   /** Dimmed text on the dusk panels. */
-  dusk4: '#a99bb5',
+  dusk4: '#b9a184',
   sandDark: '#8c7350',
   sand: '#d4b483',
   sandLight: '#efdcbc',

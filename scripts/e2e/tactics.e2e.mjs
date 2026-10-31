@@ -629,10 +629,10 @@ try {
   await shot(page, 'enemy-sheet');
 
   check(
-    'the page is the board’s black',
+    'the page is the board’s umber',
     (await page.evaluate(
       () => getComputedStyle(document.querySelector('[class*="page"]')).backgroundColor
-    )) === 'rgb(0, 0, 0)'
+    )) === 'rgb(18, 12, 8)'
   );
 
   // Hovering a hex shows what it does, without planning a move.
@@ -1125,8 +1125,8 @@ try {
       ];
     });
     check(
-      'phone: the actions share the board’s black',
-      colours[0] === 'rgb(0, 0, 0)' && colours[1] === 'rgb(0, 0, 0)',
+      'phone: the actions share the board’s umber (the canvas clear, showing the page through)',
+      colours[0] === 'rgb(18, 12, 8)' && colours[1] === 'rgba(0, 0, 0, 0)',
       colours
     );
   }

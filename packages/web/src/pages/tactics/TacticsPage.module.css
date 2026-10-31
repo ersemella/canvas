@@ -136,10 +136,10 @@
 }
 
 /* Phone: board on top, the track and panels below (brief section 9). */
-/* The canvas's black everywhere, so the board, the panel and the page read as one surface. */
+/* One near-black umber (below dusk0) everywhere, so the board, the panel and the page read as one surface. */
 .page {
   min-height: 100dvh;
-  background: #000;
+  background: #120c08;
   /* No double-tap zoom (a quick second tap on Start or a turn button zoomed the phone in). */
   touch-action: manipulation;
 }
@@ -155,6 +155,8 @@
 }
 .board :global(canvas) {
   width: 100%;
+  /* The page's umber, not GameCanvas's black, so the board has no box around it. */
+  background: transparent;
   /*
    * The board only takes taps, so the browser keeps pinch zoom on it: a page
    * zoomed in some other way can be pinched back out, where the canvas's
