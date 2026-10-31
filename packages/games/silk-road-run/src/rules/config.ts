@@ -779,6 +779,14 @@ export const ABILITY = {
     overdose: 6 as number,
   },
   /**
+   * Sedative (owner's idea, 2026-10-31; in no kit as built, measured as
+   * the Alchemist's second ability beside the overdose): a unit within
+   * `range`, the Alchemist too, ally or enemy, healed the Alchemist's power
+   * and Weakened by all it deals (its power, Empower and passives), so its
+   * hits deal nothing for `RULES.durations.turn` slots.
+   */
+  sedative: {range: 3 as number},
+  /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),
    * the Duelist's *jian*: melee, and when it hits, the Duelist's card is Hastened `haste` slots (keywords.md
    * 17.3). 3 (owner, 2026-10-26; 2 the builder's first; balance.md, "The Vanguard's buffs other than speed").

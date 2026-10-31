@@ -36,6 +36,7 @@ import {
   elixirCaught,
   elixirHeals,
   elixirOverdose,
+  sedation,
   overdoseOf,
   elixirPoison,
   blessingCaught,
@@ -688,6 +689,16 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;
+  }
+  // Sedative: the heal, less the Weaken's worth, for the unit's side.
+  if (ability === 'sedative') {
+    const u = unitAt(state, target!.hex!);
+    if (!u) return closing;
+    const weight = u.hero === CAMEL ? AI.camelHealthWeight : 1;
+    let gain = Math.min(unit.power, u.maxHp - u.hp) * weight;
+    const amount = sedation(u) - (u.weaken ?? 0);
+    if (amount > 0) gain -= (u.weaken ? 0 : 1) + weakenGuess(state, u, amount);
+    return closing + (hostile(u, unit) ? -gain : gain);
   }
   // Blessing: the health it heals, as any heal is weighed, and the Shield's worth.
   if (ability === 'blessing') {

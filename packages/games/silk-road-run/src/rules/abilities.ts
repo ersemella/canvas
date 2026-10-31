@@ -60,6 +60,7 @@ import {
   lastsThrough,
   swapCards,
   setCard,
+  passiveEmpower,
   shield,
   unitName,
   walk,
@@ -1008,6 +1009,53 @@ const elixir: AbilityDef = {
         delay(ctx, u, delays, user);
       }
     }
+  },
+};
+
+/**
+ * The Weaken a Sedative gives `u`: all its hits would deal (its power,
+ * Empower and passives' Empower), so they deal nothing; 0 for a unit that
+ * doesn't hit.
+ */
+export const sedation = (u: Unit): number =>
+  u.power > 0 ? u.power + (u.empower ?? 0) + passiveEmpower(u) : 0;
+
+/** Whether a Sedative does anything to `u`: heals it (hurt) or Weakens it further. */
+const sedativeTakes = (u: Unit | undefined): u is Unit =>
+  u !== undefined && u.alive && (u.hp < u.maxHp || sedation(u) > (u.weaken ?? 0));
+
+/**
+ * Sedative (owner's idea, 2026-10-31; `ABILITY.sedative`, in no kit as
+ * built): a unit within 3, the Alchemist too, ally or enemy, no line of
+ * fire, healed the Alchemist's power and Weakened so its hits deal nothing
+ * for `RULES.durations.turn` slots.
+ */
+const sedative: AbilityDef = {
+  id: 'sedative',
+  single: true,
+  name: 'Sedative',
+  kind: 'support',
+  bothSides: true,
+  get range() {
+    return ABILITY.sedative.range;
+  },
+  targetsUnit: true,
+  summary(user) {
+    return `A unit within ${ABILITY.sedative.range}, yourself too, ally or enemy: healed ${user.power}, and its hits deal nothing for ${RULES.durations.turn} slots.`;
+  },
+  targets(state, map, user, from) {
+    return spacesWithin(map, from, ABILITY.sedative.range)
+      .map((h) => unitAt(state, h))
+      .filter(sedativeTakes)
+      .map((u) => ({hex: u.hex!}));
+  },
+  resolve(ctx, user, target) {
+    const u = unitAt(ctx.state, target.hex!);
+    if (!u) return;
+    log(ctx, `${unitName(user)} gives ${unitName(u)} a sedative.`);
+    heal(ctx, u, user.power, user);
+    const amount = sedation(u);
+    if (amount > (u.weaken ?? 0)) weaken(ctx, u, amount, user);
   },
 };
 
@@ -2634,6 +2682,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   bite,
   cleave,
   elixir,
+  sedative,
   swiftStrike,
   omen,
   stomp,

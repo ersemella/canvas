@@ -51,6 +51,8 @@ export type AbilityId =
   | 'bite'
   | 'cleave'
   | 'elixir'
+  // The Alchemist's heal that Weakens to nothing (owner, 2026-10-31; a switch, off).
+  | 'sedative'
   | 'swiftStrike'
   | 'omen'
   | 'stomp'

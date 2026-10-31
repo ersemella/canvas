@@ -562,6 +562,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // A slim vial, a drop falling from it the accent.
+  sedative: {
+    kind: 'support',
+    rows: [
+      '.....##.....', //
+      '.....==.....',
+      '.....##.....',
+      '....####....',
+      '....#==#....',
+      '....####....',
+      '....####....',
+      '....####....',
+      '.....##.....',
+      '............',
+      '.....++.....',
+      '.....++.....',
+    ],
+  },
   // A shield, a mending cross on it the accent.
   blessing: {
     kind: 'support',

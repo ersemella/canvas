@@ -3410,6 +3410,34 @@ describe('the built Elixir, an overdose (2026-10-31)', () => {
   });
 });
 
+describe('Sedative (a switch, in no kit)', () => {
+  it('a unit within 3, ally or enemy: healed the power, Weakened by all it deals for 8 slots', () => {
+    const s = setup(
+      {
+        'p-alchemist': at(1, 3),
+        'e-mangudai': at(2, 3),
+        'p-modao': at(4, 3),
+        'e-modao': at(8, 6),
+      },
+      ['modao', 'alchemist', 'mangudai']
+    );
+    const alchemist = unit(s, 'p-alchemist');
+    alchemist.loadout = {abilities: ['elixir', 'sedative', 'hold']};
+    expect(ABILITIES.sedative.summary(alchemist)).toBe(
+      'A unit within 3, yourself too, ally or enemy: healed 1, and its hits deal nothing for 8 slots.'
+    );
+    const e = unit(s, 'e-mangudai');
+    e.hp -= 2;
+    e.empower = 1;
+    e.empowerUntil = s.currentSlot + 8;
+    applyTurn(s, alchemist, {action: {ability: 'sedative', target: {hex: at(2, 3)}}});
+    expect(e.hp).toBe(e.maxHp - 1);
+    expect(e.weaken).toBe(3);
+    expect(e.weakenUntil).toBe(s.currentSlot + RULES.durations.turn);
+    expect(damageOf(e)).toBe(0);
+  });
+});
+
 describe('the Vanguard and the Alchemist', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
   // The Elixir before the overdose (2026-10-27 to 31), as these tests were
