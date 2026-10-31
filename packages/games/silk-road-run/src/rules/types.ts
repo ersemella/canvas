@@ -393,6 +393,11 @@ export interface Unit {
    */
   elixirLine?: number;
   /**
+   * Its own Elixir as an overdose (`ABILITY.elixir.overdose`), to this
+   * damage; 0 not (the test stage's `"elixir"`).
+   */
+  elixirOverdose?: number;
+  /**
    * It has lost health this fight, healed back or not: Humphrey unhurt all
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
    */

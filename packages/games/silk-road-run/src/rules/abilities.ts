@@ -799,7 +799,7 @@ const elixirTakes =
     if (mode === 'alternate')
       return elixirHits(user) ? u.side !== user.side : u.side === user.side && elixirHeals(u);
     // The overdose: any unit, ally or enemy (it always takes the Alchemist's power).
-    if (ABILITY.elixir.overdose > 0) return u.alive;
+    if (overdoseOf(user) > 0) return u.alive;
     if (u.side !== user.side)
       return fixed > 0 || delay > 0 || (u.power > 0 && elixirAmount('weaken') > 0);
     return (
@@ -836,11 +836,17 @@ export function elixirLines(map: MapData, from: Hex, user: Unit): Hex[][] {
 }
 
 /**
- * The Empower an overdose gives `u` (`ABILITY.elixir.overdose`): enough
- * for its hits to deal `overdose`, at least 1; 0 with no overdose.
+ * The damage `user`'s Elixir as an overdose Empowers a unit's hits to: its
+ * own setting (`Unit.elixirOverdose`), else `ABILITY.elixir.overdose`; 0 not.
  */
-export const elixirOverdose = (u: Unit): number =>
-  ABILITY.elixir.overdose > 0 ? Math.max(1, ABILITY.elixir.overdose - u.power) : 0;
+export const overdoseOf = (user: Unit): number => user.elixirOverdose ?? ABILITY.elixir.overdose;
+
+/**
+ * The Empower `user`'s overdose gives `u` (`overdoseOf`): enough for its
+ * hits to deal the overdose, at least 1; 0 with no overdose.
+ */
+export const elixirOverdose = (user: Unit, u: Unit): number =>
+  overdoseOf(user) > 0 ? Math.max(1, overdoseOf(user) - u.power) : 0;
 
 /** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed` (0: none). */
 export const elixirAmount = (which: 'empower' | 'weaken'): number =>
@@ -928,8 +934,8 @@ const elixir: AbilityDef = {
       : `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}`;
     if (ABILITY.elixir.mode === 'alternate')
       return `${where}: ${elixirHits(user) ? `this time an enemy, hit for ${user.power}` : `this time an ally, healed ${user.power}`}; heal and hit by turns.`;
-    if (ABILITY.elixir.overdose > 0)
-      return `${where}, ally or enemy: Empowered until its hits deal ${ABILITY.elixir.overdose}, for ${RULES.durations.turn} slots, and it takes ${user.power}.`;
+    if (overdoseOf(user) > 0)
+      return `${where}, ally or enemy: Empowered until its hits deal ${overdoseOf(user)}, for ${RULES.durations.turn} slots, and it takes ${user.power}.`;
     if (ABILITY.elixir.mode === 'poison')
       return `${where}: healed ${user.power}, then it loses 1 every ${ABILITY.elixir.poisonEvery} slots until ${elixirPoison(user)} is lost.`;
     const who = `${hastes || delays ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
@@ -985,9 +991,9 @@ const elixir: AbilityDef = {
     }
     for (const u of caught) {
       log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
-      if (ABILITY.elixir.overdose > 0) {
+      if (overdoseOf(user) > 0) {
         // The overdose: Empowered first, then the Alchemist's power taken.
-        if (u.power > 0) empower(ctx, u, elixirOverdose(u), user);
+        if (u.power > 0) empower(ctx, u, elixirOverdose(user, u), user);
         applyDamage(ctx, u, user.power, `The overdose takes ${user.power} from ${unitName(u)}`, user);
       } else if (u.side === user.side) {
         if (elixirHeals(u)) heal(ctx, u, user.power, user);

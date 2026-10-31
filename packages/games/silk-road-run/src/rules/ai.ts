@@ -36,6 +36,7 @@ import {
   elixirCaught,
   elixirHeals,
   elixirOverdose,
+  overdoseOf,
   elixirPoison,
   blessingCaught,
   forks,
@@ -659,11 +660,11 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       }
       // The overdose, on either side: the Empower's worth less what it takes
       // (a fall counted as a kill), for the unit's side.
-      if (ABILITY.elixir.overdose > 0) {
+      if (overdoseOf(unit) > 0) {
         const taken = Math.min(Math.max(0, unit.power - (u.shield ?? 0)), u.hp);
         let gain = -(taken * weight(u) + (taken > 0 && taken >= u.hp && u.hero !== CAMEL ? AI.kill : 0));
-        if (taken < u.hp && u.power > 0 && (u.empower ?? 0) < elixirOverdose(u))
-          gain += 1 + empowerGuess(state, u, elixirOverdose(u) - (u.empower ?? 0));
+        if (taken < u.hp && u.power > 0 && (u.empower ?? 0) < elixirOverdose(unit, u))
+          gain += 1 + empowerGuess(state, u, elixirOverdose(unit, u) - (u.empower ?? 0));
         value += hostile(u, unit) ? -gain : gain;
         continue;
       }

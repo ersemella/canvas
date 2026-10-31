@@ -3,7 +3,7 @@
 // Empower up to a hit of `overdose` (6 one-shots every hero of defence 1 or
 // 2, 4 those of defence 1) for a turn's slots (8), and a hit of the
 // Alchemist's power on it (`ABILITY.elixir.overdose`); no heal, hit or
-// Weaken besides. Against the Elixir as built, in the seats of
+// Weaken besides; and the overdose in other shapes. Against the Elixir as built, in the seats of
 // elixir-turns-poison.mjs. `modWinPct` throughout.
 const regions = {
   steppe: ['bokh', 'mangudai', 'storm'],
@@ -20,6 +20,13 @@ const variants = {
     Object.assign(c.ABILITY.elixir, {overdose: 6});
     c.HEROES.alchemist.power = 2;
   },
+  // Its shape (the owner's question, 2026-10-31), the overdose to 6 at power 1:
+  // in lines to 3 as Axe Throw (the test stage's), one unit within 3, a burst
+  // of radius 1 on a space within 2, every unit next to him and himself.
+  odLine: (c) => Object.assign(c.ABILITY.elixir, {overdose: 6, line: true, range: 3}),
+  odRange3: (c) => Object.assign(c.ABILITY.elixir, {overdose: 6, range: 3}),
+  odBurst: (c) => Object.assign(c.ABILITY.elixir, {overdose: 6, shape: 'burst', radius: 1}),
+  odAura: (c) => Object.assign(c.ABILITY.elixir, {overdose: 6, shape: 'aura', radius: 1}),
 };
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};

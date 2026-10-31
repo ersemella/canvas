@@ -70,8 +70,11 @@ interface TestSetup {
   };
   /** Every Priest's Blessing on himself (`Unit.blessesSelf`). */
   blessing: {self?: boolean};
-  /** Every Elixir aimed in lines, to this range (`Unit.elixirLine`); 0 not. */
-  elixir: {line?: number};
+  /**
+   * Every Elixir aimed in lines, to this range (`Unit.elixirLine`), and as
+   * an overdose, to this damage (`Unit.elixirOverdose`); 0 not.
+   */
+  elixir: {line?: number; overdose?: number};
   /**
    * Every unit of a hero, both sides, the party picked on the start menu
    * too: its stats and kit (under a unit's own), its hero's passives in
@@ -273,11 +276,21 @@ export function parseTestStage(raw: unknown): TestSetup {
   if (v.elixir !== undefined) {
     if (!isObject(v.elixir)) fail('elixir must be an object.');
     const x = v.elixir as Record<string, unknown>;
-    onlyKeys('elixir', x, ['line']);
+    onlyKeys('elixir', x, ['line', 'overdose']);
     if (x.line !== undefined) {
       if (typeof x.line !== 'number' || !Number.isInteger(x.line) || x.line < 0 || x.line > 8)
         fail('elixir.line must be a whole number from 0 to 8.');
       elixir.line = x.line as number;
+    }
+    if (x.overdose !== undefined) {
+      if (
+        typeof x.overdose !== 'number' ||
+        !Number.isInteger(x.overdose) ||
+        x.overdose < 0 ||
+        x.overdose > 20
+      )
+        fail('elixir.overdose must be a whole number from 0 to 20.');
+      elixir.overdose = x.overdose as number;
     }
   }
   const heroes: TestSetup['heroes'] = {};
@@ -433,6 +446,8 @@ export function createTestFight(
       u.blessesSelf = setup.blessing.self;
   // Every unit, so an Elixir given in a loadout is aimed so too.
   if (setup.elixir.line !== undefined) for (const u of units) u.elixirLine = setup.elixir.line;
+  if (setup.elixir.overdose !== undefined)
+    for (const u of units) u.elixirOverdose = setup.elixir.overdose;
   // A Leap too.
   for (const u of units) {
     if (setup.leap.shape !== undefined) u.leapShape = setup.leap.shape;

@@ -135,6 +135,27 @@ describe('the test stage', () => {
     expect(createTestFight(1, {...raw, elixir: undefined}).units[0]!.elixirLine).toBeUndefined();
   });
 
+  it('makes every Elixir an overdose with "elixir": {"overdose": 6}, on ally or enemy', () => {
+    const raw = {
+      player: [
+        {hero: 'alchemist', at: space(3, 4)},
+        {hero: 'bokh', at: space(4, 4)},
+      ],
+      enemy: [{hero: 'mangudai', at: space(8, 4)}],
+      yurts: 'none' as const,
+      camel: null,
+      elixir: {overdose: 6},
+    };
+    const s = createTestFight(1, raw);
+    const a = s.units.find((u) => u.hero === 'alchemist')!;
+    expect(s.units.every((u) => u.elixirOverdose === 6)).toBe(true);
+    expect(ABILITIES.elixir.summary(a)).toContain('ally or enemy: Empowered until its hits deal 6');
+    expect(() => parseTestStage({...raw, elixir: {overdose: -1}})).toThrow(
+      'elixir.overdose must be a whole number from 0 to 20.'
+    );
+    expect(createTestFight(1, {...raw, elixir: undefined}).units[0]!.elixirOverdose).toBeUndefined();
+  });
+
   it('gives every Duelist the Swift Strike and walk "swiftStrike" sets', () => {
     const raw = {
       player: [{hero: 'youxia'}],
