@@ -2451,37 +2451,37 @@ const charge: AbilityDef = {
 // ─── Barbarian ───────────────────────────────────────────────────────────────
 
 /**
- * Hew's funnel, set toward `dir`: the spaces next to `from` along `dir`
+ * Wade In's funnel, set toward `dir`: the spaces next to `from` along `dir`
  * and `dir + 1`, then the one past them touching both (2 away, off the
- * six lines; its tip, where Hew is aimed). Yurts left out.
+ * six lines; its tip, where Wade In is aimed). Yurts left out.
  */
-function hewFunnel(map: MapData, from: Hex, dir: number): Hex[] {
+function wadeInFunnel(map: MapData, from: Hex, dir: number): Hex[] {
   const a = hexNeighbor(from, dir);
   return [a, hexNeighbor(from, dir + 1), hexNeighbor(a, dir + 1)].filter((h) => walkable(map, h));
 }
 
-/** Hew's funnel's tip set toward `dir` (its aim). */
-const hewTip = (from: Hex, dir: number): Hex => hexNeighbor(hexNeighbor(from, dir), dir + 1);
+/** Wade In's funnel's tip set toward `dir` (its aim). */
+const wadeInTip = (from: Hex, dir: number): Hex => hexNeighbor(hexNeighbor(from, dir), dir + 1);
 
-/** The spaces Hew's funnel covers aimed at `target`, its tip. */
-function hewFunnelArea(map: MapData, from: Hex, target: Hex): Hex[] {
-  const dir = DIRECTIONS.find((d) => hexEquals(hewTip(from, d), target));
-  return dir === undefined ? [] : hewFunnel(map, from, dir);
+/** The spaces Wade In's funnel covers aimed at `target`, its tip. */
+function wadeInFunnelArea(map: MapData, from: Hex, target: Hex): Hex[] {
+  const dir = DIRECTIONS.find((d) => hexEquals(wadeInTip(from, d), target));
+  return dir === undefined ? [] : wadeInFunnel(map, from, dir);
 }
 
-/** The spaces Hew covers aimed at `target`: its funnel, or as `line` the unit aimed at alone. */
-export function hewArea(map: MapData, from: Hex, target: Hex): Hex[] {
-  return ABILITY.hew.shape === 'line' ? [target] : hewFunnelArea(map, from, target);
+/** The spaces Wade In covers aimed at `target`: its funnel, or as `line` the unit aimed at alone. */
+export function wadeInArea(map: MapData, from: Hex, target: Hex): Hex[] {
+  return ABILITY.wadeIn.shape === 'line' ? [target] : wadeInFunnelArea(map, from, target);
 }
 
 /**
- * Hew as `line`: the first unit along each of the six lines from `from`,
+ * Wade In as `line`: the first unit along each of the six lines from `from`,
  * up to `reach` away, past free spaces only; one further than next to him
  * only if he can step in (not Immobilized, hail ending the lane where it
  * lies, the space before it his to end on).
  */
-function hewLineTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
-  const reach = isImmobilized(user) ? 1 : ABILITY.hew.reach;
+function wadeInLineTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
+  const reach = isImmobilized(user) ? 1 : ABILITY.wadeIn.reach;
   const out: ActionTarget[] = [];
   for (const dir of DIRECTIONS) {
     const way = laneFrom(map, from, dir);
@@ -2500,39 +2500,39 @@ function hewLineTargets(state: FightState, map: MapData, user: Unit, from: Hex):
 }
 
 /**
- * Hew (owner, 2026-10-31): the Barbarian's great axe. As `line` (later
+ * Wade In (owner, 2026-10-31; Hew until it reached runs): the Barbarian's great axe. As `line` (later
  * 2026-10-31): the first unit up to 2 away in a straight line, stepping
  * in next to it first. As `funnel`: two spaces next to him and the one
- * past them (`hewFunnel`), every unit there hit; with `shieldPerHit`, then
- * Shield for each enemy hit (`ABILITY.hew`), for slots, not turns.
+ * past them (`wadeInFunnel`), every unit there hit; with `shieldPerHit`, then
+ * Shield for each enemy hit (`ABILITY.wadeIn`), for slots, not turns.
  */
-const hew: AbilityDef = {
-  id: 'hew',
-  name: 'Hew',
+const wadeIn: AbilityDef = {
+  id: 'wadeIn',
+  name: 'Wade In',
   kind: 'attack',
   summary: () =>
-    ABILITY.hew.shape === 'line'
-      ? `Strike the first unit up to ${ABILITY.hew.reach} away in a straight line, stepping in next to it first.`
+    ABILITY.wadeIn.shape === 'line'
+      ? `Strike the first unit up to ${ABILITY.wadeIn.reach} away in a straight line, stepping in next to it first.`
       : `Hits every unit on two spaces next to you and the space past them, allies included.${
-          ABILITY.hew.shieldPerHit > 0
-            ? ` Gain Shield ${ABILITY.hew.shieldPerHit} for each enemy hit, for ${ABILITY.hew.slots} slots.`
+          ABILITY.wadeIn.shieldPerHit > 0
+            ? ` Gain Shield ${ABILITY.wadeIn.shieldPerHit} for each enemy hit, for ${ABILITY.wadeIn.slots} slots.`
             : ''
         }`,
-  area: hewArea,
+  area: wadeInArea,
   targets(state, map, user, from) {
-    if (ABILITY.hew.shape === 'line') return hewLineTargets(state, map, user, from);
+    if (ABILITY.wadeIn.shape === 'line') return wadeInLineTargets(state, map, user, from);
     const out: ActionTarget[] = [];
     for (const dir of DIRECTIONS) {
-      const caught = hewFunnel(map, from, dir).some((h) => {
+      const caught = wadeInFunnel(map, from, dir).some((h) => {
         const u = unitAt(state, h);
         return u !== undefined && u !== user;
       });
-      if (caught) out.push({hex: hewTip(from, dir)});
+      if (caught) out.push({hex: wadeInTip(from, dir)});
     }
     return out;
   },
   resolve(ctx, user, target) {
-    if (ABILITY.hew.shape === 'line') {
+    if (ABILITY.wadeIn.shape === 'line') {
       const goal = target.hex!;
       const dir = hexDirectionTo(user.hex!, goal)!;
       if (hexDistance(user.hex!, goal) > 1) {
@@ -2546,19 +2546,19 @@ const hew: AbilityDef = {
       }
       const u = unitAt(ctx.state, goal);
       if (!user.alive || !user.hex || !u || hexDistance(user.hex, goal) !== 1) return;
-      log(ctx, `${unitName(user)} hews.`);
+      log(ctx, `${unitName(user)} wades in.`);
       hit(ctx, user, u, 'The axe');
       return;
     }
-    const caught = hewFunnelArea(ctx.map, user.hex!, target.hex!)
+    const caught = wadeInFunnelArea(ctx.map, user.hex!, target.hex!)
       .map((h) => unitAt(ctx.state, h))
       .filter((u): u is Unit => u !== undefined);
-    log(ctx, `${unitName(user)} hews.`);
+    log(ctx, `${unitName(user)} wades in.`);
     const enemies = caught.filter((u) => hostile(u, user)).length;
     for (const u of caught) hit(ctx, user, u, 'The axe');
-    const amount = enemies * ABILITY.hew.shieldPerHit;
-    // Added to any Shield he has, for Hew's own slots.
-    if (user.alive && amount > 0) shield(ctx, user, amount, false, ABILITY.hew.slots);
+    const amount = enemies * ABILITY.wadeIn.shieldPerHit;
+    // Added to any Shield he has, for Wade In's own slots.
+    if (user.alive && amount > 0) shield(ctx, user, amount, false, ABILITY.wadeIn.slots);
   },
 };
 
@@ -3069,7 +3069,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   reave,
   axeThrow,
   leap,
-  hew,
+  wadeIn,
   smash,
   boulder,
   gore,
