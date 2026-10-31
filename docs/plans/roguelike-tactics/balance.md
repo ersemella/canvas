@@ -6751,6 +6751,39 @@ a row (about ±2.5 a cell, ±3.5 a span), the same seeds. Unfinished 0–1%.
 
 Not built into runs or on the test stage.
 
+### The Cataphract with neither slam nor brace (later 2026-10-31)
+
+Asked for (the owner), after "The slam in place of the brace": the
+Cataphract with **no Armour after a charge and no slam** (`armour` 0,
+`slam` `none`), Charge alone. `experiments/slam-damage.mjs`'s `bare` rows,
+on the same rules (`73041dd`) and seeds as the three versions above, 400
+fights a row. Unfinished 0–1.3%.
+
+| | Brace (built) | Slam, Delay 6 | **Neither** |
+|---|---:|---:|---:|
+| Byzantium against the Steppe | 32.5% | 33% | 26.3% |
+| against China | 39% | 52.3% | 37.5% |
+| against Persia | 60.9% | 60.3% | 54.3% |
+| Cataphract abroad: Steppe, China, Persia | 53.8, 51.5, 57% | 52.8, 61.4, 55.1% | 47.3, 49.3, 48.6% |
+| Others' (his mean abroad) | 54.1% | 56.4% | 48.4% |
+| Outrider, Duelist, Ranger in his seat | 36.3, 43.8, 32.8% | 30.3, 37, 27.5% | 44, 57.5, 38.3% |
+| Kept | 62.4% | 68.4% | 53.4% |
+| **Score** | 58.2% | 62.4% | **50.9%** |
+| Novice / expert Cataphract | 44.8 / 54.3% | 41.5 / 55.3% | 43 / 54% |
+| **His skill span** | 9.5 | 13.8 | **11.0** |
+
+- **Without either he is even**: 50.9% as a score, the other damage
+  heroes 49.5–51.1% when last measured; the brace was worth 7.3 points,
+  the slam at Delay 6 11.5. Abroad 47.3–49.3% in every seat, a little
+  under; in his own seat the Duelist beats him (57.5%), the Outrider and
+  the Ranger don't (44%, 38.3%).
+- **Byzantium's party loses 6–7 points** against the Steppe and Persia
+  (26.3%, 54.3%), 1.5 against China: the Steppe stays its worst match-up.
+- **Skill span 11.0**, between the brace's 9.5 and the slam's 13.8,
+  inside noise of both: Charge alone keeps where he aims mattering.
+
+Not built into runs or on the test stage.
+
 ## Eclipse (2026-10-31)
 
 Asked for (owner), after the versions of Alignment: a Magus ability at
