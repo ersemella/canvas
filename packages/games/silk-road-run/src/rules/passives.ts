@@ -381,7 +381,8 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
  * Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
  * 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), the
  * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29), and
- * Spearhead, the Vanguard's (owner, 2026-10-30), aren't in 19.8's pool.
+ * Spearhead, the Vanguard's from 2026-10-30 to 2026-10-31 (owner), aren't
+ * in 19.8's pool.
  */
 export const NOT_OFFERED: readonly PassiveId[] = [
   'unstoppable',

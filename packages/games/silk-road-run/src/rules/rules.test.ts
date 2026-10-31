@@ -21,7 +21,6 @@ import {
   REGIONS,
   ROSTER,
   RULES,
-  SPEARHEAD,
   STAGES,
   healthOf,
 } from './config';
@@ -2103,8 +2102,8 @@ describe('the Barbarian', () => {
     applyTurn(s, b, {action: {ability: 'reave', target: {hex: hexNeighbor(c, 0)}}});
     expect([hp(s, 'e-modao'), hp(s, 'p-modao'), hp(s, 'e-mangudai')]).toEqual([3, 3, 0]);
     expect(b.axe).toBeUndefined();
-    // Its own Vanguard hit next to it: Spearhead Hastens it.
-    expect(b.slot).toBe(actionCost(b) - SPEARHEAD.haste);
+    // Its own Vanguard hit next to it, with no Spearhead: no Haste.
+    expect(b.slot).toBe(actionCost(b));
   });
 
   it('Reave throws the axe down a line of 3, hitting every unit along it, and it lies on the last space', () => {

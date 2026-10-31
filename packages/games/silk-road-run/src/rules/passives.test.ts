@@ -363,8 +363,8 @@ describe('the passives: position and allies', () => {
     ]);
   });
 
-  it('Spearhead is the Vanguard’s from the start, never offered at the caravanserai', () => {
-    expect(HEROES.modao.passives).toContain('spearhead');
+  it('Spearhead is no hero’s, never offered at the caravanserai', () => {
+    for (const hero of Object.values(HEROES)) expect(hero.passives ?? []).not.toContain('spearhead');
     expect(NOT_OFFERED).toContain('spearhead');
   });
 

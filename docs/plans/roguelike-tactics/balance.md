@@ -5463,7 +5463,7 @@ it). Unfinished fights at most 4%.
 - **8 and up too strong** (57.5–67.2%): every other tank loses China's
   seat, the Juggernaut and the Cataphract to 24–38%.
 - Each point of Delay is worth about 3–5 points of the Vanguard's score.
-  Not changed: the numbers are the owner's.
+  Not changed then: the numbers are the owner's.
 
 **Beside the other tanks (2026-10-31).** Asked for: how these compare
 with the Juggernaut and the Grappler. Each tank's score from the same
@@ -5507,6 +5507,8 @@ seat of a Steppe mirror, 400 fights a row (about ±3.5 a span), seeds from
   edge of noise: a bigger Delay makes choosing whom to Cleave matter more.
 - The Cataphract's span doubled with its slam gone (6.8 to 13.7), the
   first measure of it since; the Grappler stays the least skilful tank.
+- **Built (owner, 2026-10-31):** the Vanguard without Spearhead, Cleave's
+  Delay 6; Spearhead kept in the code, no hero's and not offered.
 
 ## Principles for re-tuning
 

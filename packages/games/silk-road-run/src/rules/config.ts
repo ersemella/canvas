@@ -186,9 +186,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 3,
     power: 2,
     abilities: ['cleave', 'hold'],
-    // Spearhead at range 2 (owner, 2026-10-30; balance.md, "Spearhead at
-    // range 2": its role score 45.6% to 51%).
-    passives: ['spearhead'],
+    // No passive (owner, 2026-10-31; balance.md, "Spearhead off, Cleave's
+    // Delay raised in its place": its role score 50.4% without, 54.9% with,
+    // since the Cataphract's slam came off). Spearhead at range 2 from
+    // 2026-10-30 (balance.md, "Spearhead at range 2": 45.6% to 51% then).
   },
   /**
    * The Alchemist (owner, 2026-10-25; roster.md): a support whose
@@ -502,7 +503,8 @@ export const ARMOURED = {armour: 1 as number};
  * at it, a Shield's or not, as Devoted), each ally within `range` of it,
  * Humphrey too, is Hastened `haste`, Devoted's number. Range 2 (owner,
  * 2026-10-30, as measured: "Spearhead at range 2"); 1, next to it, when
- * first built, off.
+ * first built, off. No hero's since 2026-10-31 (owner; balance.md,
+ * "Spearhead off, Cleave's Delay raised in its place").
  */
 export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 
