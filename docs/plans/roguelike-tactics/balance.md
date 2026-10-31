@@ -5593,6 +5593,34 @@ and himself.
 (`overdose` 6, `range` 3), in runs and on the test stage, at 44.5% as
 measured above, with the widest skill span of any hero.
 
+### The overdose with a Sedative beside it (2026-10-31)
+
+Asked for (the owner): whether the Alchemist keeps his balance and skill
+span with a second option, a heal of his power that Weakens the unit to
+nothing. `ABILITY.sedative` (in no kit as built): a unit within 3, the
+Alchemist too, ally or enemy, no line of fire, healed his power and
+Weakened by all its hits deal (its power, Empower and passives' Empower)
+for 8 slots. Measured with his kit the overdose, Sedative and Hold, both
+sides' Alchemists. `experiments/elixir-sedative.mjs`, the seats and
+fights of "The Elixir as an overdose", on `b24c536` (the as-built row
+reproducing its 44.5% exactly). Unfinished fights at most 0.5%.
+
+| Alchemist | Steppe | Persia | Byzantium | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| The overdose (as built) | 43.3% | 35.8% | 55.6% | 44.2% | 44.5% | 35.8% | 57.5% | 21.7 |
+| **With Sedative** | 46.5% | 40.1% | 55.8% | 47.4% | **47.4%** | 38.4% | 58.6% | **20.2** |
+
+- **Both kept, a little better**: 3 points up (each seat 0–5 points,
+  each row about ±2.5, so the score's gain is about two standard errors),
+  still 5–6 under the Elixir before the overdose (53%); the skill span
+  about the same (20.2 from 21.7), still the widest of any hero.
+- **He uses both about evenly**: the overdose on 34–45% of his turns
+  (44–56% alone), Sedative on 32–38%, and walks much less (21–33% from
+  37–52%): the Sedative gives him something to do on the turns the
+  overdose had no hit to set up. He lives about as often (42–86%).
+
+Not built.
+
 ### The Barbarian and the Cataphract swapped (2026-10-31)
 
 Asked for (the owner): Byzantium's tank and damage hero swapped, as the
