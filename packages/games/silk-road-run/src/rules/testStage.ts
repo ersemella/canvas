@@ -52,7 +52,7 @@ interface TestSetup {
   camel: UnitSetup | null;
   player: UnitSetup[];
   enemy: UnitSetup[];
-  /** Wait's share for this fight (`FightState.waitShare`), or null for the rule's own. */
+  /** Wait's share for this fight (`FightState.waitShare`, 1 for none), or null for the runs' own. */
   wait: number | null;
   /** Every Duelist's Swift Strike and walk (`Unit.lunge`, `.passThrough`, `.jump`, `.chain`, `.streakResets`, `.swiftHaste`, `.streakHaste`, `.moveCap`). */
   swiftStrike: {
@@ -88,7 +88,7 @@ interface TestSetup {
   charge: {armour?: number};
 }
 
-/** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
+/** `"wait": true`: Wait at two thirds of the action cost, as in runs (balance.md, "Wait"). */
 const WAIT_ON = 2 / 3;
 /** The most units a side may bring (those without an "at" must also fit its starting columns). */
 const MAX_SIDE = 9;
@@ -217,6 +217,8 @@ export function parseTestStage(raw: unknown): TestSetup {
   }
   let wait: number | null = null;
   if (v.wait === true) wait = WAIT_ON;
+  // Wait off, whatever the runs' rule is.
+  else if (v.wait === false) wait = 1;
   else if (typeof v.wait === 'number' && v.wait > 0 && v.wait <= 1) wait = v.wait;
   else if (v.wait !== undefined && v.wait !== false && v.wait !== null)
     fail(

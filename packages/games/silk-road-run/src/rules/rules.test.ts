@@ -446,7 +446,7 @@ describe('the track', () => {
     );
   });
 
-  it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {
+  it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did but a Wait (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
@@ -462,7 +462,7 @@ describe('the track', () => {
     expect(aimSlot(s, b)).toBe(34);
     s.currentSlot = 35;
     expect(aimSlot(s, m)).toBe(43);
-    // A move and an ability place it alike.
+    // A move and an ability place it alike; a Hold in place is a Wait.
     s.currentSlot = 25;
     m.slot = 25;
     s.awaiting = m.id;
@@ -471,7 +471,7 @@ describe('the track', () => {
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
     expect(unit(moved, m.id).slot).toBe(33);
-    expect(unit(held, m.id).slot).toBe(33);
+    expect(unit(held, m.id).slot).toBe(25 + waitCost(m));
   });
 
   it('gives the faster more turns: Outriders before Grappler, Grappler before Temee', () => {
@@ -1538,6 +1538,8 @@ describe('abilities', () => {
 
   it('hail covers one space exactly two away: a unit there is Immobilized for `RULES.durations.hail` slots', () => {
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    // Its Holds a whole turn each, so its second comes past the hail's slots.
+    s.waitShare = 1;
     const storm = unit(s, 'p-storm');
     const targets = ABILITIES.hail.targets(s, STEPPE, storm, storm.hex!);
     expect(targets.length).toBeGreaterThan(0);
@@ -1923,7 +1925,7 @@ describe('the Duelist', () => {
     const y = unit(s, 'p-youxia');
     y.slot = s.currentSlot;
     applyTurn(s, y, {action: {ability: 'hold', target: {}}});
-    expect(y.slot).toBe(actionCost(y));
+    expect(y.slot).toBe(waitCost(y));
   });
 });
 
@@ -5067,7 +5069,7 @@ describe('previews, the AI and the run', () => {
     const bokh = unit(s, 'p-bokh');
     s.awaiting = bokh.id;
     const input: TurnInput = {action: {ability: 'hold'}};
-    const aim = s.currentSlot + actionCost(bokh);
+    const aim = s.currentSlot + waitCost(bokh);
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
     // Cards in the aimed slot and the one after: the card yields past both.
     unit(s, 'e-bokh').slot = aim;
