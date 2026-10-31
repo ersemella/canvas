@@ -21,7 +21,7 @@ The committed file (2026-10-30): China's three heroes against the
 Steppe's, on the Cyclops's Cave, a map with nothing on it (no yurts,
 obstacles or mountains; the Fairy Chimneys before), with Wait on
 (`"wait": true`) for play-testing it, and every Duelist with jumps one a
-turn, a walk of 3 and Haste 1, 2, then 3 on turns striking running
+turn, a walk of 2 and Haste 1, 2, then 3 on turns striking running
 (`"swiftStrike"`, below; balance.md, "The Duelist's jumps one a turn, the
 Haste growing"). To jump the unit next to him, aim Swift Strike at the
 free space past it.
@@ -33,7 +33,7 @@ below; owner, 2026-10-30): it blesses only the units on the line aimed.
   "seed": null,
   "map": "cave",
   "wait": true,
-  "swiftStrike": {"lunge": 1, "walk": 3, "jump": true, "chain": false, "streak": [1, 2, 3]},
+  "swiftStrike": {"lunge": 1, "walk": 2, "jump": true, "chain": false, "streak": [1, 2, 3]},
   "blessing": {"self": false},
   "yurts": "none",
   "camel": {},
