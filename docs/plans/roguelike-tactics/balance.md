@@ -6143,6 +6143,72 @@ before his next turn; enemies already past it stay. Same rows as above
   can't be again until it has acted, Omen's `once`); or the deck as first
   built with that guard.
 
+### Invocation's charge (2026-10-31)
+
+Asked for (the owner), after "The Priest's Invocation": would a shorter
+charge help, and what does it do to skill? `ABILITY.invocation.charge`
+(a switch, off: null is a Hold's cost) sets the charge as a share of his
+action cost; `experiments/invocation-charge.mjs` on `9b525aa`'s rules,
+Wait off, the rows of `priest-invocation.mjs` at charges of **10 slots**
+(built, his whole turn at speed 1), **7, 5, 3 and 1**, on the same seeds.
+400 fights a row (about ±2.5 points; a span about ±3.5), seeds from 1000,
+production AI; unfinished fights at most 1%. The 10-slot rows reproduce
+"The Priest's Invocation" exactly.
+
+| Charge | Steppe | China | Persia | others' | Storm C. in his | Alchemist in his | Magus in his | kept | **score** |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 (built) | 30.8 | 24.0 | 33.3 | 29.4 | 68.5 | 69.8 | 50.6 | 37.0 | **33.2** |
+| 7 | 41.8 | 36.3 | 49.2 | 42.4 | 56.0 | 61.3 | 44.8 | 46.0 | **44.2** |
+| 5 | 55.8 | 49.8 | 62.2 | 55.9 | 35.5 | 57.0 | 35.0 | 57.5 | **56.7** |
+| 3 | 70.2 | 71.8 | 70.5 | 70.8 | 22.1 | 42.5 | 20.3 | 71.7 | **71.3** |
+| 1 | 85.0 | 88.8 | 78.8 | 84.2 | 9.3 | 29.8 | 8.0 | 84.3 | **84.2** |
+
+How he plays in the others' seats (as before; hits, damage and heals a
+fight are Invocation's):
+
+| Charge | His turns | Casting | Hold | Lives through | Enemies hit | Damage | Healed |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 10 | 2.7–3.1 | 22–40% | 13–16% | 29–41% | 0.36–0.78 | 1.1–2.3 | 2.5–5.2 |
+| 7 | 2.6–2.9 | 41–58% | 5–8% | 34–46% | 1.0–1.8 | 3.1–5.3 | 4.2–7.3 |
+| 5 | 2.6–3.0 | 52–71% | 2–5% | 43–53% | 2.0–2.9 | 5.9–8.6 | 4.6–8.5 |
+| 3 | 2.8–3.2 | 67–76% | 1–3% | 61–62% | 2.9–4.1 | 8.8–12.3 | 4.8–8.5 |
+| 1 | 3.1–3.5 | 74–79% | 0–2% | 67–84% | 3.7–4.9 | 11–14.8 | 5.3–8.6 |
+
+**Skill**, as before (the Priest in the Steppe's support seat, and
+Byzantium's party, by a novice and an expert):
+
+| Charge | Priest novice | expert | **span** | Party novice | expert | **span** |
+|---:|---:|---:|---:|---:|---:|---:|
+| 10 (built) | 47.5% | 50.8% | 3.3 | 40.9% | 50.6% | 9.7 |
+| 7 | 44.8% | 49.8% | 5.0 | 46% | 53.3% | 7.3 |
+| 5 | 43.8% | 50.8% | 7.0 | 37.6% | 54.8% | **17.2** |
+| 3 | 45.3% | 51.8% | 6.5 | 37.5% | 56.9% | **19.4** |
+| 1 | 46.5% | 54.3% | 7.8 | 35.2% | 54.1% | **18.9** |
+
+- **The charge is the whole balance of Invocation**: each slot taken off
+  is worth about 6 points, from 33.2% at 10 to 84.2% at 1, evenly in
+  every seat. **Even lies at about 6 slots** (44.2% at 7, 56.7% at 5;
+  6 untried), 3/5 of his turn; the test stage's Wait (7 slots) measured
+  43.7%, as 7 here.
+- **What it buys is landing before the enemy moves**, not more turns: his
+  turns a fight barely change (2.6–3.5, the fights shorter as he wins
+  more), but the AI casts on more of them (22–40% to 74–79%), Holds less,
+  and each cast catches more (0.4–0.8 enemies a fight hit at 10, 3.7–4.9 at
+  1) since fewer enemies act between the cast and the landing to walk out.
+  The heal grows less (2.5–5.2 to 5.3–8.6): allies are seldom where it
+  lands. He lives longer for the damage he deals (29–41% to 67–84%).
+- **A shorter charge raises the skill gap, for him and his party.** His
+  own span grows from 3.3 to 5–7.8 (each within noise of the next, but
+  every short charge above the built one), now beside the tanks'
+  5.3–13.7. His party's jumps at 5 slots and under: 17.2–19.4 against
+  7.3–9.7, the novice party losing most (37.6% at 5 against 46% at 7),
+  as more of the fight turns on where the area goes and who is in it
+  when it lands; above the Duelist's 16.7, the largest measured.
+- **Not changed in runs**: a charge of about 6 slots (0.6) would bring him
+  to even with a span of about 6 and his party's 7–17, though 6 itself
+  is unmeasured. Above 7 he is weak whatever the skill; at 5 and under
+  too strong, and a novice's party suffers for it.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
