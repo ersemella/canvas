@@ -219,6 +219,8 @@ Blessing's Shield, as a heal alone, and with the Priest himself too
 the Priest always blessed.
 `cleave-for-spearhead.mjs` (2026-10-31) the Vanguard without Spearhead
 at Cleave's Delay 6–10 (`ABILITY.cleave.delay`), beside Spearhead as built.
+`vanguard-skill.mjs` (2026-10-31) the tanks' skill, the Vanguard by those
+options, as `skill-fights.mjs`.
 
 ## Ability and stat ablation
 

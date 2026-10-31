@@ -5487,6 +5487,27 @@ for every option) run on `e243cc1`, 400 fights each; the Cataphract too.
   66.5% in the Steppe's seat. The Cataphract's 55.7% of 2026-10-29 is
   gone with its slam.
 
+**Skill (2026-10-31).** Asked for: the skill gap of each option.
+`experiments/vanguard-skill.mjs`, as `skill-fights.mjs`: the tank played
+by a novice (depth 1) or an expert (depth 4, 4× the work) in the tank
+seat of a Steppe mirror, 400 fights a row (about ±3.5 a span), seeds from
+1000, on `a2d0304`. Unfinished fights 0%.
+
+| Tank | Novice | Expert | Span (2026-10-29) |
+|---|---:|---:|---:|
+| Vanguard, Spearhead, Delay 6 (built) | 45.8% | 52.8% | 7 |
+| Vanguard, no Spearhead, 6 | 46.8% | 54% | 7.2 (8) |
+| Vanguard, no Spearhead, 7 | 44.5% | 54.8% | **10.3** |
+| Grappler | 44.5% | 49.8% | 5.3 (6.7) |
+| Juggernaut | 40.8% | 53.5% | **12.7** (13) |
+| Cataphract | 44.8% | 58.5% | **13.7** (6.8) |
+
+- **Spearhead adds no skill** (7 against 7.2): it fires on being hit,
+  not on a choice. **Delay 7 adds about 3 points of span** (10.3), at the
+  edge of noise: a bigger Delay makes choosing whom to Cleave matter more.
+- The Cataphract's span doubled with its slam gone (6.8 to 13.7), the
+  first measure of it since; the Grappler stays the least skilful tank.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
