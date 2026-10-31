@@ -1,10 +1,11 @@
 {
-  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against Byzantium's, on the Cyclops's Cave, a map with no obstacles or mountains, with Wait on (a Skip turn comes back after two thirds of a turn); the Priest with Invocation in place of Blessing (owner, 2026-10-31); and Byzantium's three as in a run since 2026-10-31 (owner): the Barbarian its tank, with Lunge and Fury, the Cataphract its damage hero, braced after each charge; and Lunge's Push 1 (owner, later 2026-10-31: the unit the Barbarian strikes Pushed 1 away from him). And the Magus with Alignment in place of Omen (owner, 2026-10-31): one of his six lines, any distance, through anything, the cards of every unit on it rearranged on the track, swapped among themselves and with Humphrey's; pick him on the start menu to play it.",
+  "$comment": "The test stage, started from the start menu's Test stage button. Every field is explained in test-stage.md beside this file. As committed, China's three heroes against Byzantium's, on the Cyclops's Cave, a map with no obstacles or mountains, with Wait on (a Skip turn comes back after two thirds of a turn); the Priest with Invocation in place of Blessing (owner, 2026-10-31); and Byzantium's three as in a run since 2026-10-31 (owner): the Barbarian its tank, with Lunge and Fury, the Cataphract its damage hero, braced after each charge; and Lunge's Push 1 (owner, later 2026-10-31: the unit the Barbarian strikes Pushed 1 away from him), and Bloodlust beside his Fury (his hit damaging an enemy Empowers him 1 for 10 slots). And the Magus with Alignment in place of Omen (owner, 2026-10-31): one of his six lines, any distance, through anything, the cards of every unit on it rearranged on the track, swapped among themselves and with Humphrey's; pick him on the start menu to play it.",
   "seed": null,
   "map": "cave",
   "wait": true,
   "heroes": {
-    "magus": {"abilities": ["alignment"]}
+    "magus": {"abilities": ["alignment"]},
+    "varangian": {"passives": ["fury", "bloodlust"]}
   },
   "lunge": {"push": 1},
   "yurts": "none",

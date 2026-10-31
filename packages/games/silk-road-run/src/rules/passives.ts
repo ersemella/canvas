@@ -9,7 +9,7 @@
  * caravanserai drafts them with the stat provisions (19.3): the party's
  * picks, and the rival's for the enemy (`fitRank`).
  */
-import {ARMOURED, DEVOTED, FURY, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
+import {ARMOURED, BLOODLUST, DEVOTED, FURY, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 
@@ -214,6 +214,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     `Armour ${ARMOURED.armour} against every hit, unless it Pierces.`
   ),
   fury: def('fury', 'Fury', 'damage', `Whenever it is hit, its card is Hastened ${FURY.haste}.`),
+  bloodlust: def(
+    'bloodlust',
+    'Bloodlust',
+    'damage',
+    BLOODLUST.stacks
+      ? `Whenever its hit damages an enemy, it is Empowered ${BLOODLUST.empower} more, up to ${BLOODLUST.max}, for ${BLOODLUST.slots} slots.`
+      : `Whenever its hit damages an enemy, it is Empowered ${BLOODLUST.empower} for ${BLOODLUST.slots} slots.`
+  ),
   spearhead: def(
     'spearhead',
     'Spearhead',
@@ -394,6 +402,7 @@ export const NOT_OFFERED: readonly PassiveId[] = [
   'regrow',
   'spearhead',
   'fury',
+  'bloodlust',
 ];
 
 /** Whether `unit` carries the passive `id`. */

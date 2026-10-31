@@ -13,6 +13,7 @@ import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
   ARMOURED,
+  BLOODLUST,
   FURY,
   CAMEL,
   DEVOTED,
@@ -484,6 +485,20 @@ export function shotEmpower(user: Unit, shot: ShotInAir): number {
 }
 
 /**
+ * Bloodlust (`BLOODLUST`): `u`, carrying it, has damaged an enemy, so is
+ * Empowered for Bloodlust's slots: at least its Empower, or that much more
+ * up to its most when it stacks.
+ */
+function bloodlust(ctx: Ctx, u: Unit): void {
+  if (!u.alive || !hasPassive(u, 'bloodlust')) return;
+  const {empower: step, slots, stacks, max} = BLOODLUST;
+  const amount = stacks ? Math.min(max, (u.empower ?? 0) + step) : Math.max(u.empower ?? 0, step);
+  u.empower = amount;
+  u.empowerUntil = Math.max(u.empowerUntil ?? 0, lastsThrough(ctx.state, slots));
+  log(ctx, `${unitName(u)}’s bloodlust rises: Empowered ${amount}.`);
+}
+
+/**
  * Empowers `u` by `amount` for `RULES.durations.turn` slots, replacing any
  * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
  * its Inspire (19.9).
@@ -669,6 +684,7 @@ export function applyDamage(
     log(ctx, `${unitName(target)}’s fury rises.`);
     haste(ctx, target, FURY.haste);
   }
+  if (source && hostile(source, target)) bloodlust(ctx, source);
   if (target.shield) {
     const absorbed = Math.min(target.shield, amount);
     target.shield -= absorbed;

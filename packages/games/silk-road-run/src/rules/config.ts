@@ -528,6 +528,21 @@ export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 export const FURY = {haste: 5 as number};
 
 /**
+ * Bloodlust (owner, later 2026-10-31; the test stage's Barbarian's beside
+ * Fury, no hero's in runs, not offered): whenever its hit deals damage to
+ * an enemy (a Shield taking it too; Armour stopping it all not), it is
+ * Empowered `empower` for `slots` slots (10, his own turn's at speed 1, so
+ * it lasts to his next turn). `stacks` off: Empowered at least `empower`,
+ * the time renewed; on: `empower` more for each such hit, at most `max`.
+ */
+export const BLOODLUST = {
+  empower: 1 as number,
+  slots: 10 as number,
+  stacks: false as boolean,
+  max: 3 as number,
+};
+
+/**
  * The generic ability upgrades' amounts (progression.md, 19.9; owner,
  * 2026-10-29): the builder's first readings, marked TBD there. Each Delay,
  * Haste, Weaken, Empower, Armour and Shield is the keyword's own (17.3,

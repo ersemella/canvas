@@ -132,6 +132,8 @@ export type PassiveId =
   // The Vanguard's (owner, 2026-10-30).
   | 'spearhead'
   | 'fury'
+  // The test stage's Barbarian's beside Fury (owner, later 2026-10-31).
+  | 'bloodlust'
   // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
   // drafted with the passives. Track
   | 'wearying'
