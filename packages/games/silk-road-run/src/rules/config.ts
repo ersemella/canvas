@@ -632,8 +632,11 @@ export const ABILITY = {
    * Empower he cast it with adding to the hit and the heal alike)
    * (`landShots`), and his card goes his action cost on, a full turn. A
    * Stun before it lands loses it, as a drawn arrow.
+   * `charge`, a switch for measuring: null as built (a Hold's cost, so a
+   * Wait's when Wait is on); a share of his action cost, rounded, at least
+   * 1, in its place (balance.md, "Invocation's charge").
    */
-  invocation: {range: 3 as number, radius: 1 as number},
+  invocation: {range: 3 as number, radius: 1 as number, charge: null as number | null},
   blessing: {
     mode: 'heal' as 'heal' | 'track',
     scale: 'bands' as 'cap' | 'bands',
