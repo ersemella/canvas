@@ -2117,6 +2117,18 @@ describe('the Barbarian', () => {
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), b.shield]).toEqual([2, 0, undefined]);
   });
 
+  it('with a Push (`Unit.lungePush`, the test stage\'s) Lunge Pushes the unit struck away from him', () => {
+    const {s, b} = lunging({'e-modao': along(c, 0, 2), 'e-storm': along(c, 3, 1)});
+    expect(ABILITY.lunge.push).toBe(0);
+    b.lungePush = 1;
+    expect(ABILITIES.lunge.summary(b)).toContain('It is Pushed 1.');
+    applyTurn(s, b, {action: {ability: 'lunge', target: {hex: along(c, 0, 2)}}});
+    // He steps in to 1 away; the Vanguard, hit, is Pushed on to 3 away.
+    expect(b.hex).toEqual(hexNeighbor(c, 0));
+    expect(unit(s, 'e-modao').hex).toEqual(along(c, 0, 3));
+    expect(hp(s, 'e-modao')).toBe(2);
+  });
+
   it('Fury Hastens him 5 whenever he is hit', () => {
     const {s, b} = lunging({'e-modao': hexNeighbor(c, 0)});
     b.slot = s.currentSlot + 10;

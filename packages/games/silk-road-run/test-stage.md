@@ -40,7 +40,9 @@ aims it in lines or sets the overdose's damage.
 to 2 away along one of his six straight lines, ally or enemy, struck for
 his power, stepping in next to it first when it is 2 away, as a lunge
 (hail stops him short, and then he doesn't strike); and **Fury**: whenever
-he is hit, his card is Hastened 5. The Cataphract its damage hero, speed
+he is hit, his card is Hastened 5. **Here his Lunge also Pushes 1**
+(`"lunge": {"push": 1}`, below; owner, later 2026-10-31; 0 in runs): the
+unit he strikes is Pushed 1 straight away from him. The Cataphract its damage hero, speed
 2, defence 2 (health 6), power 2, without Armoured, Armour 1 for 8 slots
 after each charge. The Steppe's three were the enemy until 2026-10-31.
 **The Magus has Alignment in place of Omen** (`"heroes"`, below; owner,
@@ -74,6 +76,7 @@ a picked-up card down, then undoes the arrangement, then the line.
   "heroes": {
     "magus": {"abilities": ["alignment"]}
   },
+  "lunge": {"push": 1},
   "yurts": "none",
   "camel": {},
   "player": [
@@ -147,6 +150,7 @@ it, unhurt.
 | `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. `overdose`, a number from 0 to 20: above 0, the unit given it, ally or enemy, is Empowered until its hits deal that much, for 8 slots, then hit for its user's power, no heal, hit or Weaken besides (6 as built); `0`, the Elixir before it (an ally healed his power and Empowered 2, an enemy hit and Weakened 2), at the built range of 3. | Elixir as built: an overdose to 6, any unit within 3, himself too |
 | `heroes` | Every unit of a hero, both sides, the party picked on the start menu too, by the hero's id: `speed`, `defence`, `power`, `abilities` as a unit's (below), each under a unit's own; `passives`, its hero's own in place of config.ts's (`[]`: none, the Cataphract without Armoured; a unit's `passives` are added beside them); `caution`, how much the AI shies from enemy reach with it, 0 (a tank's: it walks into reach) to 5, 1 the other heroes'. E.g. `{"cataphract": {"power": 2, "passives": []}}`. | each hero as config.ts has it |
 | `leap` | Every Leap, both sides, a hero's or one given in `abilities`: `shape`, the spaces its axe strikes next to where he lands, `"front"` (the two ahead), `"forward"` (four, all but the two he flew over) or `"splash"` (the front two for his power, the other four for 1); `shieldPerHit`, 0 to 8, the Shield he gains for each enemy hit, Humphrey and allies not counted, for 8 slots, added to any he has. | Leap as built: `"front"`, no Shield |
+| `lunge` | Every Lunge, both sides, a hero's or one given in `abilities`: `push`, 0 to 8, how far the unit it strikes is Pushed straight away from him after the hit (its own Push, so Forceful adds none). | Lunge as built: no Push |
 | `charge` | Every Charge, both sides, a hero's or one given in `abilities`: `armour`, 0 to 8, the Armour its user gains after each charge, for 8 slots (a hit on it that much less, unless it Pierces). | Charge as built: no Armour after it |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.

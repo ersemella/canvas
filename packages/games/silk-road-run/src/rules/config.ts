@@ -959,12 +959,16 @@ export const ABILITY = {
    * the first unit up to `reach` (2) away along one of his six lines, ally
    * or enemy, hit for his power; one further than next to him, he steps
    * in until next to it first, as a lunge (stopped by hail).
+   * `push` (owner, later 2026-10-31; the test stage's 1, 0 in runs): as
+   * `line`, the unit struck is then Pushed that many away from him. A
+   * unit's own (`Unit.lungePush`, the test stage's `lunge`) comes first.
    */
   lunge: {
     shape: 'line' as 'funnel' | 'line',
     reach: 2 as number,
     shieldPerHit: 0 as number,
     slots: 10 as number,
+    push: 0 as number,
   },
   /**
    * Alignment (owner, 2026-10-31; the test stage's Magus's in place of Omen,

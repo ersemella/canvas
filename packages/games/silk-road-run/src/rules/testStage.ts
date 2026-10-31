@@ -86,6 +86,8 @@ interface TestSetup {
   leap: {shape?: LeapShape; shieldPerHit?: number};
   /** Every Charge's Armour after it, for 8 slots (`Unit.chargeArmour`). */
   charge: {armour?: number};
+  /** Every Lunge's Push on the unit it strikes (`Unit.lungePush`). */
+  lunge: {push?: number};
 }
 
 /** `"wait": true`: Wait at two thirds of the action cost, as in runs (balance.md, "Wait"). */
@@ -195,6 +197,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     'heroes',
     'leap',
     'charge',
+    'lunge',
   ]);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
@@ -355,6 +358,17 @@ export function parseTestStage(raw: unknown): TestSetup {
       charge.armour = c.armour as number;
     }
   }
+  const lunge: TestSetup['lunge'] = {};
+  if (v.lunge !== undefined) {
+    if (!isObject(v.lunge)) fail('lunge must be an object.');
+    const l = v.lunge as Record<string, unknown>;
+    onlyKeys('lunge', l, ['push']);
+    if (l.push !== undefined) {
+      if (!Number.isInteger(l.push) || (l.push as number) < 0 || (l.push as number) > 8)
+        fail('lunge.push must be a whole number from 0 to 8.');
+      lunge.push = l.push as number;
+    }
+  }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -371,6 +385,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     heroes,
     leap,
     charge,
+    lunge,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -470,6 +485,7 @@ export function createTestFight(
     if (setup.leap.shape !== undefined) u.leapShape = setup.leap.shape;
     if (setup.leap.shieldPerHit !== undefined) u.leapShieldPerHit = setup.leap.shieldPerHit;
     if (setup.charge.armour !== undefined) u.chargeArmour = setup.charge.armour;
+    if (setup.lunge.push !== undefined) u.lungePush = setup.lunge.push;
     const caution = setup.heroes[u.hero]?.caution;
     if (caution !== undefined) u.caution = caution;
   }

@@ -272,6 +272,8 @@ export interface Unit {
   leapShieldPerHit?: number;
   /** Armour after each Charge, for 8 slots (`ABILITY.charge.armour`), the test stage's (`charge`); absent for the rule's. */
   chargeArmour?: number;
+  /** How far Lunge Pushes the unit it strikes (`ABILITY.lunge.push`), the test stage's (`lunge`); absent for the rule's. */
+  lungePush?: number;
   /** Its provisions, stat by stat, added to its hero's or loadout's stats; absent with none. */
   provisions?: Partial<Record<StatId, number>>;
   /**

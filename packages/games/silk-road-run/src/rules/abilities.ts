@@ -2618,6 +2618,9 @@ export function lungeArea(map: MapData, from: Hex, target: Hex): Hex[] {
   return ABILITY.lunge.shape === 'line' ? [target] : lungeFunnelArea(map, from, target);
 }
 
+/** How far `u`'s Lunge Pushes the unit it strikes: its own (the test stage's), else the rule's. */
+export const lungePushOf = (u: Unit): number => u.lungePush ?? ABILITY.lunge.push;
+
 /**
  * Lunge as `line`: the first unit along each of the six lines from `from`,
  * up to `reach` away, past free spaces only; one further than next to him
@@ -2654,9 +2657,11 @@ const axeLunge: AbilityDef = {
   id: 'lunge',
   name: 'Lunge',
   kind: 'attack',
-  summary: () =>
+  summary: (user) =>
     ABILITY.lunge.shape === 'line'
-      ? `Strike the first unit up to ${ABILITY.lunge.reach} away in a straight line, stepping in next to it first.`
+      ? `Strike the first unit up to ${ABILITY.lunge.reach} away in a straight line, stepping in next to it first.${
+          lungePushOf(user) > 0 ? ` It is Pushed ${lungePushOf(user)}.` : ''
+        }`
       : `Hits every unit on two spaces next to you and the space past them, allies included.${
           ABILITY.lunge.shieldPerHit > 0
             ? ` Gain Shield ${ABILITY.lunge.shieldPerHit} for each enemy hit, for ${ABILITY.lunge.slots} slots.`
@@ -2691,7 +2696,12 @@ const axeLunge: AbilityDef = {
       const u = unitAt(ctx.state, goal);
       if (!user.alive || !user.hex || !u || hexDistance(user.hex, goal) !== 1) return;
       log(ctx, `${unitName(user)} lunges.`);
+      const push = lungePushOf(user);
+      // Its own Push, so Forceful adds none (as Axe Throw's).
+      if (push > 0) ctx.pushes = true;
       hit(ctx, user, u, 'The axe');
+      if (push > 0 && u.alive && u.hex && user.alive && user.hex)
+        displace(ctx, u, directionTo(user.hex, u.hex), push, 'push');
       return;
     }
     const caught = lungeFunnelArea(ctx.map, user.hex!, target.hex!)
