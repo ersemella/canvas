@@ -62,6 +62,8 @@ export type AbilityId =
   | 'invocation'
   | 'reave'
   | 'hew'
+  // The test stage's Magus's in place of Omen (owner, 2026-10-31).
+  | 'syzygy'
   | 'axeThrow'
   // The Barbarian's since 2026-10-30, in place of Axe Throw.
   | 'leap'
@@ -567,6 +569,18 @@ export interface ActionTarget {
    * target then.
    */
   also?: Hex;
+  /**
+   * Syzygy's arrangement (owner, 2026-10-31): the cards of units on its
+   * line, each by the space its unit stands on, put on these slots; units
+   * on the line not listed keep theirs.
+   */
+  cards?: CardPlacement[];
+}
+
+/** One card Syzygy places: the unit on `hex`, its card on `slot`. */
+export interface CardPlacement {
+  hex: Hex;
+  slot: number;
 }
 
 export interface TurnAction {

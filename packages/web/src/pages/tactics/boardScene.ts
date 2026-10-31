@@ -86,6 +86,8 @@ export interface SceneInput {
   inspected?: Unit | undefined;
   /** The inspected enemy's ability explained on its stat sheet, if any. */
   inspectedAbility?: AbilityId | null;
+  /** Syzygy's arranging on the track, once its line is picked (`BoardScene.arrange`). */
+  arrange?: BoardScene['arrange'];
 }
 
 /**
@@ -124,6 +126,7 @@ export function buildScene(input: SceneInput): BoardScene {
     preview: [],
     previewSlot: preview?.slot ?? null,
     previewBumps: preview?.bumped ?? {},
+    arrange: input.arrange ?? null,
   };
   if (!fight) return out;
   // An enemy looked at while no move or ability is being picked: what it threatens.
@@ -237,7 +240,11 @@ export function buildScene(input: SceneInput): BoardScene {
       };
     // Blessing in a line: its six lines, each to the map's edge through
     // everything, as a lane to aim along; the one aimed, or hovered, alone once picked.
-    if (from && ability === 'blessing' && ABILITY.blessing.shape === 'line') {
+    // Syzygy's too, only the lines with a card it can move.
+    if (
+      from &&
+      (ability === 'syzygy' || (ability === 'blessing' && ABILITY.blessing.shape === 'line'))
+    ) {
       const aimed =
         target?.hex ??
         (hoverHex && targetAt(mapOf(fight), from, def, targets, hoverHex, acting)?.hex);
@@ -246,6 +253,7 @@ export function buildScene(input: SceneInput): BoardScene {
         from,
         lanes: blessingLines(mapOf(fight), from)
           .filter((line) => line.length > 0)
+          .filter((line) => targets.some((t) => t.hex && hexEquals(t.hex, line[0]!)))
           .filter((line) => !aimed || dirOf(line[0]!) === dirOf(aimed))
           .map((line) => ({hexes: line, target: true})),
       };

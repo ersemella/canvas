@@ -517,6 +517,7 @@ export class TacticsBoardSystem extends BaseSystem {
       {
         selected: scene.selectedUnitId,
         hovered: this.hover.unitId,
+        arrange: scene.arrange ?? null,
       }
     );
   }

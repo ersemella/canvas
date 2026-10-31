@@ -5770,6 +5770,72 @@ production AI. Unfinished fights at most 0.8%.
 - **Not changed in runs**; the test stage has Hew, and the Cataphract
   without Armoured.
 
+## Syzygy in place of Omen (2026-10-31)
+
+Asked for (owner): the Magus's Omen replaced on the test stage by
+**Syzygy**: one of his six lines, any distance, through anything, and the
+cards of every unit on it, of either side, rearranged on the track, each on
+any blank card or swapped among themselves (`ABILITY.syzygy`, `"heroes":
+{"magus": {"abilities": ["syzygy"]}}` on the test stage). Then role
+balance and skill measured. The deck it places on runs from the slot after
+his turn to 12 slots on, or the furthest card if further (the track as
+drawn). The AI tries three arrangements a line (its allies' cards on the
+earliest open slots, its enemies' on the latest, or both, each side in its
+order) and weighs each card's move as the share of a turn gained or lost,
+as Omen's; a player may make any.
+
+`experiments/syzygy.mjs`, 400 fights a row, Syzygy a `patch` on both
+sides, beside Omen as built. **Roles**, as `roles-twelve.mjs`: the Magus
+in the support seat of the three other regions' mirrors (his side's wins),
+and each other support in his seat of Persia's (shown as the Magus's side,
+100 less the other's):
+
+| Seat | Omen | Syzygy | Change |
+|---|---:|---:|---:|
+| For the Storm Caller (Steppe) | 50.3% | 48.5% | −1.8 |
+| For the Alchemist (China) | 60% | 68.3% | +8.3 |
+| For the Priest (Byzantium) | 50.6% | 55.6% | +5.0 |
+| Against the Storm Caller in Persia's | 57.7% | 62.3% | +4.6 |
+| Against the Alchemist in Persia's | 59.9% | 64.2% | +4.3 |
+| Against the Priest in Persia's | 66.7% | 73.4% | +6.7 |
+| **Mean** | **57.5%** | **62.1%** | **+4.6** |
+
+**Skill**, as `skill-fights.mjs`: the Magus played by a novice (depth 1)
+or an expert (depth 4, 4× the work) in the support seat of a Steppe mirror,
+against the same Magus at production's search:
+
+| Played by | Omen | Syzygy |
+|---|---:|---:|
+| Novice | 40.3% | 45.3% |
+| Expert | 57% | 56.5% |
+| Span | **16.7** | **11.2** |
+
+Unfinished fights: 0–1.5% in the seats (Omen 0–2%), but 6.3–6.8% with a
+Magus on each side (Omen 1.3–1.8%), over principle 12's 3%. Syzygy is
+69–79% of his turns (Omen 64–74%). Measured on main as of 30d7cd8 (the
+Priest with Invocation, the Alchemist with Sedative); a first run on
+a754068 (Blessing, no Sedative) gave the same picture, 61.6% against
+55.0%.
+
+- **Syzygy is stronger than Omen by about 5 points**, 62.1% as a score
+  against 57.5%: even in the Steppe's seat, 5–8 points over in China's
+  and Byzantium's, and 4–7 over in Persia's own party. Omen, at 57.5% on
+  today's rules, is itself over even here.
+- **It rewards play less than Omen but still well**: a span of 11.2
+  against 16.7, the novice much stronger with it (45.3% against 40.3%)
+  since the AI's arrangements are already near the best (allies to the
+  front, enemies to the back), so a shallow search loses little. A player
+  arranging by hand has more to choose from than the AI tries.
+- **Stalls**: an infinite line that can send Humphrey's card to the back of
+  the deck each turn, from both sides, is the likely cause of the
+  unfinished fights with two Magi (a mirror; in the seats, with one, they
+  stay under 2%); untried, a cap on how far back a card
+  may go (`ABILITY.syzygy.deck`, 12 now) or leaving Humphrey out.
+- **Not changed in runs**: Syzygy is the test stage's, for play-testing.
+  Untried tunings if it is to replace Omen: a shorter deck (as far back as
+  his own next turn, Omen's reach), allies only forward and enemies only
+  back, or a line of limited length.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

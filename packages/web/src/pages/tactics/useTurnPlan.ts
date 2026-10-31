@@ -11,11 +11,14 @@ import {
   offeredTargets,
   previewTurn,
   reachableHexes,
+  syzygyBlanks,
+  syzygyUnits,
   targetAt,
 } from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
   ActionTarget,
+  CardPlacement,
   FightState,
   Reach,
   TurnInput,
@@ -37,6 +40,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   axeThrow: 'No one within 3 in a straight line.',
   leap: 'No free space to land on.',
   omen: 'No unit within 3 whose turn comes before your next.',
+  syzygy: 'No unit on any of your lines with a card to move.',
   stomp: 'Nowhere to Stomp.',
   charge: 'Nowhere to charge.',
   longshot: 'No one in any of your lanes.',
@@ -84,6 +88,8 @@ interface Picks {
    * confirms, as on the target.
    */
   tapped: Hex | null;
+  /** Syzygy: the unit whose card is picked up off the track, to be put on another. */
+  held: string | null;
 }
 
 const NO_PICKS: Picks = {
@@ -92,6 +98,7 @@ const NO_PICKS: Picks = {
   target: null,
   moving: false,
   tapped: null,
+  held: null,
 };
 
 export type TurnPlan = ReturnType<typeof useTurnPlan>;
@@ -111,7 +118,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     picks: NO_PICKS,
   });
   const picks = saved.fight === fight ? saved.picks : NO_PICKS;
-  const {plannedMove, ability, target, moving, tapped} = picks;
+  const {plannedMove, ability, target, moving, tapped, held} = picks;
   const pick = useCallback(
     (change: Partial<Picks>) =>
       setSaved((s) => ({fight, picks: {...(s.fight === fight ? s.picks : NO_PICKS), ...change}})),
@@ -143,6 +150,33 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     return offeredTargets(fight, mapOf(fight), acting, ABILITIES[ability]);
   }, [ability, fight, acting]);
 
+  /**
+   * Syzygy, its line picked: the units on it whose cards it may move, and
+   * where each card is in the arrangement so far.
+   */
+  const arranging = useMemo(() => {
+    if (ability !== 'syzygy' || !target?.hex || !fight || !acting?.hex) return null;
+    const units = syzygyUnits(fight, mapOf(fight), acting, acting.hex, target.hex);
+    const cards = target.cards ?? [];
+    const slotOf = (id: string) => {
+      const u = units.find((v) => v.id === id)!;
+      return cards.find((c) => hexEquals(c.hex, u.hex!))?.slot ?? u.slot!;
+    };
+    const ends = new Set(units.map((u) => slotOf(u.id)));
+    // The slots a card may go on: the blank cards now, and those the line's cards leave.
+    const open = [...syzygyBlanks(fight), ...units.map((u) => u.slot!)]
+      .filter((slot) => !ends.has(slot))
+      .sort((a, b) => a - b);
+    return {units, slotOf, open};
+  }, [ability, target, fight, acting]);
+
+  /** Syzygy's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
+  const arrange = useMemo(
+    () =>
+      arranging ? {movable: arranging.units.map((u) => u.id), held, open: arranging.open} : null,
+    [arranging, held]
+  );
+
   /** The action with its target chosen, ready to preview. */
   const action = useMemo(() => {
     if (!ability || !target) return null;
@@ -154,15 +188,19 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const needsTarget =
     moving && !plannedMove
       ? 'Pick where to move'
-      : ability && !action
-        ? stepsFirst(ability)
-          ? target?.to
-            ? 'Pick a target'
-            : secondPick(ability)!
-          : secondPick(ability) && target?.hex
-            ? secondPick(ability)!
-            : 'Pick a target'
-        : null;
+      : arranging && !target?.cards?.length
+        ? held
+          ? 'Put it on a blank card'
+          : 'Pick a card on the track'
+        : ability && !action
+          ? stepsFirst(ability)
+            ? target?.to
+              ? 'Pick a target'
+              : secondPick(ability)!
+            : secondPick(ability) && target?.hex
+              ? secondPick(ability)!
+              : 'Pick a target'
+          : null;
 
   /** The picked turn, once its hex or target is: the picked button confirms it. */
   const input: TurnInput | null = useMemo(() => {
@@ -201,7 +239,14 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const chooseAbility = useCallback(
     (id: AbilityId | null) => {
       if (!id)
-        return pick({plannedMove: null, moving: false, ability: null, target: null, tapped: null});
+        return pick({
+          plannedMove: null,
+          moving: false,
+          ability: null,
+          target: null,
+          tapped: null,
+          held: null,
+        });
       // Abilities with no target (Hold) preview at once.
       const own =
         fight && acting ? ABILITIES[id].targets(fight, mapOf(fight), acting, acting.hex!) : [];
@@ -210,6 +255,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         moving: false,
         ability: id,
         tapped: null,
+        held: null,
         target: own.length === 1 && own[0]!.hex === undefined ? {} : null,
       });
     },
@@ -218,8 +264,44 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
 
   const chooseTarget = useCallback(
     (t: ActionTarget, tapped: Hex | null = null) =>
-      pick({plannedMove: null, moving: false, target: t, tapped}),
+      pick({plannedMove: null, moving: false, target: t, tapped, held: null}),
     [pick]
+  );
+
+  /**
+   * Syzygy: a tap on the track's deck, at `slot`. With no card picked up, a
+   * card of the line's picks it up; with one, a blank card puts it there,
+   * another of the line's swaps the two, and its own puts it back down.
+   * False when the tap does nothing.
+   */
+  const arrangeTap = useCallback(
+    (slot: number): boolean => {
+      if (!arranging || !target?.hex) return false;
+      const {units, slotOf, open} = arranging;
+      const there = units.find((u) => slotOf(u.id) === slot);
+      if (!held) {
+        if (!there) return false;
+        pick({held: there.id});
+        return true;
+      }
+      if (there?.id === held) {
+        pick({held: null});
+        return true;
+      }
+      const ends = new Map(units.map((u) => [u.id, slotOf(u.id)]));
+      if (there) {
+        ends.set(there.id, slotOf(held));
+        ends.set(held, slot);
+      } else if (open.includes(slot)) ends.set(held, slot);
+      else return false;
+      // Only the cards that end elsewhere than they are.
+      const cards: CardPlacement[] = units
+        .filter((u) => ends.get(u.id) !== u.slot)
+        .map((u) => ({hex: {...u.hex!}, slot: ends.get(u.id)!}));
+      pick({target: {hex: target.hex, cards}, held: null});
+      return true;
+    },
+    [arranging, target, held, pick]
   );
 
   /**
@@ -246,6 +328,18 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         return true;
       }
       if (!ability) return false;
+      if (ability === 'syzygy') {
+        // A line: a tap anywhere on it picks it, and the cards are arranged on the track.
+        const match =
+          fight &&
+          acting.hex &&
+          targetAt(mapOf(fight), acting.hex, ABILITIES[ability], targets, h, acting);
+        if (!match) return false;
+        if (target?.hex && hexEquals(target.hex, match.hex!))
+          pick({target: null, tapped: null, held: null});
+        else chooseTarget({hex: match.hex!, cards: []}, hexEquals(match.hex!, h) ? null : h);
+        return true;
+      }
       if (stepsFirst(ability)) {
         // Skirmish: the space to step to, then a target in line from there.
         const step = targets.find((t) => t.to && hexEquals(t.to, h));
@@ -325,7 +419,10 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    * destination, then the ability or Move. False when nothing is picked.
    */
   const stepBack = useCallback((): boolean => {
-    if (target?.also) pick({target: {hex: target.hex!}});
+    // Syzygy: the card picked up put down, then the arrangement undone, then the line.
+    if (held) pick({held: null});
+    else if (target?.cards?.length) pick({target: {hex: target.hex!, cards: []}});
+    else if (target?.also) pick({target: {hex: target.hex!}});
     else if (stepsFirst(ability) && target?.hex) pick({target: {to: target.to!}});
     else if (target?.to && !stepsFirst(ability)) pick({target: {hex: target.hex!}});
     else if (target?.hex || target?.to) pick({target: null, tapped: null});
@@ -334,7 +431,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     else if (moving) pick({moving: false});
     else return false;
     return true;
-  }, [target, ability, plannedMove, moving, chooseAbility, pick]);
+  }, [held, target, ability, plannedMove, moving, chooseAbility, pick]);
 
   /**
    * Slots until the unit's next turn after this one, whatever it does: its
@@ -377,6 +474,9 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     toggleMove,
     planTap,
     stepBack,
+    arrangeTap,
+    /** Syzygy's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
+    arrange,
     slotsLater,
     outOfReach,
   };

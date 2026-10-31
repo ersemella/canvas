@@ -9,6 +9,7 @@ import {
   hexDirectionTo,
   hexDistance,
   hexEquals,
+  hexKey,
   hexNeighbor,
   hexNeighbors,
 } from '@canvas/engine/server';
@@ -70,7 +71,7 @@ import {blocks, onMap, tileAt} from './map';
 import {aimSlot, chargeOf, placeCard, simultaneousOrder} from './track';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
-import type {AbilityId, ActionTarget, FightState, LeapShape, Unit} from './types';
+import type {AbilityId, ActionTarget, CardPlacement, FightState, LeapShape, Unit} from './types';
 
 /**
  * What an ability is broadly for, shown as an icon by its name: hurting
@@ -165,6 +166,11 @@ export interface AbilityDef {
    * one at its target.
    */
   recordsOwn?(user: Unit): boolean;
+  /**
+   * Why a target the targets list matches still can't be taken, or null:
+   * for what the list leaves open (Syzygy's arrangement of cards).
+   */
+  check?(state: FightState, map: MapData, user: Unit, target: ActionTarget): string | null;
   /** Resolves the ability now. */
   resolve(ctx: Ctx, user: Unit, target: ActionTarget): void;
 }
@@ -1846,6 +1852,175 @@ const omen: AbilityDef = {
   },
 };
 
+// ─── Magus: Syzygy ───────────────────────────────────────────────────────────
+
+/**
+ * The deck Syzygy places cards on (`ABILITY.syzygy.deck`): from the slot
+ * after the turn now to `deck` slots on, or to the furthest card on the
+ * track if that is further, as the track draws it.
+ */
+export function syzygyDeck(state: FightState): {first: number; last: number} {
+  const cards = state.units.filter((u) => u.alive && u.slot !== null).map((u) => u.slot!);
+  return {
+    first: state.currentSlot + 1,
+    last: Math.max(state.currentSlot + ABILITY.syzygy.deck, ...cards),
+  };
+}
+
+/** The blank cards of Syzygy's deck: slots no card is on. */
+export function syzygyBlanks(state: FightState): number[] {
+  const {first, last} = syzygyDeck(state);
+  const taken = new Set(state.units.filter((u) => u.alive && u.slot !== null).map((u) => u.slot!));
+  const out: number[] = [];
+  for (let s = first; s <= last; s++) if (!taken.has(s)) out.push(s);
+  return out;
+}
+
+/**
+ * The units whose cards a Syzygy from `from` aimed toward `toward` can
+ * move: every unit on that line, to the map's edge through anything, of
+ * either side, with a card on the track after the turn now, and not
+ * Inevitable. Nearest first.
+ */
+export function syzygyUnits(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  toward: Hex
+): Unit[] {
+  const dir = hexDirectionTo(from, toward);
+  if (dir === null) return [];
+  return lineFrom(map, from, dir)
+    .map((h) => unitAt(state, h))
+    .filter(
+      (u): u is Unit =>
+        u !== undefined &&
+        u !== user &&
+        u.alive &&
+        u.slot !== null &&
+        u.slot > state.currentSlot &&
+        !hasPassive(u, 'steadyGait')
+    );
+}
+
+/**
+ * Why a Syzygy's arrangement can't be made, or null if it can: each card
+ * placed is a unit on the line, once, on a slot of the deck, and no two
+ * of the line's cards end on one slot nor on any other unit's card.
+ */
+export function syzygyProblem(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  target: ActionTarget
+): string | null {
+  if (!user.hex || !target.hex) return 'Syzygy needs a line.';
+  const units = syzygyUnits(state, map, user, user.hex, target.hex);
+  const {first, last} = syzygyDeck(state);
+  const ends = new Map(units.map((u) => [u, u.slot!]));
+  const placed = new Set<Unit>();
+  for (const c of target.cards ?? []) {
+    const u = unitAt(state, c.hex);
+    if (!u || !units.includes(u)) return 'Syzygy moves only the cards of units on its line.';
+    if (placed.has(u)) return 'Syzygy places each card once.';
+    if (!Number.isInteger(c.slot) || c.slot < first || c.slot > last)
+      return 'Syzygy places cards only on the track as drawn, after this turn.';
+    placed.add(u);
+    ends.set(u, c.slot);
+  }
+  const mine = new Set(ends.values());
+  if (mine.size !== ends.size) return 'Two cards can’t share a slot.';
+  for (const u of state.units)
+    if (u.alive && u.slot !== null && !ends.has(u) && mine.has(u.slot))
+      return 'Syzygy places cards only on blank cards, or swaps them among the line’s.';
+  return null;
+}
+
+/**
+ * The arrangements the AI tries for a Syzygy along the line toward
+ * `toward` (the player may make any): its allies' cards on the earliest
+ * of the slots open to them (the blank cards and their own), its enemies'
+ * on the latest, or both at once, each side keeping its order. The cards
+ * that move, only; an empty list when none would.
+ */
+export function syzygyArrangements(
+  state: FightState,
+  map: MapData,
+  user: Unit,
+  from: Hex,
+  toward: Hex
+): CardPlacement[][] {
+  const units = syzygyUnits(state, map, user, from, toward).sort((a, b) => a.slot! - b.slot!);
+  const allies = units.filter((u) => !hostile(u, user));
+  const enemies = units.filter((u) => hostile(u, user));
+  const blanks = syzygyBlanks(state);
+  const open = (us: Unit[]) => [...blanks, ...us.map((u) => u.slot!)].sort((a, b) => a - b);
+  const early = (us: Unit[], slots: number[]) => us.map((u, i) => [u, slots[i]!] as const);
+  const late = (us: Unit[], slots: number[]) =>
+    us.map((u, i) => [u, slots[slots.length - us.length + i]!] as const);
+  const both = open(units);
+  const variants = [
+    [...early(allies, both), ...late(enemies, both)],
+    early(allies, open(allies)),
+    late(enemies, open(enemies)),
+  ];
+  const out: CardPlacement[][] = [];
+  const seen = new Set<string>();
+  for (const v of variants) {
+    const cards = v
+      .filter(([u, slot]) => slot !== u.slot)
+      .map(([u, slot]) => ({hex: {...u.hex!}, slot}));
+    const key = cards.map((c) => `${hexKey(c.hex)}=${c.slot}`).join(',');
+    if (cards.length === 0 || seen.has(key)) continue;
+    seen.add(key);
+    out.push(cards);
+  }
+  return out;
+}
+
+/**
+ * Syzygy (owner, 2026-10-31; the test stage's Magus's in place of Omen):
+ * one of his six lines, to the map's edge through anything, and the cards
+ * of every unit on it rearranged as he likes, each put on a blank card of
+ * the deck or several swapped among themselves (`ABILITY.syzygy`).
+ * Aimed at the line's first space (`hex`), the arrangement in `cards`.
+ */
+const syzygy: AbilityDef = {
+  id: 'syzygy',
+  name: 'Syzygy',
+  kind: 'control',
+  damages: false,
+  bothSides: true,
+  area: (map, from, target) => blessingLine(map, from, target),
+  summary: () =>
+    'A line from you, any distance, through anything: rearrange the cards of the units on it, each on any blank card of the track, or swapped among themselves.',
+  targets(state, map, user, from) {
+    const out: ActionTarget[] = [];
+    for (const l of blessingLines(map, from)) {
+      if (l.length === 0 || syzygyUnits(state, map, user, from, l[0]!).length === 0) continue;
+      const hex = {...l[0]!};
+      const ways = syzygyArrangements(state, map, user, from, hex);
+      if (ways.length === 0) out.push({hex, cards: []});
+      for (const cards of ways) out.push({hex, cards});
+    }
+    return out;
+  },
+  check: (state, map, user, target) => syzygyProblem(state, map, user, target),
+  resolve(ctx, user, target) {
+    log(ctx, `${unitName(user)} reads a syzygy in the stars.`);
+    const moves = (target.cards ?? [])
+      .map((c) => ({u: unitAt(ctx.state, c.hex)!, slot: c.slot}))
+      .filter(({u, slot}) => u && u.slot !== slot);
+    // Every card off first, so a swap never lands on a card still there.
+    for (const {u} of moves) u.slot = null;
+    for (const {u, slot} of moves) {
+      u.slot = slot;
+      log(ctx, `${unitName(u)}'s card moves to ${slot - ctx.state.currentSlot} slots on.`);
+    }
+  },
+};
+
 // ─── Juggernaut ──────────────────────────────────────────────────────────────
 
 /** The units standing in a row from `h` along direction `dir`, `h`'s first; none if it is free. */
@@ -2807,6 +2982,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   sedative,
   swiftStrike,
   omen,
+  syzygy,
   stomp,
   longshot,
   blessing,

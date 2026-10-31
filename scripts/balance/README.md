@@ -229,6 +229,10 @@ their new and old seats, the other damage heroes and Byzantium's party.
 (`ABILITY.hew`), the Cataphract without and with Armoured; only the rows
 with Byzantium in them, the rest from `byzantium-swap.mjs`.
 
+`syzygy.mjs` (2026-10-31) the Magus's Syzygy (the test stage's in place
+of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
+support seat of the three other regions' mirrors, each other support in
+his seat of Persia's, and his skill as `skill-fights.mjs`.
 ## Ability and stat ablation
 
 `ablate.mjs` measures what each ability and stat is worth under the production

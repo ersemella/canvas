@@ -50,6 +50,8 @@ import {
   arrowLanes,
   ridePlan,
   stompPlan,
+  syzygyArrangements,
+  syzygyUnits,
   trackBlessing,
   unusableReason,
 } from './abilities';
@@ -2217,6 +2219,110 @@ describe('the Magus', () => {
     delay(ctx, m, 3);
     haste(ctx, m, 3);
     expect(m.slot).toBe(was);
+  });
+
+  describe("Syzygy (the test stage's, in place of Omen)", () => {
+    const along = (h: Hex, dir: number, n: number): Hex => {
+      let out = h;
+      for (let i = 0; i < n; i++) out = hexNeighbor(out, dir);
+      return out;
+    };
+    /** The Magus at the centre with Syzygy; two enemies up its line 0, an ally down line 3. */
+    const lined = () => {
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': along(c, 0, 1),
+          'e-bokh': along(c, 0, 3),
+          'p-bokh': along(c, 3, 2),
+          'p-mangudai': along(c, 1, 1),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      m.loadout = {...m.loadout, abilities: ['syzygy', 'hold']};
+      m.slot = s.currentSlot;
+      unit(s, 'e-mangudai').slot = 2;
+      unit(s, 'e-bokh').slot = 5;
+      unit(s, 'p-bokh').slot = 9;
+      unit(s, 'p-mangudai').slot = 3;
+      return {s, m};
+    };
+    const turn = (hex: Hex, cards: {hex: Hex; slot: number}[]): TurnInput => ({
+      action: {ability: 'syzygy', target: {hex, cards}},
+    });
+
+    it('aims any line with a card it can move on it, to the edge and through anything', () => {
+      const {s, m} = lined();
+      // A yurt between the Magus and the far enemy doesn't block the line.
+      s.tiles = {[hexKey(along(c, 0, 2))]: 'obstacle'};
+      const lines = new Set(ABILITIES.syzygy.targets(s, mapOf(s), m, c).map((t) => hexKey(t.hex!)));
+      expect(lines).toEqual(new Set([0, 1, 3].map((d) => hexKey(along(c, d, 1)))));
+      expect(syzygyUnits(s, mapOf(s), m, c, along(c, 0, 1)).map((u) => u.id)).toEqual([
+        'e-mangudai',
+        'e-bokh',
+      ]);
+      // Not an Inevitable unit's card.
+      unit(s, 'p-mangudai').passives = ['steadyGait'];
+      expect(syzygyUnits(s, mapOf(s), m, c, along(c, 1, 1))).toEqual([]);
+    });
+
+    it('puts cards on blank cards, or swaps them among the line', () => {
+      const {s, m} = lined();
+      const e1 = unit(s, 'e-mangudai');
+      const e2 = unit(s, 'e-bokh');
+      // Swapped, and the near one on a blank card far back.
+      let c1 = cloneFight(s);
+      applyTurn(
+        c1,
+        unit(c1, 'p-magus'),
+        turn(along(c, 0, 1), [
+          {hex: e1.hex!, slot: 5},
+          {hex: e2.hex!, slot: 2},
+        ])
+      );
+      expect([unit(c1, 'e-mangudai').slot, unit(c1, 'e-bokh').slot]).toEqual([5, 2]);
+      c1 = cloneFight(s);
+      applyTurn(c1, unit(c1, 'p-magus'), turn(along(c, 0, 1), [{hex: e1.hex!, slot: 12}]));
+      expect(unit(c1, 'e-mangudai').slot).toBe(12);
+      // An ally to the slot just after this turn.
+      c1 = cloneFight(s);
+      applyTurn(c1, unit(c1, 'p-magus'), turn(along(c, 3, 1), [{hex: along(c, 3, 2), slot: 1}]));
+      expect(unit(c1, 'p-bokh').slot).toBe(1);
+      expect(unit(c1, 'p-magus').slot).toBe(actionCost(m));
+    });
+
+    it("refuses a card on another unit's card, off the deck, twice, or off the line", () => {
+      const {s} = lined();
+      const e1 = along(c, 0, 1);
+      for (const cards of [
+        [{hex: e1, slot: 3}], // p-mangudai's card, not on this line
+        [{hex: e1, slot: 0}], // the turn now
+        [{hex: e1, slot: 13}], // past the deck
+        [
+          {hex: e1, slot: 6},
+          {hex: along(c, 0, 3), slot: 6},
+        ],
+        [{hex: along(c, 3, 2), slot: 6}], // not on this line
+      ])
+        expect(tryTurn(s, 'p-magus', turn(e1, cards))).toThrow(RuleError);
+    });
+
+    it('the AI sends enemies to the back of the deck and brings allies to the front', () => {
+      const {s, m} = lined();
+      const ways = syzygyArrangements(s, mapOf(s), m, c, along(c, 0, 1));
+      expect(ways).toContainEqual([
+        {hex: along(c, 0, 1), slot: 11},
+        {hex: along(c, 0, 3), slot: 12},
+      ]);
+      expect(syzygyArrangements(s, mapOf(s), m, c, along(c, 3, 1))).toEqual([
+        [{hex: along(c, 3, 2), slot: 1}],
+      ]);
+      m.controller = 'ai';
+      const t = chooseAiTurn(s, m);
+      expect(t.action.ability).toBe('syzygy');
+      expect(t.action.target?.cards?.length).toBeGreaterThan(0);
+    });
   });
 
   it('Omen as `swap` (the first built) swaps two cards within 2 before its next turn', () => {
