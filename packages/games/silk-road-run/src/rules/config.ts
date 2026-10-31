@@ -1140,13 +1140,15 @@ export const AI = {
    */
   horizonSlots: 0 as number,
   /**
-   * A switch for measuring (2026-10-31; balance.md, "A Wait always
+   * A Wait always searched (2026-10-31; balance.md, "A Wait always
    * searched"): a Hold in place that brings the card back sooner than its
    * action cost (a Wait) joins the options a decision searches on, played
-   * if it wasn't tried: the root's at 1, every decision's at 2. 0 as
-   * built: a Hold is searched only if it screens among the best.
+   * if it wasn't tried: the root's at 1, every decision's at 2. 1 since
+   * 2026-10-31 (the owner's call; measured no gain or loss at either, the
+   * root's the cheaper); 0, a Hold is searched only if it screens among
+   * the best.
    */
-  keepWait: 0 as number,
+  keepWait: 1 as number,
   /**
    * Root options whose searched values are within this of the best are
    * near-ties, settled by what each does at once (2026-10-31; balance.md,

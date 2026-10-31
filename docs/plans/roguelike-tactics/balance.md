@@ -6292,7 +6292,9 @@ without it), production's search, one side with Wait:
 | Byzantium | 50.8% | 51.5% | 50.3% |
 
 Nothing: the search already tries a Wait often enough, and doesn't find
-it better when it does. **Left off.**
+it better when it does. Left off at first; **on at the root since later
+2026-10-31** (`keepWait` 1, the owner's call with Wait in runs: no gain
+or loss measured, the root's the cheaper of the two).
 
 ### Wait in runs (2026-10-31)
 
@@ -6302,7 +6304,9 @@ the track in the leaf at 0.25 (`AI.reachShare`, `AI.leafTrack`), and
 near-ties at the root settled by what each option does at once
 (`AI.tieMargin` 0.05: with reach counted, stepping in to hit next turn
 scored a hair over hitting now, the Barbarian walking past a free Axe
-Throw). The horizon and the kept Wait stay off. The browser's AI
+Throw). The horizon stays off; the kept Wait was turned on at the root
+later that day (`keepWait` 1, "A Wait always searched"), after these
+rows. The browser's AI
 searches about 6% shallower with the leaf's terms (11.9 → 11.2 decisions
 on average over 48 decisions, `AI.browser`'s 400 ms).
 `experiments/wait-ship.mjs`, 800 fights a row, on `8fe8c1d`: today's
