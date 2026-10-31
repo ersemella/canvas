@@ -12,9 +12,10 @@ const regions = {
 };
 const china = ['modao', 'youxia', 'alchemist'];
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
-const kit = ({haste = 0, streak = []}) => (c) => {
+const kit = ({haste = 0, streak = [], dashMin = 0}) => (c) => {
   Object.assign(c.ABILITY.swiftStrike, {
     dash: 3,
+    dashMin,
     lunge: 0,
     jump: false,
     chain: false,
@@ -29,6 +30,9 @@ const kit = ({haste = 0, streak = []}) => (c) => {
 const variants = {
   'dash-flat3': kit({haste: 3}),
   'dash-streak': kit({streak: [1, 2, 3]}),
+  // A dash of 2 or 3, his choice, a unit passed on the way (owner, 2026-10-31).
+  'dash23-flat3': kit({haste: 3, dashMin: 2}),
+  'dash23-streak': kit({streak: [1, 2, 3], dashMin: 2}),
 };
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};

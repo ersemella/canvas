@@ -358,6 +358,7 @@ export interface Unit {
   jump?: boolean;
   /** Its own Swift Strike dash (`ABILITY.swiftStrike.dash`; the test stage's). */
   dash?: number;
+  dashMin?: number;
   /** Its own straight walk (`HeroDef.movesStraight`; the test stage's). */
   movesStraight?: boolean;
   /** Its own `ABILITY.swiftStrike.chain` and `.streakResets` (the test stage's). */

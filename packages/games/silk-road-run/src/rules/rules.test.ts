@@ -1809,6 +1809,21 @@ describe('the Duelist', () => {
     expect(ABILITIES.swiftStrike.targets(t, mapOf(t), z, z.hex!)).toEqual([]);
   });
 
+  it('with a shortest dash of 2, it may stop 2 or 3 out, a unit passed on the way', () => {
+    withSwift({dash: 3, dashMin: 2});
+    const s = setup({'p-youxia': c, 'e-modao': along(c, 0, 1), 'e-storm': at(0, 0)}, party);
+    s.tiles = {};
+    const y = unit(s, 'p-youxia');
+    // Past the Vanguard: 2 or 3 out; nowhere else, with no unit on the way.
+    expect(ABILITIES.swiftStrike.targets(s, mapOf(s), y, y.hex!)).toEqual(
+      sortByHex([{hex: along(c, 0, 2)}, {hex: along(c, 0, 3)}], (t) => t.hex!)
+    );
+    y.slot = s.currentSlot;
+    applyTurn(s, y, {action: {ability: 'swiftStrike', target: {hex: along(c, 0, 2)}}});
+    expect(y.hex).toEqual(along(c, 0, 2));
+    expect(unit(s, 'e-modao').hp).toBe(unit(s, 'e-modao').maxHp - y.power);
+  });
+
   it('passing through, it hits the unit next to it and the one in front of where it lands', () => {
     withSwift({lunge: 2, passThrough: true});
     const s = setup(

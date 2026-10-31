@@ -58,6 +58,7 @@ interface TestSetup {
   swiftStrike: {
     lunge?: number;
     dash?: number;
+    dashMin?: number;
     walk?: number;
     haste?: number;
     passThrough?: boolean;
@@ -211,6 +212,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     onlyKeys('swiftStrike', s, [
       'lunge',
       'dash',
+      'dashMin',
       'walk',
       'haste',
       'passThrough',
@@ -220,7 +222,7 @@ export function parseTestStage(raw: unknown): TestSetup {
       'streakResets',
       'streak',
     ]);
-    const small = (k: 'lunge' | 'dash' | 'walk' | 'haste') => {
+    const small = (k: 'lunge' | 'dash' | 'dashMin' | 'walk' | 'haste') => {
       if (s[k] === undefined) return;
       if (!Number.isInteger(s[k]) || (s[k] as number) < 0 || (s[k] as number) > 8)
         fail(`swiftStrike.${k} must be a whole number from 0 to 8.`);
@@ -228,6 +230,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     };
     small('lunge');
     small('dash');
+    small('dashMin');
     small('walk');
     small('haste');
     for (const k of ['passThrough', 'jump', 'straight', 'chain', 'streakResets'] as const)
@@ -332,12 +335,24 @@ export function createTestFight(
     ]),
   ];
   const units = placed.map(([u]) => u);
-  const {lunge, dash, walk, haste, passThrough, jump, straight, chain, streakResets, streak} =
-    setup.swiftStrike;
+  const {
+    lunge,
+    dash,
+    dashMin,
+    walk,
+    haste,
+    passThrough,
+    jump,
+    straight,
+    chain,
+    streakResets,
+    streak,
+  } = setup.swiftStrike;
   for (const u of units)
     if (u.hero === 'youxia') {
       if (lunge !== undefined) u.lunge = lunge;
       if (dash !== undefined) u.dash = dash;
+      if (dashMin !== undefined) u.dashMin = dashMin;
       if (walk !== undefined) u.moveCap = walk;
       if (haste !== undefined) u.swiftHaste = haste;
       if (passThrough !== undefined) u.passThrough = passThrough;

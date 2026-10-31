@@ -1279,6 +1279,20 @@ function dashTargets(state: FightState, map: MapData, user: Unit, from: Hex): Ac
   const n = dashOf(user);
   if (isImmobilized(user) || n < 2) return [];
   const out: ActionTarget[] = [];
+  const shortest = user.dashMin ?? ABILITY.swiftStrike.dashMin;
+  if (shortest > 0) {
+    // Any length from `dashMin` to `dash`, on a free space, a unit passed on the way.
+    for (const dir of DIRECTIONS) {
+      const way = laneFrom(map, from, dir);
+      for (let len = Math.max(2, shortest); len <= n && len <= way.length; len++) {
+        const land = way[len - 1]!;
+        const other = unitAt(state, land);
+        if ((other && other !== user) || !mayEndOn(map, user, land)) continue;
+        if (way.slice(0, len - 1).some((h) => unitAt(state, h))) out.push({hex: land});
+      }
+    }
+    return sortByHex(out, (t) => t.hex!);
+  }
   for (const dir of DIRECTIONS) {
     const way = laneFrom(map, from, dir);
     // Yurts or the edge on the last space: one fewer.
@@ -1512,7 +1526,9 @@ const swiftStrike: AbilityDef = {
     const streak = streakOf(user);
     const first =
       dashOf(user) > 0
-        ? `Dash exactly ${dashOf(user)} straight, through units, hitting each passed (${dashOf(user) - 1} if yurts or the edge are in the way).`
+        ? (user.dashMin ?? ABILITY.swiftStrike.dashMin) > 0
+          ? `Dash ${user.dashMin ?? ABILITY.swiftStrike.dashMin} to ${dashOf(user)} straight, through units, hitting each passed.`
+          : `Dash exactly ${dashOf(user)} straight, through units, hitting each passed (${dashOf(user) - 1} if yurts or the edge are in the way).`
         : jumps(user)
           ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it${(user.chain ?? ABILITY.swiftStrike.chain) ? ', and jump again from there' : ''}.`
           : lunge === 0

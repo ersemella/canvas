@@ -796,6 +796,12 @@ export const ABILITY = {
      * fewer, through a unit next to it. No strike in place. 0 as built.
      */
     dash: 0 as number,
+    /**
+     * The shortest dash (owner's idea, 2026-10-31): it may stop on any free
+     * space from `dashMin` to `dash` out, with a unit passed on the way.
+     * 0: exactly `dash` (one fewer against yurts or the edge), as first built.
+     */
+    dashMin: 0 as number,
     /** With `jump`, a jump may be followed by another in the same turn. On (owner, 2026-10-30). */
     chain: true as boolean,
     /**
