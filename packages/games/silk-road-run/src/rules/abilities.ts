@@ -1084,7 +1084,8 @@ export function invocationArea(map: MapData, centre: Hex): Hex[] {
  * space within `ABILITY.invocation.range`, no line of fire, charged as a
  * Hold costs (`chargeOf`). Nothing happens as he casts it; when his card
  * comes back (`landShots`), every enemy within `radius` of the space takes
- * his power and every ally there, himself too, is healed his power.
+ * his power and every ally there, himself too, is healed his power, an
+ * Empower he cast it with adding to both.
  */
 const invocation: AbilityDef = {
   id: 'invocation',
@@ -1095,7 +1096,7 @@ const invocation: AbilityDef = {
   range: ABILITY.invocation.range,
   radius: ABILITY.invocation.radius,
   summary: (user) =>
-    `A space within ${ABILITY.invocation.range} and the spaces next to it: charge ${chargeOf(user, 'invocation')}. When your card comes back, enemies there take ${user.power} and allies there, you too, heal ${user.power}.`,
+    `A space within ${ABILITY.invocation.range} and the spaces next to it: charge ${chargeOf(user, 'invocation')}. When your card comes back, enemies there take ${user.power} and allies there, you too, heal ${user.power}; an Empower adds to both.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.invocation.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {

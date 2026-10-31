@@ -825,11 +825,17 @@ export function clearHail(state: FightState, caster: Unit): void {
   for (const u of state.units) u.statuses = u.statuses.filter((s) => s.hail !== caster.id);
 }
 
+/** What an Invocation heals each ally: its Priest's power and the Empower he cast it with (owner, 2026-10-31). */
+export function invocationHeal(user: Unit, v: ShotInAir): number {
+  return user.power + shotEmpower(user, v);
+}
+
 /**
  * The Priest's Invocation landing, his charging card come back (owner,
  * 2026-10-31): every unit within `ABILITY.invocation.radius` of its space
  * now, each enemy hit for his power (the Empower he cast it with carried),
- * each ally, himself and the camel too, healed his power.
+ * each ally, himself and the camel too, healed his power and that Empower
+ * (`invocationHeal`).
  */
 function landInvocation(ctx: Ctx, user: Unit, v: ShotInAir): void {
   log(ctx, `${unitName(user)}'s invocation lands.`);
@@ -842,7 +848,7 @@ function landInvocation(ctx: Ctx, user: Unit, v: ShotInAir): void {
   );
   for (const u of caught) {
     if (!u.alive) continue;
-    if (u.side === user.side) heal(ctx, u, user.power, user);
+    if (u.side === user.side) heal(ctx, u, invocationHeal(user, v), user);
     else hit(ctx, user, u, `${unitName(user)}'s invocation`, shotEmpower(user, v));
   }
 }

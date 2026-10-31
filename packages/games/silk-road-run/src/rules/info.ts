@@ -160,7 +160,7 @@ export function shotInfo(shot: ShotInAir, state: FightState): HexInfo {
     return {
       name: 'Invocation',
       short: 'Lands here when its card comes back',
-      detail: `Lands when ${who} charging card comes back: ${power} damage to each enemy here and ${power} healing to each ally here.`,
+      detail: `Lands when ${who} charging card comes back: ${power} damage to each enemy here and ${power} healing to each ally here, an Empower adding to both.`,
     };
   }
   if (shot.hex)

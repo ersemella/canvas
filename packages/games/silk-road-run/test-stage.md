@@ -27,7 +27,8 @@ tries other versions of him.
 The Priest plays as in a run since 2026-10-31: speed 1, defence 2,
 power 3, with Invocation in place of Blessing (a space within 3 and the
 spaces next to it, charged as a Hold costs; when his card comes back,
-enemies there take his power and allies there heal it). `"blessing"`,
+enemies there take his power and allies there heal it, an Empower adding
+to both; with Wait on, as here, the charge is a Wait's 2/3 of a turn). `"blessing"`,
 below, applies only to a Priest given Blessing with `"abilities"`.
 The Elixir (named Overdose since 2026-10-31) plays as in a run since
 2026-10-31, an overdose on one unit within 3 (balance.md, "The Elixir as an overdose"); `"elixir"`, below,

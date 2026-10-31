@@ -620,7 +620,8 @@ export const ABILITY = {
    * of it. Charged: it does nothing as he casts it, his card going as many
    * slots on as a Hold would send it (`waitCost`), greyed while it charges;
    * when it comes back, every enemy in the area then takes his power and
-   * every ally there, himself and the camel too, is healed his power
+   * every ally there, himself and the camel too, is healed his power (an
+   * Empower he cast it with adding to the hit and the heal alike)
    * (`landShots`), and his card goes his action cost on, a full turn. A
    * Stun before it lands loses it, as a drawn arrow.
    */

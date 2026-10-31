@@ -5215,6 +5215,18 @@ describe('the Priest’s Invocation', () => {
     expect(s.currentSlot).toBe(back + actionCost(p));
   });
 
+  it('carries the Empower he cast it with to the hit and the heal alike', () => {
+    const {s, p} = ready({'p-bokh': t, 'e-bokh': hexNeighbor(t, 0)});
+    const ally = unit(s, 'p-bokh');
+    const enemy = unit(s, 'e-bokh');
+    ally.hp = 1;
+    p.empower = 2;
+    invoke(s, p, t);
+    advanceToDecision(s);
+    expect(ally.hp).toBe(1 + p.power + 2);
+    expect(enemy.hp).toBe(enemy.maxHp - p.power - 2);
+  });
+
   it('heals the Priest himself when he stands in it', () => {
     const {s, p} = ready({'e-bokh': at(6, 7)});
     p.hp = 1;

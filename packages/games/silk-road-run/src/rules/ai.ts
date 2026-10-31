@@ -63,7 +63,7 @@ import {threatDamage, threatOn, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, charging, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
-import {armourOf, camelOf, damageOf, lastsThrough, shotEmpower} from './resolve';
+import {armourOf, camelOf, damageOf, invocationHeal, lastsThrough, shotEmpower} from './resolve';
 import type {AbilityId, FightState, LeapShape, ShotInAir, Side, TurnInput, Unit} from './types';
 
 export interface ScoredOption {
@@ -375,7 +375,7 @@ function invocationPoints(state: FightState, source: Unit, v: ShotInAir, side: S
     if (!u.alive || !u.hex || hexDistance(u.hex, v.hex!) > ABILITY.invocation.radius) continue;
     const weight = u.hero === CAMEL ? AI.camelHealthWeight : 1;
     let value: number;
-    if (!hostile(u, source)) value = Math.min(source.power, u.maxHp - u.hp) * weight;
+    if (!hostile(u, source)) value = Math.min(invocationHeal(source, v), u.maxHp - u.hp) * weight;
     else {
       const hit = Math.min(
         Math.max(0, damageOf(source, shotEmpower(source, v)) - armourOf(undefined, u, source.hex)),
@@ -797,7 +797,12 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // Invocation: what it will be worth as it stands when it lands, less
   // the charge that holds the Priest back (`invocationPoints`, `chargeCost`).
   if (ability === 'invocation') {
-    const shot: ShotInAir = {source: unit.id, ability: 'invocation', hex: target!.hex!};
+    const shot: ShotInAir = {
+      source: unit.id,
+      ability: 'invocation',
+      hex: target!.hex!,
+      ...(unit.empower ? {empower: unit.empower} : {}),
+    };
     const value = invocationPoints(
       state,
       {...unit, slot: state.currentSlot + chargeOf(unit, ability, state.waitShare)},
