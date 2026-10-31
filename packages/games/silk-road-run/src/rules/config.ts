@@ -287,8 +287,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * 2026-10-31 (owner; its damage hero before, the Cataphract its tank), a
    * Varangian guardsman with a great axe. Speed 1, defence 3 (health 8),
    * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before),
-   * Lunge (`ABILITY.lunge`; Hew on the test stage, then Wade In) and Fury (`FURY`, Haste 5)
-   * as measured in balance.md, "Hew as a line, with Fury". Before that: Leap (owner,
+   * Lunge (`ABILITY.lunge`; Hew on the test stage, then Wade In) and Battle Cry
+   * (`BATTLE_CRY`, Haste 5 for him and allies within 2; owner, later
+   * 2026-10-31, as measured in balance.md, "Battle Cry in place of Fury"),
+   * Fury (`FURY`, Haste 5 for him alone) before. Before that: Leap (owner,
    * 2026-10-30): over anything to a free space 2 away off his straight
    * lines, hitting the two spaces in front of where he lands. In place of
    * Axe Throw (owner, later 2026-10-28; `ABILITY.axeThrow`: any unit within
@@ -305,7 +307,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 3,
     power: 2,
     abilities: ['lunge', 'hold'],
-    passives: ['fury'],
+    passives: ['battleCry'],
   },
   /**
    * The Priest (owner, 2026-10-28; roster.md): Byzantium's support, a
@@ -522,7 +524,8 @@ export const ARMOURED = {armour: 1 as number};
 export const SPEARHEAD = {haste: 3 as number, range: 2 as number};
 
 /**
- * Fury (owner, 2026-10-31), the Barbarian's, not offered: whenever it is
+ * Fury (owner, 2026-10-31), the Barbarian's until Battle Cry (later
+ * 2026-10-31), not offered: whenever it is
  * hit (any damage coming at it, a Shield's or not, as Spearhead), its own
  * card is Hastened `haste`: 5 (owner, 2026-10-31, as measured: balance.md,
  * "Fury's Haste 5"; 3, Devoted's and Spearhead's, on the test stage first).
@@ -538,13 +541,14 @@ export const FURY = {haste: 5 as number};
  * the time renewed; on: `empower` more for each such hit, at most `max`.
  */
 /**
- * Battle Cry (owner, later 2026-10-31; the test stage's Barbarian's in
- * place of Fury and Bloodlust, no hero's in runs, not offered): whenever
- * it is hit (any damage coming at it, a Shield's or not, as Fury and
- * Spearhead), its own card is Hastened `self` and each ally's within
- * `range`, Humphrey too, `allies`.
+ * Battle Cry (owner, later 2026-10-31), the Barbarian's in place of Fury,
+ * not offered: whenever it is hit (any damage coming at it, a Shield's or
+ * not, as Fury and Spearhead), its own card is Hastened `self` and each
+ * ally's within `range`, Humphrey too, `allies`. 5 and 5 (owner, as
+ * measured: balance.md, "Battle Cry in place of Fury", 46.3% as a score
+ * against Fury's 38.8%); 3 and 3 on the test stage first.
  */
-export const BATTLE_CRY = {self: 3 as number, allies: 3 as number, range: 2 as number};
+export const BATTLE_CRY = {self: 5 as number, allies: 5 as number, range: 2 as number};
 
 export const BLOODLUST = {
   empower: 1 as number,

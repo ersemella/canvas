@@ -1975,11 +1975,11 @@ describe('the Barbarian', () => {
     hexNeighbor(landing(dir), dir + 1),
   ];
 
-  it('has speed 1, power 2, defence 3, Lunge and Fury, and is Byzantium’s tank on the roster', () => {
+  it('has speed 1, power 2, defence 3, Lunge and Battle Cry, and is Byzantium’s tank on the roster', () => {
     const {b} = lunging({});
     expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 2, 3, healthOf(3)]);
     expect(abilitiesOf(b).map((d) => d.id)).toEqual(['lunge', 'hold']);
-    expect(b.passives).toEqual(['fury']);
+    expect(b.passives).toEqual(['battleCry']);
     expect(ROSTER).toContain('varangian');
     expect(REGIONS.byzantium.heroes).toEqual(['varangian', 'cataphract', 'priest']);
   });
@@ -2157,14 +2157,14 @@ describe('the Barbarian', () => {
     }
   });
 
-  it("with Battle Cry (the test stage's) is Hastened 3 when hit, and each ally within 2", () => {
+  it('with Battle Cry (his own) is Hastened 5 when hit, and each ally within 2', () => {
     const {s, b} = lunging({
       'e-modao': hexNeighbor(c, 0),
       'p-modao': along(c, 3, 2),
       'p-mangudai': along(c, 3, 3),
     });
-    b.passives = ['battleCry'];
-    expect(BATTLE_CRY).toEqual({self: 3, allies: 3, range: 2});
+    expect(b.passives).toEqual(['battleCry']);
+    expect(BATTLE_CRY).toEqual({self: 5, allies: 5, range: 2});
     const [near, far] = [unit(s, 'p-modao'), unit(s, 'p-mangudai')];
     b.slot = s.currentSlot + 10;
     // Apart, so no two Hastened cards collide.
@@ -2172,14 +2172,15 @@ describe('the Barbarian', () => {
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     hit(ctx, unit(s, 'e-modao'), b, 'A test hit');
     expect([b.slot, near.slot, far.slot]).toEqual([
+      s.currentSlot + 5,
       s.currentSlot + 7,
-      s.currentSlot + 9,
       s.currentSlot + 12,
     ]);
   });
 
   it('Fury Hastens him 5 whenever he is hit', () => {
     const {s, b} = lunging({'e-modao': hexNeighbor(c, 0)});
+    b.passives = ['fury'];
     b.slot = s.currentSlot + 10;
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     hit(ctx, unit(s, 'e-modao'), b, 'A test hit');
