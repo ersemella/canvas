@@ -5345,7 +5345,30 @@ Unfinished fights 0–1%.
 
 Not built. Both would need much more from each cast to be even, his
 power 2 or more (a heal and hit of 2, a poison of 3), or the Empower and
-Weaken kept beside them; not measured.
+Weaken kept beside them.
+
+**At power 2** (the owner's question, 2026-10-31; `turns2-` and
+`poison2-` rows, the same seats and fights): a heal and a hit of 2 by
+turns, or a heal of 2 and a poison of 3.
+
+| Alchemist | Steppe | Persia | Byzantium | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| By turns, power 2 | 37.3% | 36.8% | 45.5% | 31.1% | **35.5%** | 50.3% | 53.5% | 3.2 |
+| Poison, power 2 | 30.5% | 33.2% | 47.5% | 25.7% | **31.4%** | 49% | 53.5% | 4.5 |
+
+- **Still far too weak**: by turns 8 points better than at power 1
+  (27.3%), poison only 1.5 (29.9%), both 17–21 points under the Elixir
+  as built (52.7%). The Elixir as built at power 2 was 73.8% in China's
+  mirror ("Durations by power and defence, step 1"): the point is worth
+  much less here.
+- **By turns, still cast on only 23–42% of his turns** (27–42% at power
+  1): the heal turn with no one hurt still stalls him, so half his
+  Elixirs never come. Kept in his own party 31.1% (Persia's Magus in his
+  seat 58.8%, the Priest 76%).
+- **Poison gains least**: 3 over 18 slots, after healing an enemy 2
+  first when it's hurt, is slow and often undone; he lives through
+  39–71% of fights (45.5–78.5% at power 1), a little more exposed.
+- Unfinished fights at most 1%.
 
 ## Principles for re-tuning
 
