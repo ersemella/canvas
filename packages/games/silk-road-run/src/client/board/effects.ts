@@ -1,7 +1,7 @@
 /**
  * Abilities' effects as a turn plays back (Sunlight's beam, Gale's gusts,
  * a Volley's arrows falling, Shove's blow, Haul's rope, Cleave's swing,
- * Swift Strike's thrust, Reave's swing and throw, Axe Throw's axe, Elixir's flask, Omen's clock,
+ * Swift Strike's thrust, Reave's swing and throw, Axe Throw's axe, Elixir's flask, the Sedative's vial and haze, Omen's clock,
  * Blessing's halo, Stomp's quake, Bite's jaws, Smash's club, the Boulder's
  * flight; Snap Shot's and Feigned Retreat's arrows are drawn by the
  * playback, Hail's stones and Grapple's fists by the board).
@@ -50,8 +50,7 @@ export const ABILITY_EFFECT: Partial<
   axeThrow: drawAxeThrow,
   swiftStrike: drawSwiftStrike,
   elixir: drawElixir,
-  // The same flask, for the Sedative.
-  sedative: drawElixir,
+  sedative: drawSedative,
   omen: drawOmen,
   blessing: drawBlessing,
   stomp: drawStomp,
@@ -505,6 +504,121 @@ function drawSwiftStrike(ctx: CanvasRenderingContext2D, {from, target, k}: Effec
 }
 
 /** How high the Alchemist's flask arcs, in scene pixels, and the drops it bursts into. */
+/** The Sedative's vial arcs lower than the Elixir's flask. */
+const SEDATIVE_ARC = 28;
+/** The 4×4 art pixels of a sleepy "Z". */
+const ZED: [number, number][] = [
+  [0, 0],
+  [1, 0],
+  [2, 0],
+  [3, 0],
+  [2, 1],
+  [1, 2],
+  [0, 3],
+  [1, 3],
+  [2, 3],
+  [3, 3],
+];
+
+/**
+ * Sedative: the Alchemist floats a slim violet vial over in a low,
+ * swaying arc; over the unit it uncorks, and a lavender haze settles round
+ * its head while sleepy Zs drift up out of it, dizzy stars turn round its
+ * brow and a small green plus rises for the heal, then it all thins away.
+ * On itself, the vial just uncorks.
+ */
+function drawSedative(ctx: CanvasRenderingContext2D, {from, target, k}: EffectFrame): void {
+  const a = from ? center(from) : center(target);
+  const b = center(target);
+  const flight = from && (from.q !== target.q || from.r !== target.r) ? 0.4 : 0;
+  if (k < flight) {
+    const t = k / flight;
+    const x = lerp(a.x, b.x, t);
+    const y = lerp(a.y - 22, b.y - 40, t) - Math.sin(Math.PI * t) * SEDATIVE_ARC;
+    const [fx, fy] = artCell(x, y);
+    // Swaying, not tumbling: the vial leans one way, then the other.
+    const lean = Math.floor(t * 6) % 2 === 0 ? 0 : 1;
+    const body: [number, number][] = [
+      [0, 0],
+      [0, 1],
+      [lean, 2],
+      [lean, 3],
+    ];
+    for (const [ox, oy] of body)
+      for (const [dx, dy] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const)
+        artPixel(ctx, fx + ox + dx, fy + oy + dy, OUTLINE);
+    for (const [ox, oy] of body) artPixel(ctx, fx + ox, fy + oy, oy < 2 ? '#c4b5fd' : '#8b5cf6');
+    artPixel(ctx, fx, fy, '#ffffff');
+    artPixel(ctx, fx, fy - 1, '#a16207');
+    return;
+  }
+  const m = flight < 1 ? (k - flight) / (1 - flight) : 1;
+  const fade = fadeOut(m, 0.6);
+  if (fade <= 0) return;
+  const head = {x: b.x, y: b.y - 34};
+  // The haze: dithered lavender, settling round the head and thinning.
+  const settle = Math.min(1, m / 0.3);
+  for (const [w, h, level, color] of [
+    [26, 12, 3, '#a78bfa'],
+    [16, 7, 5, '#ddd6fe'],
+  ] as const) {
+    const haze = ditherFill(ctx, color, level * fade);
+    if (!haze) continue;
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(head.x, head.y - 6 + settle * 8, w * (0.6 + settle * 0.4), h, 0, 0, Math.PI * 2);
+    ctx.fillStyle = haze;
+    ctx.fill();
+    ctx.restore();
+  }
+  // The cork popping off, up and away, early on.
+  if (m < 0.3) {
+    const [cx, cy] = artCell(head.x + m * 30, head.y - 12 - m * 40);
+    artPixel(ctx, cx, cy, '#a16207');
+  }
+  // Sleepy Zs, staggered, drifting up and to the side, growing fainter.
+  for (let i = 0; i < 3; i++) {
+    const z = (m - i * 0.18) / 0.6;
+    if (z <= 0 || z >= 1) continue;
+    const [zx, zy] = artCell(head.x + 6 + z * 16 + i * 2, head.y - 10 - z * 34);
+    const color = z < 0.6 ? '#ede9fe' : '#a78bfa';
+    for (const [ox, oy] of ZED) artPixel(ctx, zx + ox, zy + oy, color);
+  }
+  // Dizzy stars turning round the brow.
+  if (fade > 0.3)
+    for (let i = 0; i < 3; i++) {
+      const ang = (i / 3) * Math.PI * 2 + m * 7;
+      const [sx, sy] = artCell(head.x + Math.cos(ang) * 14, head.y + 2 + Math.sin(ang) * 5);
+      artPixel(ctx, sx, sy, '#fef08a');
+      if (Math.sin(ang) > 0)
+        for (const [ox, oy] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ] as const)
+          artPixel(ctx, sx + ox, sy + oy, '#fde68a');
+    }
+  // The heal: a small green plus rising beside it.
+  if (m > 0.15 && m < 0.75) {
+    const h = (m - 0.15) / 0.6;
+    const [px, py] = artCell(b.x - 16, b.y - 16 - h * 22);
+    for (const [ox, oy] of [
+      [0, 0],
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ] as const)
+      artPixel(ctx, px + ox, py + oy, '#86efac');
+  }
+}
+
 const ELIXIR_ARC = 46;
 const ELIXIR_DROPS = 10;
 
