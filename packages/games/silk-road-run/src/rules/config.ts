@@ -978,8 +978,13 @@ export const ABILITY = {
    * hold an enemy back turn after turn; Omen's reach). Without it, to
    * `deck` slots on (12, the camel's start; a whole turn of the slowest),
    * or to the furthest card on it if that is further, as first built.
+   * `swaps` (owner, later 2026-10-31; on, over `beforeNext` and `deck`):
+   * swaps only, no blank cards: the cards of the line's units, his own
+   * next turn's (where his card would land after this turn) and
+   * Humphrey's (on the line or not) permuted among themselves, so every
+   * card sent back brings another forward.
    */
-  alignment: {beforeNext: true as boolean, deck: 12 as number},
+  alignment: {swaps: true as boolean, beforeNext: true as boolean, deck: 12 as number},
   /**
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the

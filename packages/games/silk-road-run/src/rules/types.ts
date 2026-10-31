@@ -356,6 +356,11 @@ export interface Unit {
    */
   hasteDue?: number;
   /**
+   * The slot this unit's card takes at the end of its turn, in place of its
+   * action cost on: the Magus's own card swapped by Alignment (`swaps`).
+   */
+  cardDue?: number;
+  /**
    * Put after the Magus's next turn by an Omen (`bracket`) and not
    * yet acted since: with `ABILITY.omen.once`, not put there again.
    */

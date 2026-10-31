@@ -56,6 +56,7 @@ import {
   lungeOf,
   dashOf,
   lungeCaught,
+  alignmentSelfSlot,
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
@@ -881,7 +882,9 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     for (const c of target?.cards ?? []) {
       const u = unitAt(state, c.hex);
       if (!u || u.slot === null) continue;
-      value += ((hostile(u, unit) ? 1 : -1) * turnValue(u) * (c.slot - u.slot)) / cardCost(u);
+      // His own card from where it would go after this turn.
+      const was = u === unit ? alignmentSelfSlot(state, unit) : u.slot;
+      value += ((hostile(u, unit) ? 1 : -1) * turnValue(u) * (c.slot - was)) / cardCost(u);
     }
     return closing + value;
   }

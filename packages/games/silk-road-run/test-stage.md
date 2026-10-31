@@ -52,11 +52,16 @@ themselves there, in any order (`ABILITY.alignment`). **No card it moves
 lands after his next turn** (`beforeNext`; owner, later 2026-10-31), so he
 can't hold an enemy back turn after turn; a card already past his next
 turn may still be brought in before it. As first built it reached 12
-slots on. No Magus is in the committed line-up: take him on the
+slots on. **Since later 2026-10-31, swaps only** (`swaps`): no blank
+cards; the cards of the line's units, his own next turn's (the landing
+card on the track, dashed, with his portrait) and Humphrey's, on the line
+or not, swapped among themselves in any order: drag one onto another, or
+tap one then the other. Measured broken (balance.md): swapping his own
+card each turn gives him turn after turn. No Magus is in the committed line-up: take him on the
 start menu to play it. Aim it by tapping a line, then arrange on the
-track: drag a card of the line (outlined in gold) onto a blank card (lit
-while one is picked up) to put it there, or onto another of the line's
-cards to swap the two; or tap the card to pick it up, then tap where it
+track: drag a card of the line (outlined in gold) onto another of the
+line's cards to swap the two (or, with `swaps` off, onto a blank card, lit
+while one is picked up); or tap the card to pick it up, then tap where it
 goes (its own card puts it back down). The preview's arrows show every
 move; the button confirms once a card has moved. Esc or a right-click puts
 a picked-up card down, then undoes the arrangement, then the line.

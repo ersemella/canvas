@@ -49,7 +49,13 @@ export interface BoardScene {
    * slots it may go on (lit). Taps on the track then name a slot
    * (`tactics:slot`), blank cards included.
    */
-  arrange?: {movable: string[]; held: string | null; open: number[]} | null;
+  arrange?: {
+    movable: string[];
+    held: string | null;
+    open: number[];
+    /** Alignment's swaps: the slot his own next turn's card takes in the arrangement, shown as the landing card. */
+    own?: number | null;
+  } | null;
   /** Where the acting unit's card lands after the planned turn: a ghost card on the track. */
   previewSlot?: number | null;
   /** Cards the planned turn's landing moves on, by unit id (`TurnPreview.bumped`). */

@@ -77,6 +77,8 @@ export {
   longshotLines,
   alignmentBlanks,
   alignmentDeck,
+  alignmentPool,
+  alignmentSelfSlot,
   alignmentUnits,
   unusableReason,
 } from './rules/abilities';

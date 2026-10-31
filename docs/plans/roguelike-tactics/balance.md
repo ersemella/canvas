@@ -6332,6 +6332,51 @@ loses ground (15 points against the Steppe), Byzantium, weak since its
 rework of the day, gains 9–14. Which of Wait and the AI moves China is
 not separated: the first row to run if China needs tuning.
 
+### Alignment as swaps only, with his own card and Humphrey's (later 2026-10-31)
+
+Asked for (owner): Alignment as **swaps only** (`ABILITY.alignment.swaps`,
+on; no blank cards, and so no limit of its own): the cards of the line's
+units, **his own next turn's** (where his card would land after this turn)
+and **Humphrey's**, on the line or not, permuted among themselves; every
+card sent back brings another forward. His own card takes its swapped slot
+as his turn ends (`Unit.cardDue`). The AI tries its side's cards (his own
+among them) on the pool's earliest slots and the other side's on its
+latest, and each single swap of an enemy's card before one of its own.
+Same rows (`experiments/alignment.mjs`, 400 fights, main as of the change;
+Byzantium's tank and damage hero swapped in runs since the rows above, so
+Omen's Byzantine rows moved; before Wait came into runs, ab7c0e7):
+
+| Seat | Omen | Alignment, swaps |
+|---|---:|---:|
+| For the Storm Caller (Steppe) | 50.3% | 86.9% |
+| For the Alchemist (China) | 60% | 93.2% |
+| For the Priest (Byzantium) | 69% | 98.4% |
+| Against the Storm Caller in Persia's | 57.7% | 82.9% |
+| Against the Alchemist in Persia's | 59.9% | 88.1% |
+| Against the Priest in Persia's | 66.7% | 97.4% |
+| **Mean** | **60.6%** | **91.2%** |
+
+| Played by | Omen | Alignment, swaps |
+|---|---:|---:|
+| Novice | 40.3% | 38.9% |
+| Expert | 57% | 56.8% |
+| Span | 16.7 | 17.9 |
+
+Unfinished: 3.3–6.8% in the seats, **45%** with a Magus on each side.
+His turns a fight: 15–21 (Omen 5–6), 95 with a Magus on each side;
+Alignment on 88–96% of them.
+
+- **Broken, by his own card**: each turn he swaps his next turn's card with
+  the earliest card on the pool, an enemy's, and acts again at once while it
+  waits where his next turn was. Next turn the same, so he takes turn after
+  turn and the enemy he picks is held back each time: the stun-lock back,
+  and with extra turns. Two Magi do it to each other until the turn cap.
+- **Humphrey is not the trouble**: his card only trades with another.
+- **Untried, to keep his own card in**: his card may only go later (a swap
+  with him brings a card forward, never sends one back); or a swap with his
+  own card ends with his card at least his action cost on; or his own card
+  out, Humphrey's in, swaps only.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

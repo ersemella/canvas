@@ -11,9 +11,10 @@ import {
   offeredTargets,
   previewTurn,
   reachableHexes,
+  ABILITY,
   alignmentBlanks,
   alignmentDeck,
-  alignmentUnits,
+  alignmentPool,
   targetAt,
 } from '@canvas/games-silk-road-run';
 import type {
@@ -157,27 +158,45 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
    */
   const arranging = useMemo(() => {
     if (ability !== 'alignment' || !target?.hex || !fight || !acting?.hex) return null;
-    const units = alignmentUnits(fight, mapOf(fight), acting, acting.hex, target.hex);
+    // Each card it may move, by the space it's known by, and its slot now
+    // (with `swaps`, his own next turn's and Humphrey's among them).
+    const pool = alignmentPool(fight, mapOf(fight), acting, acting.hex, target.hex);
+    const units = pool.map((p) => p.unit);
+    const base = new Map(pool.map((p) => [p.unit.id, p]));
     const cards = target.cards ?? [];
     const slotOf = (id: string) => {
-      const u = units.find((v) => v.id === id)!;
-      return cards.find((c) => hexEquals(c.hex, u.hex!))?.slot ?? u.slot!;
+      const p = base.get(id)!;
+      return cards.find((c) => hexEquals(c.hex, p.hex))?.slot ?? p.slot;
     };
     const ends = new Set(units.map((u) => slotOf(u.id)));
-    // Where a moved card may land: before his next turn (`alignmentDeck`).
+    const {swaps} = ABILITY.alignment;
+    // Where a moved card may land: swapped among the pool's slots, or
+    // before his next turn (`alignmentDeck`).
     const {first, last} = alignmentDeck(fight, acting);
-    const inDeck = (slot: number) => slot >= first && slot <= last;
-    // The slots a card may go on: the blank cards now, and those the line's cards leave.
-    const open = [...alignmentBlanks(fight, acting), ...units.map((u) => u.slot!)]
-      .filter((slot) => !ends.has(slot) && inDeck(slot))
-      .sort((a, b) => a - b);
-    return {units, slotOf, open, inDeck};
+    const slots = new Set(pool.map((p) => p.slot));
+    const inDeck = (slot: number) => (swaps ? slots.has(slot) : slot >= first && slot <= last);
+    // The blank cards a card may go on (none with `swaps`), and those the line's cards leave.
+    const open = swaps
+      ? []
+      : [...alignmentBlanks(fight, acting), ...units.map((u) => u.slot!)]
+          .filter((slot) => !ends.has(slot) && inDeck(slot))
+          .sort((a, b) => a - b);
+    // His own card, where it shows on the track (the landing card) until a preview places it.
+    const own = base.has(acting.id) ? slotOf(acting.id) : null;
+    return {units, base, slotOf, open, inDeck, own};
   }, [ability, target, fight, acting]);
 
   /** Alignment's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
   const arrange = useMemo(
     () =>
-      arranging ? {movable: arranging.units.map((u) => u.id), held, open: arranging.open} : null,
+      arranging
+        ? {
+            movable: arranging.units.map((u) => u.id),
+            held,
+            open: arranging.open,
+            own: arranging.own,
+          }
+        : null,
     [arranging, held]
   );
 
@@ -279,7 +298,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const putCard = useCallback(
     (id: string, slot: number): boolean => {
       if (!arranging || !target?.hex) return false;
-      const {units, slotOf, open, inDeck} = arranging;
+      const {units, base, slotOf, open, inDeck} = arranging;
       const there = units.find((u) => slotOf(u.id) === slot);
       if (there?.id === id) {
         pick({held: null});
@@ -292,9 +311,12 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       } else if (open.includes(slot)) ends.set(id, slot);
       else return false;
       // Only the cards that end elsewhere than they are, each before his next turn.
-      const moved = units.filter((u) => ends.get(u.id) !== u.slot);
+      const moved = units.filter((u) => ends.get(u.id) !== base.get(u.id)!.slot);
       if (moved.some((u) => !inDeck(ends.get(u.id)!))) return false;
-      const cards: CardPlacement[] = moved.map((u) => ({hex: {...u.hex!}, slot: ends.get(u.id)!}));
+      const cards: CardPlacement[] = moved.map((u) => ({
+        hex: {...base.get(u.id)!.hex},
+        slot: ends.get(u.id)!,
+      }));
       pick({target: {hex: target.hex, cards}, held: null});
       return true;
     },
