@@ -6248,6 +6248,86 @@ rules, the same seeds and rows; unfinished fights at most 0.3%.
   play well, and an enemy Priest much weaker in a novice AI's hands than an
   expert's); and China's seat and the Alchemist's under even.
 
+### A horizon of slots (2026-10-31)
+
+Item 2 of what Wait needs from the AI: a line of the search ending at a
+stretch of track, not a count of decisions, so a line that Waits sees as
+many enemy turns as one that acts. Built as `AI.horizonSlots`, **off**
+(0). `experiments/horizon.mjs`, 800 fights a row, on `565d922`: both
+sides searching up to 6 decisions (narrowing 4, 3, 2, four times the
+work) with reach and the track at 0.25, one side with Wait (Patient 3),
+the search cut by decisions only (`d6`) or at 6 or 9 slots too; and one
+side's AI with the horizon against the same deep search without it,
+no Wait (`ai-h6`). Stopped once the shipping measurements were in, so
+some rows are missing.
+
+| Mirror | Wait, decisions only | Wait, horizon 6 | Wait, horizon 9 | The horizon's AI |
+|---|---:|---:|---:|---:|
+| Steppe | 49.3% | 49.9% | 47.4% | **23.4%** |
+| China | **58.8%** | 56.6% | | |
+| Persia | 42.8% | 47.5% | 40.8% | 50.4% |
+| Byzantium | 51.4% | 53% | | |
+
+The horizon changes little for Wait (+0.6 to +4.7 at 6 slots, worse at
+9) and can cripple the AI: on the Steppe the side cutting its lines at 6
+slots wins 23.4% against the same search without, its lines ending
+before the hits they set up land. **Left off.** The deeper search alone
+is what found Wait's first clear worth, China's 58.8%: the browser's AI,
+some 11 decisions deep, is the one that plays it in runs.
+
+### A Wait always searched (2026-10-31)
+
+Item 4: a Hold in place that brings the card back sooner joins the
+options a decision searches on, tried if it wasn't (`AI.keepWait`, the
+root's at 1, every decision's at 2), **off** (0).
+`experiments/keep-wait.mjs`, 800 fights a row, on `dbd9bbb`, with reach
+and the track at 0.25 (the same as reach.mjs's `waitm0.25-` rows
+without it), production's search, one side with Wait:
+
+| Mirror | Without (waitm0.25) | Root | Every decision |
+|---|---:|---:|---:|
+| Steppe | 49.4% | 51% | 49.5% |
+| China | 45.8% | 47.4% | 46.3% |
+| Persia | 48.2% | 46.8% | 47.3% |
+| Byzantium | 50.8% | 51.5% | 50.3% |
+
+Nothing: the search already tries a Wait often enough, and doesn't find
+it better when it does. **Left off.**
+
+### Wait in runs (2026-10-31)
+
+The owner's call, after the four AI items: **Wait is in runs**
+(`RULES.waitShare` 2/3), and with it the AI that plays it: reach and
+the track in the leaf at 0.25 (`AI.reachShare`, `AI.leafTrack`), and
+near-ties at the root settled by what each option does at once
+(`AI.tieMargin` 0.05: with reach counted, stepping in to hit next turn
+scored a hair over hitting now, the Barbarian walking past a free Axe
+Throw). The horizon and the kept Wait stay off. The browser's AI
+searches about 6% shallower with the leaf's terms (11.9 → 11.2 decisions
+on average over 48 decisions, `AI.browser`'s 400 ms).
+`experiments/wait-ship.mjs`, 800 fights a row, on `8fe8c1d`: today's
+game (`built`) against the game before (`before`: all four off).
+
+| | Before | Wait in runs |
+|---|---:|---:|
+| Steppe mirror (player side) | 64.6% | 64.9% |
+| China mirror | 41% | 52% |
+| Persia mirror | 77.6% | 67.8% |
+| Byzantium mirror | 90.6% | 86.4% |
+| China v Steppe | 45.6% | **30.6%** |
+| Persia v Steppe | 70.1% | 64.5% |
+| Byzantium v Steppe | 11.4% | 22.9% |
+| Persia v China | 59.8% | 62.9% |
+| Byzantium v China | 7.6% | 16.4% |
+| Byzantium v Persia | 19.1% | 33.4% |
+
+The AI as built against the AI before, on today's rules, one side each:
+Steppe 52.4%, China 55.5%, Persia 60.7%, Byzantium 56.6%. The mirrors'
+side bias shrinks (Persia's 77.6% → 67.8%, China's 41% → 52%); China
+loses ground (15 points against the Steppe), Byzantium, weak since its
+rework of the day, gains 9–14. Which of Wait and the AI moves China is
+not separated: the first row to run if China needs tuning.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
