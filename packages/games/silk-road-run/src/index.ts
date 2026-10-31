@@ -68,6 +68,8 @@ export {
   abilitiesOf,
   arrowLanes,
   axeLines,
+  elixirLineRange,
+  elixirLines,
   blessingLines,
   forks,
   longshotLanes,

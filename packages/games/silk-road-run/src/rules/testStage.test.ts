@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {hexDirectionTo, hexKey} from '@canvas/engine/server';
+import {hexDirectionTo, hexKey, hexNeighbor} from '@canvas/engine/server';
 import {DOME, spaceAt, spaceOf} from './map';
 import {abilitiesOf, unusableReason, ABILITIES} from './abilities';
 import {HEROES} from './config';
@@ -56,6 +56,42 @@ describe('the test stage', () => {
       'blessing.self must be true or false.'
     );
     expect(createTestFight(1, {...raw, blessing: undefined}).units[0]!.blessesSelf).toBeUndefined();
+  });
+
+  it('aims every Elixir in lines to the range given with "elixir": {"line": 3}, over anything', () => {
+    const from = spaceAt(3, 4);
+    const along = (n: number) => {
+      let h = from;
+      for (let i = 0; i < n; i++) h = hexNeighbor(h, 0);
+      return spaceOf(h);
+    };
+    const raw = {
+      player: [
+        {hero: 'alchemist', at: space(3, 4)},
+        {hero: 'bokh', at: along(1)},
+      ],
+      enemy: [
+        {hero: 'mangudai', at: along(3)},
+        {hero: 'storm', at: along(4)},
+      ],
+      yurts: 'none' as const,
+      camel: null,
+      elixir: {line: 3},
+    };
+    const s = createTestFight(1, raw);
+    const a = s.units.find((u) => u.hero === 'alchemist')!;
+    expect(s.units.every((u) => u.elixirLine === 3)).toBe(true);
+    expect(ABILITIES.elixir.summary(a)).toContain('within 3 in a straight line, over anything');
+    // Past the Grappler beside it, the Outrider 3 along the line; not the Storm Caller 4 away, nor itself.
+    const aimed = ABILITIES.elixir.targets(s, mapOf(s), a, a.hex!).map((t) => spaceOf(t.hex!));
+    expect(aimed).toContainEqual(along(1));
+    expect(aimed).toContainEqual(along(3));
+    expect(aimed).not.toContainEqual(along(4));
+    expect(aimed).not.toContainEqual(space(3, 4));
+    expect(() => parseTestStage({...raw, elixir: {line: 'yes'}})).toThrow(
+      'elixir.line must be a whole number from 0 to 8.'
+    );
+    expect(createTestFight(1, {...raw, elixir: undefined}).units[0]!.elixirLine).toBeUndefined();
   });
 
   it('gives every Duelist the Swift Strike and walk "swiftStrike" sets', () => {

@@ -21,6 +21,8 @@ import {
   arrowLanes,
   blessingLines,
   axeLines,
+  elixirLineRange,
+  elixirLines,
   castableSpaces,
   longshotLanes,
   longshotLines,
@@ -172,7 +174,9 @@ export function buildScene(input: SceneInput): BoardScene {
     // an enemy it can hit, so it's plain why the others can't be.
     const def = ABILITIES[ability];
     const from = acting.hex;
-    if (from && def.range) {
+    // An Elixir in lines reaches no circle of spaces: its lanes are drawn below.
+    const elixirInLines = ability === 'elixir' && elixirLineRange(acting) > 0;
+    if (from && def.range && !elixirInLines) {
       const map = mapOf(fight);
       out.range = hexesInRange(from, def.range).filter(
         (h) =>
@@ -208,12 +212,20 @@ export function buildScene(input: SceneInput): BoardScene {
       };
     // Longshot as first built (`first` off): its six lines, to the map's edge through everything, an arrow
     // to each unit it may hit along them; Axe Throw's the same, to its range.
-    if (from && ((ability === 'longshot' && !ABILITY.longshot.first) || ability === 'axeThrow'))
+    // An Elixir in lines (`Unit.elixirLine`) as Axe Throw's.
+    if (
+      from &&
+      ((ability === 'longshot' && !ABILITY.longshot.first) ||
+        ability === 'axeThrow' ||
+        elixirInLines)
+    )
       out.lanes = {
         from,
         lanes: (ability === 'axeThrow'
           ? axeLines(mapOf(fight), from)
-          : longshotLines(mapOf(fight), from)
+          : elixirInLines
+            ? elixirLines(mapOf(fight), from, acting)
+            : longshotLines(mapOf(fight), from)
         ).flatMap((line): NonNullable<BoardScene['lanes']>['lanes'] => {
           const hits = targets.filter((t) => t.hex && line.some((h) => hexEquals(h, t.hex!)));
           if (!hits.length) return [{hexes: line, target: false}];

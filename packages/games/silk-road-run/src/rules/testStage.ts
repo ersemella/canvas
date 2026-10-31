@@ -69,6 +69,8 @@ interface TestSetup {
   };
   /** Every Priest's Blessing on himself (`Unit.blessesSelf`). */
   blessing: {self?: boolean};
+  /** Every Elixir aimed in lines, to this range (`Unit.elixirLine`); 0 not. */
+  elixir: {line?: number};
 }
 
 /** `"wait": true`: the proposed Wait, two thirds of the action cost (balance.md, "Wait"). */
@@ -174,6 +176,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     'wait',
     'swiftStrike',
     'blessing',
+    'elixir',
   ]);
   const map = v.map ?? STEPPE.id;
   // A map's old name, kept so a fight saved there loads (`MAPS.ridges`), isn't offered.
@@ -252,6 +255,17 @@ export function parseTestStage(raw: unknown): TestSetup {
       blessing.self = b.self as boolean;
     }
   }
+  const elixir: TestSetup['elixir'] = {};
+  if (v.elixir !== undefined) {
+    if (!isObject(v.elixir)) fail('elixir must be an object.');
+    const x = v.elixir as Record<string, unknown>;
+    onlyKeys('elixir', x, ['line']);
+    if (x.line !== undefined) {
+      if (typeof x.line !== 'number' || !Number.isInteger(x.line) || x.line < 0 || x.line > 8)
+        fail('elixir.line must be a whole number from 0 to 8.');
+      elixir.line = x.line as number;
+    }
+  }
   const camel =
     v.camel === false || v.camel === null ? null : parseUnit('camel', v.camel ?? {}, true);
   const setup: TestSetup = {
@@ -264,6 +278,7 @@ export function parseTestStage(raw: unknown): TestSetup {
     wait,
     swiftStrike,
     blessing,
+    elixir,
   };
   const taken = new Map<string, string>();
   const claim = (where: string, h: Hex) => {
@@ -335,6 +350,8 @@ export function createTestFight(
   for (const u of units)
     if (u.hero === 'priest' && setup.blessing.self !== undefined)
       u.blessesSelf = setup.blessing.self;
+  // Every unit, so an Elixir given in a loadout is aimed so too.
+  if (setup.elixir.line !== undefined) for (const u of units) u.elixirLine = setup.elixir.line;
   // The camel's road, at random (`ROUTES`), off any space a unit is set on.
   const setOn = (h: Hex) => placed.some(([u, {at}]) => at && hexEquals(at, h) && u.hero !== CAMEL);
   const roads = ROUTES.filter((r) => !setOn(r.camelStart));

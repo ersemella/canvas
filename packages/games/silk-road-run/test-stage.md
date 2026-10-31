@@ -26,6 +26,10 @@ the way, Haste 3 (`"swiftStrike"`, below; balance.md, "The Duelist walking
 straight, and a dash"). To dash, aim Swift Strike at the space he lands on.
 Every Priest's Blessing leaves him out (`"blessing": {"self": false}`,
 below; owner, 2026-10-30): it blesses only the units on the line aimed.
+Every Elixir is aimed in lines (`"elixir": {"line": 3}`, below; owner,
+2026-10-31; balance.md, "The Elixir in lines, by turns or as poison"):
+any unit within 3 on one of the Alchemist's six lines, over anything in
+between, its effects as built.
 
 ```json
 {
@@ -34,6 +38,7 @@ below; owner, 2026-10-30): it blesses only the units on the line aimed.
   "wait": true,
   "swiftStrike": {"dash": 3, "walk": 3, "straight": true, "haste": 3},
   "blessing": {"self": false},
+  "elixir": {"line": 3},
   "yurts": "none",
   "camel": {},
   "player": [
@@ -104,6 +109,7 @@ it, unhurt.
 | `wait` | **Wait** (proposed, timeline.md 3.2): `true` and a turn that does nothing (Skip turn, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) sends the card two thirds of its action cost on, rounded: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10, so Skip turn reads +6 beside an ability's +9. A number above 0 and at most 1 sets the share instead (`0.5`). Both sides play by it; the AI's search doesn't weigh the time a Wait saves, so it Waits only when that happens to look best, and an AI that does weigh it was measured Waiting in place of walking (balance.md, "Wait"). `false`: today's rule. | `false` |
 | `swiftStrike` | Every Duelist's Swift Strike, both sides (switches off in a run; balance.md, "The Duelist's lunge and streak"): `lunge`, up to that many spaces straight at the first unit in line before the strike, stopped by yurts, units and the map's edge, ending next to it; `passThrough`, `true` and the lunge may also pass through the units on its way, each hit, to a free space past them (aimed at that space), striking the unit in front of it too; `jump`, `true` and it may also jump a unit next to it to the free space past it (aimed at that space), hitting it, and from there jump another unit next to it in the same turn, never the same one twice, the turn going on until no jump is left or Skip turn ends it (with `lunge` 1, the unit 2 away in line is hit stepping one space in); `chain`, `false` and a jump ends the turn; `dash`, Swift Strike only a dash of exactly that many spaces straight, through the units on the spaces before the last, each hit, to the free space it lands on (aimed at), or with yurts or the map's edge on that space one fewer; no strike in place (`3`); `walk`, the Duelist's own walk; `straight`, `true` and it walks straight along one of the six directions, as the Outrider does, at most `walk` spaces; `haste`, the slots his card is Hastened when he hits (`0`: none); `streak`, the Haste on turns striking running, the first strike's, the second's and so on, the last held while it lasts (`[2, 3, 4]`), a turn without a strike, a walk included, starting it again. `streakResets`, `false` and it isn't started again, each hit of the fight raising the Haste. Each part left out keeps its own rule. | Swift Strike as built: melee, no lunge or jumps, Haste 3, a walk of 3 |
 | `blessing` | Every Priest's Blessing, both sides: `self`, `false` and it leaves him out, blessing only the units on the line aimed (an empty line then does nothing). | Blessing as built: he is blessed too, whatever line he aims |
+| `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. | Elixir as built: any unit within 2, himself too |
 
 Any field starting with `$` (like `$comment`) is ignored, for notes.
 

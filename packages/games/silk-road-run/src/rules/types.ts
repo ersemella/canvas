@@ -376,6 +376,11 @@ export interface Unit {
   /** Its own Blessing on itself (`ABILITY.blessing.lineSelf`; the test stage's `"blessing"`). */
   blessesSelf?: boolean;
   /**
+   * Its own Elixir aimed in lines (`ABILITY.elixir.line`), to this range;
+   * 0 not in lines (the test stage's `"elixir"`).
+   */
+  elixirLine?: number;
+  /**
    * It has lost health this fight, healed back or not: Humphrey unhurt all
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
    */

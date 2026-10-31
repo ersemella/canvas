@@ -811,11 +811,19 @@ export const elixirHits = (user: Unit): boolean =>
 export const elixirPoison = (user: Unit): number => user.power + ABILITY.elixir.poisonExtra;
 
 /**
- * Elixir's six lines from `from` (`ABILITY.elixir.line`): 1 to `range`
- * spaces straight out, through units and yurts, as Axe Throw's.
+ * How far `user`'s Elixir reaches along its lines, or 0 if it isn't aimed
+ * in lines: its own setting (`Unit.elixirLine`), else `ABILITY.elixir`'s
+ * `range` with `line`.
  */
-export function elixirLines(map: MapData, from: Hex): Hex[][] {
-  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(0, ABILITY.elixir.range));
+export const elixirLineRange = (user: Unit): number =>
+  user.elixirLine ?? (ABILITY.elixir.line ? ABILITY.elixir.range : 0);
+
+/**
+ * Elixir's six lines from `from` for `user` (`elixirLineRange`): 1 to its
+ * range straight out, through units and yurts, as Axe Throw's.
+ */
+export function elixirLines(map: MapData, from: Hex, user: Unit): Hex[][] {
+  return DIRECTIONS.map((dir) => lineFrom(map, from, dir).slice(0, elixirLineRange(user)));
 }
 
 /** Elixir's Empower or Weaken: `ABILITY.elixir`'s own amount if set, else `fixed` (0: none). */
@@ -899,8 +907,8 @@ const elixir: AbilityDef = {
           : '';
       return `${[allies, enemies].filter(Boolean).join(', ')}${empowers || weakens ? `, for ${RULES.durations.turn} slots` : ''}.`;
     };
-    const where = ABILITY.elixir.line
-      ? `A unit within ${range} in a straight line, over anything in between`
+    const where = elixirLineRange(user)
+      ? `A unit within ${elixirLineRange(user)} in a straight line, over anything in between`
       : `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}`;
     if (ABILITY.elixir.mode === 'alternate')
       return `${where}: ${elixirHits(user) ? `this time an enemy, hit for ${user.power}` : `this time an ally, healed ${user.power}`}; heal and hit by turns.`;
@@ -920,8 +928,8 @@ const elixir: AbilityDef = {
       return spacesWithin(map, from, range)
         .filter((h) => elixirCaught(state, user, from, h).length > 0)
         .map((h) => ({hex: h}));
-    if (ABILITY.elixir.line)
-      return elixirLines(map, from)
+    if (elixirLineRange(user))
+      return elixirLines(map, from, user)
         .flat()
         .map((h) => unitAt(state, h))
         .filter(elixirTakes(user))

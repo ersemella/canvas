@@ -9,7 +9,7 @@
 import {ABILITY, AI, ARMOURED} from './config';
 import {cleaveAreas, hostile, isImmobilized, isStunned, kitOf} from './board';
 import {damageOf} from './resolve';
-import {dashOf, lungeOf, passesThrough} from './abilities';
+import {dashOf, elixirLineRange, lungeOf, passesThrough} from './abilities';
 import {blocks, tileAt} from './map';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
@@ -186,9 +186,9 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const elixirHits =
       ABILITY.elixir.mode === 'alternate' ||
       (ABILITY.elixir.mode === 'built' && ABILITY.elixir.fixed > 0);
-    if (has('elixir') && elixirHits && ABILITY.elixir.line) {
+    if (has('elixir') && elixirHits && elixirLineRange(e)) {
       for (const [dq, dr] of AXIAL)
-        for (let i = 1; i <= ABILITY.elixir.range; i++)
+        for (let i = 1; i <= elixirLineRange(e); i++)
           mark(hexes, id(fq + dq * i, fr + dr * i), power);
     } else if (has('elixir') && elixirHits) {
       const range = ABILITY.elixir.range;
