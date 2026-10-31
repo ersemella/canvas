@@ -118,7 +118,7 @@ To fight the Steppe's boss instead, the Cyclops (`giant`): `"map":
 `giant` and two `wolf`. Speed 1, defence 5 (health 12), power 3. **One
 Eye**: Armour 3 against a hit (or a grapple's squeeze) from any unit not
 standing in its front lane, straight out the way its eye faces at any
-distance; a Piercing hit (Longshot) ignores it. The eye is drawn on the
+distance; a Piercing hit ignores it. The eye is drawn on the
 edge of its hex it faces. It starts facing across the board, and turns
 the way it last stepped on a walk, or toward what it aims at; being
 Pushed or Pulled doesn't turn it. **Smash**: melee, its power.

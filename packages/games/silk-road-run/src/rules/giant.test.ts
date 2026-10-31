@@ -3,7 +3,7 @@
 import {describe, expect, it} from 'vitest';
 import {hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ONE_EYE, PARTY} from './config';
+import {ABILITY, ONE_EYE, PARTY} from './config';
 import {applyTurn, createFight, mapOf} from './fight';
 import {STEPPE} from './map';
 import {squeezeDue} from './resolve';
@@ -72,11 +72,17 @@ describe('the Cyclops', () => {
     expect(giant.hp).toBe(giant.maxHp - 2);
   });
 
-  it('One Eye: a Piercing hit ignores the Armour (Longshot)', () => {
-    const s = setup({'e-giant': centre, 'p-mangudai': out(3, 3)});
-    const giant = unit(s, 'e-giant');
-    act(s, 'p-mangudai', 'longshot', {hex: centre});
-    expect(giant.hp).toBe(giant.maxHp - 2);
+  it('One Eye: a Piercing hit ignores the Armour (Longshot with `pierce`)', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {pierce: true});
+    try {
+      const s = setup({'e-giant': centre, 'p-mangudai': out(3, 3)});
+      const giant = unit(s, 'e-giant');
+      act(s, 'p-mangudai', 'longshot', {hex: centre});
+      expect(giant.hp).toBe(giant.maxHp - 2);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('One Eye: the Armour holds against a grapple’s squeeze from the side', () => {

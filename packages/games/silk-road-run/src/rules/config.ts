@@ -268,8 +268,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Ranger (owner, 2026-10-27; roster.md): a Persian foot archer, a
    * candidate for Persia's damage hero beside the Cataphract. Speed 2,
    * defence 1 (health 4) and power 3, the most of any hero, are the
-   * owner's. Longshot hits the first unit in line, Piercing
-   * (`ABILITY.longshot`).
+   * owner's. Longshot hits the first unit in line (`ABILITY.longshot`),
+   * Piercing until 2026-10-31 (owner).
    */
   archer: {
     name: 'Ranger',
@@ -558,7 +558,8 @@ export const ABILITY = {
   /**
    * Longshot (owner, 2026-10-27; roster.md), the Ranger's: down any of
    * its six lines, at any range, the first unit in line hit, stopped by
-   * yurts as Snap Shot (`first`), and Piercing (`pierce`); Pushed 1
+   * yurts as Snap Shot (`first`); Piercing (`pierce`) until 2026-10-31,
+   * when the owner took it off, so Armour now stands against it; Pushed 1
    * (`push`) from 2026-10-28 until later that day (owner: balance.md,
    * "Longshot's Push, flying over the spaces next to the Ranger", 55.2%
    * in the Steppe's damage seat with it, 49.6% without); Delayed 3, `delay`, from later
@@ -585,7 +586,7 @@ export const ABILITY = {
     camel: true as boolean,
     falloff: Infinity as number,
     first: true as boolean,
-    pierce: true as boolean,
+    pierce: false as boolean,
     push: 0 as number,
     delay: 0 as number,
     weaken: 0 as number,

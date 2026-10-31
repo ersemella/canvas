@@ -928,7 +928,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // Grapple's throw (on the unit it grapples) hits nothing (owner, 2026-10-26).
   const throws = input.action.ability === 'grapple' && grappling(unit, hit);
   // Armour: One Eye's, unless it stands in the lane the eye faces, and
-  // Armoured's (Longshot Pierces both).
+  // Armoured's (Longshot Pierces both with `ABILITY.longshot.pierce`, off as built).
   const pierces = input.action.ability === 'longshot' && ABILITY.longshot.pierce;
   const armour = armourOf(undefined, hit, unit.hex, pierces);
   const damage =
