@@ -4,7 +4,8 @@
 // nearly always. Instead: no Armour, and each unit his charge carries into
 // ruins or the map's edge Delayed (`ABILITY.charge.slam` `delay`), as
 // measured for him as a tank on 2026-10-29 ("The slam as a Delay").
-// `brace`: as built; `slamN`: no Armour, Delay N. Rows, `modWinPct`:
+// `brace`: as built; `slamN`: no Armour, Delay N; `bare`: neither (owner,
+// later 2026-10-31). Rows, `modWinPct`:
 // - `${tag}-cataphract-for-O-R`: he in the damage seat of each other
 //   region's mirror; `${tag}-O-for-cataphract-byzantium` each other damage
 //   hero in his seat of Byzantium's.
@@ -28,6 +29,7 @@ const variants = [
   ['brace', variant('none', 6, 1)],
   ['slam6', variant('delay', 6, 0)],
   ['slam9', variant('delay', 9, 0)],
+  ['bare', variant('none', 6, 0)],
 ];
 for (const [tag, patch] of variants) {
   for (const name of ['steppe', 'china', 'persia']) {
