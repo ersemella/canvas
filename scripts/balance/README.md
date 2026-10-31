@@ -381,3 +381,4 @@ costs about four times the CPU of production, past the Worker's budget
 `lunge-push.mjs` (later 2026-10-31) measures Lunge's Push 1 (`ABILITY.lunge.push`, the test stage's `"lunge": {"push": 1}`) on every row of `full-check.mjs` the Barbarian plays in, its own skill and his party's, to set beside that file's rows (same seeds).
 
 `bloodlust.mjs` (later 2026-10-31) measures Bloodlust (`BLOODLUST`, patchable in experiments since then) beside the Barbarian's Fury, refreshed (`bl`) and stacking to 3 (`bls`), on `lunge-push.mjs`'s rows with Lunge's Push 1.
+`battle-cry.mjs` (later 2026-10-31) measures Battle Cry (`BATTLE_CRY`, patchable in experiments since then) in place of the Barbarian's Fury, at Haste 3/3, 5/3 and 5/5 (himself, allies within 2), on Lunge as built, beside `full-check.mjs`'s rows of the same names.
