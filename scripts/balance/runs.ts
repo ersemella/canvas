@@ -7,7 +7,7 @@ import {createRun, handleRunAction, isStatCard, runStatus, runView} from '@balan
 import type {RunState} from '@balance-rules/run';
 import {actingUnit, advanceToDecision, applyTurn} from '@balance-rules/fight';
 import {chooseAiTurn} from '@balance-rules/ai';
-import {ABILITY, AI, CAMEL, HEROES, RULES, SPEARHEAD, STAGES} from '@balance-rules/config';
+import {ABILITY, AI, CAMEL, HEROES, RULES, SPEARHEAD, FURY, STAGES} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import {hasPassive} from '@balance-rules/passives';
 import type {CardId, HeroId, PassiveId, StatId} from '@balance-rules/types';
@@ -39,7 +39,7 @@ type Options = RunExperiment & {runs: number; seed: number; maxTurns: number};
 type Loss = 'camelKilled' | 'partyKilled' | 'stalled';
 
 export function simulateRuns(options: Options) {
-  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES, SPEARHEAD};
+  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES, SPEARHEAD, FURY};
   const restore = snapshot(config);
   try {
     options.patch?.(config);

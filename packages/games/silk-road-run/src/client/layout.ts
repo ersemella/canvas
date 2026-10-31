@@ -162,6 +162,13 @@ export function slotAt(
   return i < count ? start + i : null;
 }
 
+/**
+ * A card being dragged along the track while Syzygy arranges it: the slot
+ * the press began on, or null. Set by the input system, read by the board
+ * system to draw the picked-up card under the pointer.
+ */
+export const trackDrag: {from: number | null} = {from: null};
+
 export function cardAt(cards: TrackCard[], p: {x: number; y: number}): TrackCard | undefined {
   return cards.find((c) => p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h);
 }

@@ -34,7 +34,11 @@ export function waitCost(unit: Unit, share = RULES.waitShare): number {
  * for the rest.
  */
 export function chargeOf(unit: Unit, ability: AbilityId, share = RULES.waitShare): number {
-  if (ability === 'invocation') return waitCost(unit, share);
+  if (ability === 'invocation') {
+    const {charge} = ABILITY.invocation;
+    if (charge === null) return waitCost(unit, share);
+    return Math.max(1, Math.round(actionCost(unit) * charge));
+  }
   const charge =
     ability === 'skirmish'
       ? ABILITY.skirmish.charge

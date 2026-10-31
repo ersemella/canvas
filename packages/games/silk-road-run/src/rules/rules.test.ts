@@ -5364,6 +5364,17 @@ describe('the Priest’s Invocation', () => {
     expect(enemy.hp).toBe(enemy.maxHp - p.power - 2);
   });
 
+  it('with `charge` set, charges that share of his turn in place of a Hold’s cost', () => {
+    const inv = ABILITY.invocation as {charge: number | null};
+    onTestFinished(() => {
+      inv.charge = null;
+    });
+    inv.charge = 0.5;
+    const {s, p} = ready({'e-bokh': t});
+    invoke(s, p, t);
+    expect(p.slot).toBe(Math.round(actionCost(p) * 0.5));
+  });
+
   it('heals the Priest himself when he stands in it', () => {
     const {s, p} = ready({'e-bokh': at(6, 7)});
     p.hp = 1;

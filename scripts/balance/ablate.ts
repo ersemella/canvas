@@ -6,7 +6,7 @@
 import {createFight, advance, applyTurn, actingUnit} from '@balance-rules/fight';
 import {placeStartingCards} from '@balance-rules/track';
 import {chooseAiTurn} from '@balance-rules/ai';
-import {ABILITY, AI, CAMEL, HEROES, RULES, SPEARHEAD} from '@balance-rules/config';
+import {ABILITY, AI, CAMEL, FURY, HEROES, RULES, SPEARHEAD} from '@balance-rules/config';
 import {ABILITIES} from '@balance-rules/abilities';
 import {unitName} from '@balance-rules/resolve';
 import {MAPS} from '@balance-rules/map';
@@ -67,12 +67,13 @@ const SOURCES: [RegExp, string][] = [
   [/^The cleave hits/, 'cleave'],
   [/^The (?:jian|sword) hits/, 'swiftStrike'],
   [/^The smiting hits/, 'blessing'],
+  [/'s invocation hits/, 'invocation'],
   // Axe Throw, Reave and Leap's axe; Leap's splash (`ABILITY.leap.splash`).
   [/^The axe hits/, 'axe'],
   [/^The blow hits/, 'leapSplash'],
 ];
 const ACTOR =
-  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the (?:jian|sword)| gives .+ an elixir| smites| blesses| leaps)/;
+  /^(Your|Enemy) .+?(?:'s arrow hits| calls down hail| calls down sunlight| looses a volley|'s volley lands|'s skirmish arrow hits| draws on| throws| swaps places| grapples| bites|'s parting arrow hits| calls up a gale| shoves| hauls| cleaves| strikes .+ with the (?:jian|sword)| gives .+ an elixir| smites| blesses| leaps| begins an invocation|'s invocation lands)/;
 
 /** Runs `choose` with `settings` in place of production's AI settings (`Mod.ai`). */
 function withAi<T>(settings: Record<string, unknown> | undefined, choose: () => T): T {
@@ -102,7 +103,7 @@ function searchWith({depth, work}: {depth: number; work: number}) {
 }
 
 export function ablate(options: Options) {
-  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES, SPEARHEAD};
+  const config: Config = {ABILITY, AI, HEROES, RULES, ABILITIES, SPEARHEAD, FURY};
   const restore = snapshot(config);
   try {
     options.patch?.(config);
@@ -148,6 +149,8 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
   /** Sunlight's targets (self, ally hero, camel, enemy, or hail alone) and what it added. */
   const sunlight: Record<string, number> = {};
   let empowerDamage = 0;
+  /** What Invocations heal (the lines after one lands). */
+  let invocationHeal = 0;
   let melts = 0;
   /** Turns begun Immobilized by hail, by whose hail: the unit's side's, or the other's. */
   const held = {ally: 0, enemy: 0};
@@ -196,6 +199,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
     let swappingBack = false;
     let actor: Side | null = null;
     let lastSource: string | null = null;
+    let invoking = false;
     /** The acting unit and its ability, for the track effects it gives. */
     let acting: {name: string; ability: string} | null = null;
     /** Units Delayed since their last turn, by name (unique in the experiments that count it). */
@@ -211,6 +215,10 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
       for (const {text} of s.log) {
         const who = ACTOR.exec(text);
         if (who) actor = who[1] === 'Your' ? 'player' : 'enemy';
+        // An Invocation's heals: the lines after it lands, until the next action.
+        if (who) invoking = /'s invocation lands/.test(text);
+        const healed = invoking && / heals (\d+)\.$/.exec(text);
+        if (healed) invocationHeal += Number(healed[1]);
         for (const [pattern, source] of SOURCES) {
           if (!pattern.test(text)) continue;
           const n = Number((/for (\d+)\.?$/.exec(text) ?? /takes (\d+) from/.exec(text))?.[1] ?? 0);
@@ -436,6 +444,7 @@ function run({fights, seed, maxTurns, mod, party, enemies, map}: Options) {
     ),
     sunlightTargets: sunlight,
     empowerDamagePerFight: perFight(empowerDamage),
+    invocationHealPerFight: perFight(invocationHeal),
     meltsPerFight: round(melts / fights, 2),
     survivalPct: Object.fromEntries(
       Object.entries(units).map(([h, n]) => [h, round((100 * (survivors[h] ?? 0)) / n)])

@@ -2,10 +2,11 @@
 // first unit up to 2 away in a straight line, stepping in next to it;
 // `ABILITY.hew.shape` `line`, no Shield) with Fury (Hastened 3 whenever
 // hit, `FURY`) as asked (`fury`), and without it (`line`), to tell the
-// two apart. The Cataphract braced as there. Only the rows of
-// roles-twelve.mjs with Byzantium in them (the rest as byzantium-brace.mjs's
-// `brace-` rows, the same rules and seeds); the Barbarian's skill in the
-// tank seat, as skill-fights.mjs. `modWinPct`.
+// two apart. The Cataphract braced as there. Every row of roles-twelve.mjs
+// for `fury`, the rows with Byzantium in them for `line` (the rest the same
+// as `fury`'s); the Barbarian's skill in the tank seat, as skill-fights.mjs.
+// Run on the Priest's Invocation (in runs since `81e3d7c`'s day), so not
+// beside byzantium-brace.mjs's rows. `modWinPct`.
 const swap = (fury) => (c) => {
   Object.assign(c.HEROES.varangian, {
     speed: 1,
@@ -29,10 +30,16 @@ const regions = {
 };
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
 export const experiments = {};
-for (const [variant, patch] of [['fury', swap(true)], ['line', swap(false)]]) {
+// `fury5` (owner, later 2026-10-31): Fury's Haste 5 (`FURY.haste`), its
+// Byzantium rows only (the rest as `fury`'s), and its skill.
+const fury5 = (c) => {
+  swap(true)(c);
+  c.FURY.haste = 5;
+};
+for (const [variant, patch] of [['fury', swap(true)], ['line', swap(false)], ['fury5', fury5]]) {
   for (const [name, party] of Object.entries(regions))
     for (const [other, theirs] of Object.entries(regions))
-      if (other !== name && (name === 'byzantium' || other === 'byzantium'))
+      if (other !== name && (variant === 'fury' || name === 'byzantium' || other === 'byzantium'))
         for (const [i, out] of party.entries())
           experiments[`${variant}-${theirs[i]}-for-${out}-${name}`] = {party, patch, mod: {party: seat(party, i, theirs[i])}};
   for (const [level, search] of [['novice', {depth: 1, work: 220}], ['expert', {depth: 4, work: 4 * 220}]])

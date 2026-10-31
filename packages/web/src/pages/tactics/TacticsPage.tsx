@@ -283,14 +283,26 @@ export function TacticsPage() {
 
   const onHexRef = useRef(onHex);
   onHexRef.current = onHex;
-  /** Syzygy: a tap on the track's deck arranges its line's cards. */
-  const {arrangeTap} = plan;
+  /**
+   * Syzygy: presses, taps and drags on the track's deck arrange its line's
+   * cards. A press on a card of the line picks it up at once (so it can be
+   * dragged); the tap that press ends in then leaves it picked up.
+   */
+  const {arrangeTap, arrangeDown, arrangeDrop} = plan;
+  const pickedOnPress = useRef(false);
   const onSlot = useCallback(
-    (slot: number) => {
+    (e: TacticsSlotPayload) => {
       if (playing || busy) return;
-      arrangeTap(slot);
+      if (e.phase === 'down') {
+        pickedOnPress.current = arrangeDown(e.slot);
+        return;
+      }
+      const picked = pickedOnPress.current;
+      pickedOnPress.current = false;
+      if (e.phase === 'drop') arrangeDrop(e.from, e.slot);
+      else if (!picked) arrangeTap(e.slot);
     },
-    [playing, busy, arrangeTap]
+    [playing, busy, arrangeTap, arrangeDown, arrangeDrop]
   );
   const onSlotRef = useRef(onSlot);
   onSlotRef.current = onSlot;
@@ -402,7 +414,7 @@ export function TacticsPage() {
         setPinnedHex(null);
         setSelectedId(unitId);
       });
-      events.on<TacticsSlotPayload>('tactics:slot', ({slot}) => onSlotRef.current(slot));
+      events.on<TacticsSlotPayload>('tactics:slot', (e) => onSlotRef.current(e));
       events.on<TacticsHoverPayload>('tactics:hover', setHover);
       events.on('tactics:playback-done', playbackDone);
       boardReady();

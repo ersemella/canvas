@@ -269,30 +269,23 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   );
 
   /**
-   * Syzygy: a tap on the track's deck, at `slot`. With no card picked up, a
-   * card of the line's picks it up; with one, a blank card puts it there,
-   * another of the line's swaps the two, and its own puts it back down.
-   * False when the tap does nothing.
+   * Syzygy: the line's card `id` put on `slot`: on a blank card, or swapped
+   * with the line's card there. False when `slot` is neither.
    */
-  const arrangeTap = useCallback(
-    (slot: number): boolean => {
+  const putCard = useCallback(
+    (id: string, slot: number): boolean => {
       if (!arranging || !target?.hex) return false;
       const {units, slotOf, open} = arranging;
       const there = units.find((u) => slotOf(u.id) === slot);
-      if (!held) {
-        if (!there) return false;
-        pick({held: there.id});
-        return true;
-      }
-      if (there?.id === held) {
+      if (there?.id === id) {
         pick({held: null});
         return true;
       }
       const ends = new Map(units.map((u) => [u.id, slotOf(u.id)]));
       if (there) {
-        ends.set(there.id, slotOf(held));
-        ends.set(held, slot);
-      } else if (open.includes(slot)) ends.set(held, slot);
+        ends.set(there.id, slotOf(id));
+        ends.set(id, slot);
+      } else if (open.includes(slot)) ends.set(id, slot);
       else return false;
       // Only the cards that end elsewhere than they are.
       const cards: CardPlacement[] = units
@@ -301,7 +294,56 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       pick({target: {hex: target.hex, cards}, held: null});
       return true;
     },
-    [arranging, target, held, pick]
+    [arranging, target, pick]
+  );
+
+  /** Syzygy: the line's card at `slot` in the arrangement so far, if any. */
+  const cardAtSlot = useCallback(
+    (slot: number) => arranging?.units.find((u) => arranging.slotOf(u.id) === slot),
+    [arranging]
+  );
+
+  /**
+   * Syzygy: a tap on the track's deck, at `slot`. With no card picked up, a
+   * card of the line's picks it up; with one, a blank card puts it there,
+   * another of the line's swaps the two, and its own puts it back down.
+   * False when the tap does nothing.
+   */
+  const arrangeTap = useCallback(
+    (slot: number): boolean => {
+      if (!arranging) return false;
+      if (held) return putCard(held, slot);
+      const there = cardAtSlot(slot);
+      if (!there) return false;
+      pick({held: there.id});
+      return true;
+    },
+    [arranging, held, putCard, cardAtSlot, pick]
+  );
+
+  /**
+   * Syzygy: a press on the track's deck at `slot`, before it's known to be
+   * a tap or a drag: with no card picked up, a card of the line's there is
+   * picked up at once, so it can be dragged. True when it picked one up.
+   */
+  const arrangeDown = useCallback(
+    (slot: number): boolean => {
+      if (!arranging || held) return false;
+      const there = cardAtSlot(slot);
+      if (!there) return false;
+      pick({held: there.id});
+      return true;
+    },
+    [arranging, held, cardAtSlot, pick]
+  );
+
+  /** Syzygy: the line's card at `from` dragged and dropped on `to`. */
+  const arrangeDrop = useCallback(
+    (from: number, to: number): boolean => {
+      const there = cardAtSlot(from);
+      return there ? putCard(there.id, to) : false;
+    },
+    [cardAtSlot, putCard]
   );
 
   /**
@@ -475,6 +517,8 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     planTap,
     stepBack,
     arrangeTap,
+    arrangeDown,
+    arrangeDrop,
     /** Syzygy's arranging, for the track (`BoardScene.arrange`), once its line is picked. */
     arrange,
     slotsLater,

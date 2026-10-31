@@ -1,11 +1,11 @@
-import {assetLoader, BaseSystem, hexKey} from '@canvas/engine';
+import {assetLoader, BaseSystem, hexKey, mouseService} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {exitSealed, shotLane, unitAt} from '../rules/board';
 import {pastExit, tileAt} from '../rules/map';
 import {mapOf} from '../rules/fight';
 import type {FightState} from '../rules/types';
-import {trackCards} from './layout';
+import {trackCards, trackDrag} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 import {Playback} from './playback';
 import type {PlaybackPayload} from './playback';
@@ -506,10 +506,18 @@ export class TacticsBoardSystem extends BaseSystem {
       drawStatusMark(ctx, e.mark, x, y, 1 - k * k);
     }
 
+    const cards = trackCards(fight, scene.previewSlot ?? null, scene.previewBumps);
+    // Syzygy: the card picked up follows the pointer while it's dragged from its slot.
+    const held = scene.arrange?.held;
+    const dragging =
+      held &&
+      mouseService.isDown &&
+      trackDrag.from !== null &&
+      cards.some((c) => c.unitId === held && !c.ghost && c.slot === trackDrag.from);
     drawTrack(
       ctx,
       fight,
-      trackCards(fight, scene.previewSlot ?? null, scene.previewBumps),
+      cards,
       scene.previewSlot ?? null,
       scene.previewBumps ?? {},
       this.advance,
@@ -518,6 +526,7 @@ export class TacticsBoardSystem extends BaseSystem {
         selected: scene.selectedUnitId,
         hovered: this.hover.unitId,
         arrange: scene.arrange ?? null,
+        dragX: dragging ? mouseService.position.x : null,
       }
     );
   }
