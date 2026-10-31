@@ -5370,6 +5370,53 @@ turns, or a heal of 2 and a poison of 3.
   39–71% of fights (45.5–78.5% at power 1), a little more exposed.
 - Unfinished fights at most 1%.
 
+### The Duelist walking straight, and a dash (2026-10-31)
+
+Asked for (owner): the Duelist's walk only straight, up to 3 spaces along
+one of the six directions (`HeroDef.movesStraight` with his `moveCap`, a
+switch: the Outrider's has no cap), with the jumps one a turn and the
+streak 1, 2, 3 of "The Duelist's jumps one a turn, the Haste growing";
+then Swift Strike only a dash (`ABILITY.swiftStrike.dash`, a switch, 0 as
+built): exactly 3 spaces straight, through the units on the first two,
+each hit, to the free third, or with yurts or the map's edge on the third,
+2 through a unit next to him; no strike in place, a unit on the landing
+space blocking it, nothing at all when Immobilized; with the straight walk
+of 3, Haste 3 flat or the streak 1, 2, 3. `experiments/duelist-straight.mjs`
+and `duelist-dash.mjs`, the rows of "The Duelist's lunge and streak", on
+`65edad7`'s and `bc86882`'s rules (the free-walk rows came out exactly as
+before); the score over the Steppe's and Persia's seats only, as there.
+
+| Duelist | In others' seats | Kept in its own | Score | Speed +1 | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Jumps, streak, walk 3 free (the test stage's) | 53.3% | 57% | 55.1% | 72.5% | 36.5% | 57% | **20.5** |
+| Jumps, streak, **walk 3 straight** | 48.6% | 45.9% | **47.2%** | 66.5% | 41.5% | 52% | 10.5 |
+| Jumps, streak, walk 2 free | 54.3% | 50.8% | 52.5% | 70.5% | 45.5% | 54% | 8.5 |
+| Jumps, streak, walk 2 straight | 46.9% | 46% | 46.4% | 69.8% | 42.3% | 52.8% | 10.5 |
+| **Dash 3**, walk 3 straight, Haste 3 | 40.5% | 40.5% | **40.5%** | 67% | 42.5% | 55.3% | 12.8 |
+| Dash 3, walk 3 straight, streak | 38.4% | 35.1% | **36.7%** | 65.3% | 45.8% | 51.5% | 5.7 |
+
+Byzantium's seat (left out): the Duelist in it 62–65% walking straight or
+free, 51% dashing; the Barbarian in China's 21–30%, 31–37% dashing.
+Unfinished fights up to 3.5% with the dash and Haste 3, 6.8% with its
+streak.
+
+- **The straight walk costs about 6–8 points and half the span at walk
+  3** (47.2% from 55.1%, span 10.5 from 20.5); at walk 2 it costs 6 and
+  leaves the span as it was (10.5 against 8.5). Lines take away most of
+  the places from which a planner sets up his next strike.
+- **The dash is weak** (40.5% with Haste 3, 36.7% with the streak): in the
+  Steppe's seat he uses it on 23–27% of his turns and Holds 24–25%,
+  against 41–44% and 9–13% with the jumps; his sword deals 4.8–5.8 a fight
+  (6.5–8.3 with the jumps). It needs a unit on the first two spaces of a
+  line and a free space exactly 3 out, which the board seldom gives, and
+  it leaves him past the enemy's front. The streak lasts least of all with
+  it, so it is the weaker there.
+
+Not changed: the numbers are the owner's. The free walk of 3 with the
+jumps stays the one with the span; the straight walk is even (47.2%) at
+half of it; the dash would need a shorter, freer shape (2, or landing on
+any free space up to 3) to be worth measuring again.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new
