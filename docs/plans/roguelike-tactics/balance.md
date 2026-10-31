@@ -6783,7 +6783,9 @@ Magus's side):
 Unfinished 0–0.5% throughout.
 
 - **Eclipse 6 is even**: 51.3% as a score, Omen's 52.4% within noise, and
-  rises about 8 points a slot from 3 to 7. Built at 6 on the test stage.
+  rises about 8 points a slot from 3 to 7. Built at 6 on the test stage,
+  then in runs in place of Omen (owner, 2026-10-31; "Eclipse in runs",
+  below).
 - **Uneven by seat, as Omen is**: 35–39% beside the Steppe's and
   Byzantium's, 60–62% in China's and against Persia's others. A burst of
   Delay suits a melee party that closes on clustered enemies.
@@ -6793,6 +6795,30 @@ Unfinished 0–0.5% throughout.
   (catching enemies, sparing allies) is the decision.
 - **No lock**: a Delay of 6 is less than a turn of anyone's (9 at speed
   2), and spreading it costs aim; no fight stalled.
+
+### Eclipse in runs (later 2026-10-31)
+
+Built (owner): Eclipse at 6 the Magus's in runs, in place of Omen, and
+his on the test stage without a `"heroes"` entry; Wearying and Fervour
+(19.9) apply to it (it Delays and Hastens). `experiments/eclipse-runs.mjs`,
+`runs.mjs`, 200 runs each, Persia's stages' Magi changed too; no run won
+either way (as before, runs are won at most a few per cent). The share of
+runs reaching each stage:
+
+| Party | Ability | Stage 2 | 3 | 4 | 5 | 6 |
+|---|---|---:|---:|---:|---:|---:|
+| Persia's (Juggernaut, Ranger, Magus) | Omen | 100% | 88% | 49% | 9.5% | 2.5% |
+| | **Eclipse** | 100% | 82% | 38.5% | 6% | 2.5% |
+| Steppe's, the Magus as support | Omen | 98.5% | 81% | 31.5% | 12.5% | 5.5% |
+| | **Eclipse** | 98% | 69.5% | 20% | 9.5% | 2.5% |
+
+- **Runs with Eclipse end about a stage-third sooner**: 6–12 points fewer
+  reach stages 3 and 4. Those are the Steppe's stages (wolves, then the
+  Steppe's heroes), and beside the Steppe's heroes Eclipse is its weakest
+  (34.8% in the Storm Caller's seat against Omen's 46.7%, above): its
+  burst wants enemies close together and allies that close on them.
+- Even across the role seats, then, but a step weaker where every run
+  starts. Untried: Delay 7 (58.3% in fights), or more range or radius.
 
 ## Principles for re-tuning
 

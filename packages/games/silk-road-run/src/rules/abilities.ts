@@ -2203,7 +2203,7 @@ export function eclipseCaught(state: FightState, hex: Hex): Unit[] {
 }
 
 /**
- * Eclipse (owner, 2026-10-31; the test stage's Magus's): a space within
+ * Eclipse (owner, 2026-10-31; the Magus's, Omen before): a space within
  * `ABILITY.eclipse.range` and the spaces next to it; every unit there
  * Hastened, or every one Delayed, `slots` (`target.mode`).
  */

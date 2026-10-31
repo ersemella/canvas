@@ -237,8 +237,10 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Magus (owner, 2026-10-27; roster.md): Persia's support, a track
    * controller. Speed 2, defence 1 (health 4) and power 0 are the owner's:
    * no ability of its deals damage. Inevitable from the start (Steady
-   * Gait): nothing Delays or Hastens its card, its own Omen
+   * Gait): nothing Delays or Hastens its card, its own Eclipse
    * included, though a collision still bumps it (3.3; owner, 2026-10-27).
+   * Eclipse since 2026-10-31 (owner; balance.md, "Eclipse": 51.3% as a
+   * score against Omen's 52.4%), Omen (`ABILITY.omen`) before.
    */
   magus: {
     name: 'Magus',
@@ -246,7 +248,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 2,
     defence: 1,
     power: 0,
-    abilities: ['omen', 'hold'],
+    abilities: ['eclipse', 'hold'],
     passives: ['steadyGait'],
   },
   /**
@@ -1020,8 +1022,8 @@ export const ABILITY = {
    * 2026-10-31): the line's cards and Humphrey's only.
    */
   /**
-   * Eclipse (owner, 2026-10-31; the test stage's Magus's after Alignment,
-   * no hero's in runs; the name a placeholder): a space within `range` and
+   * Eclipse (owner, 2026-10-31; the Magus's, in runs and on the test
+   * stage, in place of Omen): a space within `range` and
    * the spaces next to it (`radius`), every unit there, of either side,
    * Humphrey too, not Inevitable, Hastened `slots`, or every one Delayed
    * `slots`, his choice each cast. 6, measured even (51.3% as a score;

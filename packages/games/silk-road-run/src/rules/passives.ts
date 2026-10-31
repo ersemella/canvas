@@ -532,6 +532,7 @@ const TRAITS: Partial<Record<AbilityId, Trait[]>> = {
   // A dash moves him, so no second target (Forked) since 2026-10-31.
   swiftStrike: ['melee'],
   omen: ['single'],
+  eclipse: ['delays', 'hastens'],
   stomp: ['melee'],
   longshot: ['ranged', 'delays', 'single'],
   blessing: ['heals', 'single'],
