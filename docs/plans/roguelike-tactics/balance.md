@@ -5941,6 +5941,92 @@ a754068 (Blessing, no Sedative) gave the same picture, 61.6% against
   his own next turn, Omen's reach), allies only forward and enemies only
   back, or a line of limited length.
 
+### The Priest's Invocation (2026-10-31)
+
+Built (the owner) in place of Blessing: the Priest **speed 1, defence 2
+(health 6), power 3**, with **Invocation** (`ABILITY.invocation`): a space
+within 3, no line of fire, and the spaces next to it. Charged: nothing
+happens as he casts it, his card going a Hold's cost on (10 slots at
+speed 1, his whole turn while Wait is off); when it comes back every enemy
+in the area then takes his power and every ally there, himself and
+Humphrey too, heals his power (an Empower he cast it with adding to
+both), and his card goes a full turn on. `experiments/priest-invocation.mjs`
+on `30d7cd8`'s rules, on the same seeds: Invocation as built
+(`invocation-`); the Priest as he was, speed 2, defence 1, Blessing in a
+line (`blessing-`); and Invocation with Wait at 2/3 on both sides, as the
+test stage plays it (`wait-`). 400 fights a row (about ±2.5 points),
+seeds from 1000, production AI. Unfinished fights 0–0.5% with Invocation,
+up to 4.5% with Blessing (7.8% in its party's skill rows). *Others'*: the
+Priest in the support seat of the Steppe's, China's and Persia's mirrors;
+*kept*: 100 − each of their supports in his seat of Byzantium's; the score
+their mean.
+
+| Variant | Steppe | China | Persia | others' | Storm C. in his | Alchemist in his | Magus in his | kept | **score** |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Invocation (built) | 30.8 | 24.0 | 33.3 | 29.4 | 68.5 | 69.8 | 50.6 | 37.0 | **33.2** |
+| Blessing (before) | 45.2 | 45.5 | 52.5 | 47.7 | 63.9 | 55.8 | 48.6 | 43.9 | **45.8** |
+| Invocation, Wait 2/3 | 43.3 | 38.3 | 48.0 | 43.2 | 62.3 | 58.0 | 46.9 | 44.3 | **43.7** |
+
+How he plays (his turns a fight, the share of them casting, Holding, and
+lives through, in the others' seats; Invocation's hits, damage, heals and
+kills a fight, from `ablate.ts`'s `invocation` source and
+`invocationHealPerFight`):
+
+| Variant | His turns | Casting | Hold | Lives through | Enemies hit | Damage | Healed | Kills |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Invocation (built) | 2.7–3.1 | 22–40% | 13–16% | 29–41% | 0.36–0.78 | 1.1–2.3 | 2.5–5.2 | 0.07–0.27 |
+| Blessing (before) | 5.2–7.2 | 76–84% | 0% | 57–75% | | | | |
+| Invocation, Wait 2/3 | 2.7–3.0 | 39–57% | 6–10% | 32–48% | 0.94–1.7 | 2.8–5.1 | 3.9–7.2 | 0.24–0.57 |
+
+- **Invocation as built is far too weak**: a score of 33.2% against
+  Blessing's 45.8% on the same seeds, 12–21 points under in every
+  others' seat (weakest in China's, 24%), and Byzantium wins 31–49% with
+  him against the other supports.
+- **Time is most of it.** Speed 1 and a charge of a whole turn give him
+  2.7–3.1 turns a fight against 5.2–7.2, and a cast lands at most once
+  every two of his action costs (20 slots). He casts on only a fifth to
+  two fifths of his turns, walks on half and Holds on 13–16%: with the
+  area to aim within 4 of him, the AI often finds no cast worth its charge.
+- **What lands is small**: under one enemy a fight hit (1.1–2.3 damage) and
+  2.5–5.2 health healed, against Blessing's heal and lasting Shield on
+  every unit in its line almost every turn. Enemies acting before it lands
+  walk out (the AI prices that at `AI.dodgeShare`), and the AI's own allies
+  don't wait in it.
+- **Defence 2 didn't keep him up**: he lives through 29–41% of fights
+  against 57–75% with Blessing at defence 1, since Blessing kept him
+  Shielded and healed every turn, and he must stand within 4 of the fight.
+- **Wait at 2/3 recovers most of the gap**: 43.7%, 2 points under
+  Blessing; his charge falls to 7 slots, he casts more (39–57% of his turns),
+  hits 0.94–1.7 enemies a fight and heals 3.9–7.2. Even across the
+  others' seats (38–48%), so on the test stage he is close to even.
+
+**Skill.** As `skill-fights.mjs`: the Priest played by a novice (depth 1)
+or an expert (depth 4, 4× the work) in the Steppe's support seat, and
+Byzantium's party in a mirror, against production's search. Unfinished
+0–0.3% but Blessing's party (5.3–7.8%).
+
+| Row | Novice | Expert | Span |
+|---|---:|---:|---:|
+| Priest, Invocation | 47.5% | 50.8% | **3.3** |
+| Priest, Blessing | 48.2% | 49% | 0.8 |
+| Priest, Invocation, Wait 2/3 | 47% | 52% | **5.0** |
+| Byzantium's party, Invocation | 40.9% | 50.6% | **9.7** |
+| Byzantium's party, Blessing | 50.4% | 52% | 1.6 |
+| Byzantium's party, Invocation, Wait 2/3 | 43.3% | 55.8% | **12.5** |
+
+- **Invocation rewards play more than Blessing did**: his own span 3.3
+  (5.0 with Wait) against 0.8, still low beside the damage heroes'
+  1.6–16.7 and the tanks' 5.3–13.7, within noise (±3.5) on its own; his
+  party's 9.7 (12.5) against 1.6, clearly above noise, since where to put
+  the area, and whether allies stand in it and enemies stay, ties his
+  turn to everyone else's. Blessing, aimed along a line that reaches
+  everyone, left nothing to choose.
+- **Untried**: a shorter charge in runs (Wait at 2/3 is close to it, and
+  near even), speed 2, a radius of 2, or the heal or damage raised. The
+  AI's allies not stepping into his area (nor its enemies being herded
+  into it) is likely some of his loss in the AI's hands and less in a
+  player's.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -226,6 +226,12 @@ options, as `skill-fights.mjs`.
 as the test stage has them (a `patch`, both sides): every role-seat row of
 `roles-twelve.mjs` as built and swapped, and the skill of the two heroes in
 their new and old seats, the other damage heroes and Byzantium's party.
+`priest-invocation.mjs` (2026-10-31) the Priest with Invocation as built
+(speed 1, defence 2), as he was with Blessing (`blessing-`), and with Wait
+at 2/3 on both sides (`wait-`): his support seats as `priest-line-any.mjs`,
+and his and Byzantium's party's skill rows. `ablate.ts` counts
+Invocation's hits as the `invocation` source and what it heals as
+`invocationHealPerFight`.
 `byzantium-hew.mjs` (2026-10-31) the swap with Hew in place of Leap
 (`ABILITY.hew`), the Cataphract without and with Armoured; only the rows
 with Byzantium in them, the rest from `byzantium-swap.mjs`.
