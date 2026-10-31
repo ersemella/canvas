@@ -6078,6 +6078,26 @@ hero in the other regions' mirrors, no Priest in them) is the fair read.
 - **Not changed in runs**; the test stage has the line Hew and Fury.
   Byzantium's numbers want measuring again once the Priest is settled.
 
+**Fury's Haste 5 (later 2026-10-31).** Asked for (the owner): Fury
+Hastening him 5 for each hit in place of 3 (`FURY.haste`).
+`byzantium-fury.mjs`'s `fury5`: its 18 rows with Byzantium in them (the
+rest as `fury`'s; the commits between change no fight, their switches off)
+and its skill. Unfinished fights at most 2.3%.
+
+| Barbarian (tank) | Steppe | China | Persia | **Others' seats** | Kept | Lives through | Turns a fight | Axe damage a fight | Skill: novice → expert, span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| Fury, Haste 3 | 43% | 49.8% | 48.5% | 47.1% | 24.4% | 30–42% | 3.2–3.3 | 4.3–6.6 | 47.3% → 53%, 5.7 |
+| Fury, Haste 5 | 43.8% | **58.8%** | 47.8% | **50.1%** | 26.0% | 29–46% | 3.3–3.5 | 4.3–8.9 | 48% → 53.8%, 5.8 |
+
+- **Haste 5 puts him even in the other regions' seats** (50.1%), but all
+  of it in China's (58.8% against 49.8%; he lives through 46% of fights
+  there, 40% with Haste 3, and deals 8.9 a fight, 6.6 at 3); the Steppe's
+  and Persia's are within noise of Haste 3. China's Duelist and Vanguard
+  hit him often in melee, so the Haste comes often; the Outrider and the
+  Storm Caller hit him less, and from where Hew can't answer.
+- **No skill from it** (span 5.8 against 5.7): it fires on being hit.
+- Byzantium's own seats as before, bent by the Priest's Invocation.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

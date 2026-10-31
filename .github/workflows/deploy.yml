@@ -82,7 +82,10 @@ jobs:
   # .claude/skills/verify). Creates a short-lived test room in production.
   smoke-prod:
     needs: deploy-pages
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest now resolves to 26.04 on some runners, which
+    # Playwright 1.56 can't install browser dependencies for. Move this to
+    # ubuntu-latest again once Playwright is upgraded to one supporting 26.04.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
