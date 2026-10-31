@@ -11,7 +11,7 @@ import {delay, haste, hit, stun} from './resolve';
 import type {Ctx} from './resolve';
 import {parseTestStage} from './testStage';
 import {NOT_OFFERED, PASSIVES} from './passives';
-import {actionCost} from './track';
+import {actionCost, waitCost} from './track';
 import type {AbilityId, ActionTarget, FightState, PassiveId, Unit} from './types';
 
 const centre: Hex = {q: 0, r: 0};
@@ -84,13 +84,13 @@ describe('the passives: the track', () => {
     expect(u.slot).toBe(98);
   });
 
-  it('Patient: a turn without moving or an ability goes 2 fewer slots on', () => {
+  it('Patient: a turn without moving or an ability goes 2 fewer slots on, after Wait', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(3, 3), 'e-bokh': out(0, 3)});
     give(s, 'p-bokh', 'patient');
     act(s, 'p-bokh', 'hold');
-    expect(unit(s, 'p-bokh').slot).toBe(actionCost(unit(s, 'p-bokh')) - 2);
+    expect(unit(s, 'p-bokh').slot).toBe(waitCost(unit(s, 'p-bokh')) - 2);
     act(s, 'p-storm', 'hold');
-    expect(unit(s, 'p-storm').slot).toBe(actionCost(unit(s, 'p-storm')));
+    expect(unit(s, 'p-storm').slot).toBe(waitCost(unit(s, 'p-storm')));
   });
 
   it('Momentum: Hastened 1 after a turn that takes a unit off the board', () => {

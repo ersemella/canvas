@@ -312,10 +312,13 @@ describe('the test stage', () => {
     expect(previewTurn(s, y.id, {action: {ability: 'hold', target: {}}})!.slot).toBe(actionCost(y));
   });
 
-  it('plays with Wait when "wait" says so: true for two thirds of a turn, or a share', () => {
+  it('plays with Wait as runs do, or as "wait" says: false for none, or a share', () => {
     const units = {player: [{hero: 'bokh'}], enemy: [{hero: 'wolf'}]};
     expect(createTestFight(1, units).waitShare).toBeUndefined();
-    expect(createTestFight(1, {...units, wait: false}).waitShare).toBeUndefined();
+    const off = createTestFight(1, {...units, wait: false});
+    expect(off.waitShare).toBe(1);
+    const grappler = off.units.find((u) => u.hero === 'bokh')!;
+    expect(aimSlot(off, grappler, 0, 'hold', true)).toBe(actionCost(grappler));
     const on = createTestFight(1, {...units, wait: true});
     expect(on.waitShare).toBeCloseTo(2 / 3);
     const bokh = on.units.find((u) => u.hero === 'bokh')!;

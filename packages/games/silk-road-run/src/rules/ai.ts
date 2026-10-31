@@ -1384,14 +1384,19 @@ export function chooseAiTurn(
       let winner = options[0]!;
       let value = -Infinity;
       const values = new Map<ScoredOption, number>();
+      // `AI.tieMargin`: options within it of the best are near-ties, searched
+      // exactly (the window opens that far below the best) and settled by
+      // what each does at once (`score`), so a hit now beats setting up the
+      // same hit for later.
+      const margin = AI.tieMargin;
       for (const option of options) {
         const next =
-          search(childOf(root, option), 1, depth - 1, value + option.cost, Infinity) - option.cost;
+          search(childOf(root, option), 1, depth - 1, value - margin + option.cost, Infinity) -
+          option.cost;
         values.set(option, next);
-        if (next > value) {
-          value = next;
+        if (next > value + margin || (next >= value - margin && option.score > winner.score))
           winner = option;
-        }
+        value = Math.max(value, next);
       }
       // The next, deeper iteration tries this one's best first (stable on
       // ties), so alpha-beta has a strong bound early and cuts off more.

@@ -21,13 +21,14 @@ export const RULES = {
   actionBase: 12,
   speedPivot: 5,
   /**
-   * Wait (timeline.md, 3.2; proposed 2026-10-30): a turn that does nothing,
-   * a Hold without a walk or a turn skipped with only Hold to choose (not
-   * a Stunned one, nor Temee's), sends the card this share of its action
-   * cost on, rounded, at least 1: at 2/3, 5, 6 and 7 slots for speeds 3, 2
-   * and 1 in place of 8, 9 and 10. 1 turns it off.
+   * Wait (timeline.md, 3.2; in runs since 2026-10-31, the owner's call,
+   * proposed 2026-10-30): a turn that does nothing, a Hold without a walk
+   * or a turn skipped with only Hold to choose (not a Stunned one, nor
+   * Temee's), sends the card this share of its action cost on, rounded, at
+   * least 1: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and
+   * 10. 1 turns it off.
    */
-  waitShare: 1 as number,
+  waitShare: (2 / 3) as number,
   /** Patient's saving (19.8): an idle turn's card goes this many slots fewer on, after Wait. */
   patientSlots: 2 as number,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
@@ -1095,9 +1096,12 @@ export const AI = {
    * search's leaf (`evaluatePosition`) counts for how soon each card comes
    * back, × the share of a turn it is from its next turn × its turn's
    * worth (`trackPoints` in ai.ts), and the actor's own card in its
-   * screening. 0 as built: the leaf has no track.
+   * screening. 0.25 since 2026-10-31, with Wait in runs and `reachShare`
+   * at the same weight, so a third of a turn saved and a hit set up are
+   * priced alike (balance.md, "Walks priced by the hit they set up"); at
+   * 1 without reach the AI Waited in place of walking.
    */
-  leafTrack: 0 as number,
+  leafTrack: 0.25 as number,
   /**
    * A switch for measuring (2026-10-30; balance.md, "Spearhead"): a unit
    * standing next to an ally with Spearhead is worth this × the Haste it
@@ -1111,9 +1115,11 @@ export const AI = {
    * hit they set up"): what the search's leaf counts for each unit's best
    * hit from where it stands (`reachPoints` in ai.ts), its side's for it
    * and the other's against, × this share; and screening counts the
-   * actor's own. 0 as built: a walk is worth only `perHexFromEnemy`.
+   * actor's own. 0.25 since 2026-10-31 (1.5 to 11 points stronger in the
+   * mirrors, the browser's search about 6% shallower); 0, a walk is worth
+   * only `perHexFromEnemy`.
    */
-  reachShare: 0 as number,
+  reachShare: 0.25 as number,
   /**
    * A switch for measuring (2026-10-31; balance.md, "A horizon of
    * slots"): a line of the search ends once the track is this many slots
@@ -1130,6 +1136,13 @@ export const AI = {
    * built: a Hold is searched only if it screens among the best.
    */
   keepWait: 0 as number,
+  /**
+   * Root options whose searched values are within this of the best are
+   * near-ties, settled by what each does at once (2026-10-31; balance.md,
+   * "Walks priced by the hit they set up"): with reach counted, stepping in
+   * to hit next turn could score a hair over hitting now.
+   */
+  tieMargin: 0.05 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
