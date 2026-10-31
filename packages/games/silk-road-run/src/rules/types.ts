@@ -468,7 +468,7 @@ export interface ShotInAir {
    * Invocation's centre (`ability`), its area the space and those next to it.
    */
   hex?: Hex;
-  /** The Priest's Invocation (charged as a Hold costs); absent for an Outrider's arrows. */
+  /** The Priest's Invocation (charged, `ABILITY.invocation.charge`); absent for an Outrider's arrows. */
   ability?: 'invocation';
   /**
    * The Outrider's Empower when it drew: the arrow carries it, though the

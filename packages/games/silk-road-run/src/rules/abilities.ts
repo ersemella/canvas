@@ -1087,8 +1087,9 @@ export function invocationArea(map: MapData, centre: Hex): Hex[] {
 
 /**
  * Invocation (owner, 2026-10-31), the Priest's in place of Blessing: a
- * space within `ABILITY.invocation.range`, no line of fire, charged as a
- * Hold costs (`chargeOf`). Nothing happens as he casts it; when his card
+ * space within `ABILITY.invocation.range`, no line of fire, charged
+ * `ABILITY.invocation.charge` of his turn (`chargeOf`: 6 slots at speed
+ * 1). Nothing happens as he casts it; when his card
  * comes back (`landShots`), every enemy within `radius` of the space takes
  * his power and every ally there, himself too, is healed his power, an
  * Empower he cast it with adding to both.

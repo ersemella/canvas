@@ -5347,7 +5347,7 @@ describe('the Priest’s Invocation', () => {
     expect(offered.some((x) => hexEquals(x.hex!, t))).toBe(true);
   });
 
-  it('does nothing when cast; his card goes a Hold’s cost on, charging', () => {
+  it('does nothing when cast; his card goes 6 slots on, 3/5 of his turn, charging', () => {
     const {s, p} = ready({'p-bokh': t, 'e-bokh': hexNeighbor(t, 0)});
     const ally = unit(s, 'p-bokh');
     const enemy = unit(s, 'e-bokh');
@@ -5355,7 +5355,7 @@ describe('the Priest’s Invocation', () => {
     invoke(s, p, t);
     expect(ally.hp).toBe(2);
     expect(enemy.hp).toBe(enemy.maxHp);
-    expect(p.slot).toBe(waitCost(p));
+    expect([actionCost(p), p.slot]).toEqual([10, 6]);
     expect(charging(s, p)).toBe(true);
   });
 
@@ -5393,15 +5393,15 @@ describe('the Priest’s Invocation', () => {
     expect(enemy.hp).toBe(enemy.maxHp - p.power - 2);
   });
 
-  it('with `charge` set, charges that share of his turn in place of a Hold’s cost', () => {
+  it('with `charge` null, charges a Hold’s cost, as first built', () => {
     const inv = ABILITY.invocation as {charge: number | null};
     onTestFinished(() => {
-      inv.charge = null;
+      inv.charge = 0.6;
     });
-    inv.charge = 0.5;
+    inv.charge = null;
     const {s, p} = ready({'e-bokh': t});
     invoke(s, p, t);
-    expect(p.slot).toBe(Math.round(actionCost(p) * 0.5));
+    expect(p.slot).toBe(waitCost(p));
   });
 
   it('heals the Priest himself when he stands in it', () => {

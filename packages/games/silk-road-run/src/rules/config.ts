@@ -630,18 +630,19 @@ export const ABILITY = {
   /**
    * Invocation (owner, 2026-10-31), the Priest's in place of Blessing: a
    * space within `range` (no line of fire) and every space within `radius`
-   * of it. Charged: it does nothing as he casts it, his card going as many
-   * slots on as a Hold would send it (`waitCost`), greyed while it charges;
+   * of it. Charged: it does nothing as he casts it, his card going
+   * `charge` of his action cost on, rounded (6 slots at speed 1; owner,
+   * 2026-10-31, as measured even, balance.md, "Invocation's charge"; a
+   * Hold's cost, 10, before), greyed while it charges;
    * when it comes back, every enemy in the area then takes his power and
    * every ally there, himself and the camel too, is healed his power (an
    * Empower he cast it with adding to the hit and the heal alike)
    * (`landShots`), and his card goes his action cost on, a full turn. A
    * Stun before it lands loses it, as a drawn arrow.
-   * `charge`, a switch for measuring: null as built (a Hold's cost, so a
-   * Wait's when Wait is on); a share of his action cost, rounded, at least
-   * 1, in its place (balance.md, "Invocation's charge").
+   * `charge` null charges a Hold's cost instead (a Wait's when Wait is
+   * on), as first built.
    */
-  invocation: {range: 3 as number, radius: 1 as number, charge: null as number | null},
+  invocation: {range: 3 as number, radius: 1 as number, charge: 0.6 as number | null},
   blessing: {
     mode: 'heal' as 'heal' | 'track',
     scale: 'bands' as 'cap' | 'bands',

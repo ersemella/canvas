@@ -95,15 +95,15 @@ describe('the test stage', () => {
     expect(createTestFight(1, {...raw, blessing: undefined}).units[0]!.blessesSelf).toBeUndefined();
   });
 
-  it('charges the Priest’s Invocation a Wait’s cost with "wait" on: 2/3 of his turn', () => {
+  it('charges the Priest’s Invocation 6 slots with "wait" on too', () => {
     const s = createTestFight(1, {player: [{hero: 'priest'}], enemy: [{hero: 'wolf'}], wait: true});
     const p = s.units.find((u) => u.hero === 'priest')!;
     p.slot = s.currentSlot;
     s.awaiting = p.id;
     const now = s.currentSlot;
     applyTurn(s, p, {action: {ability: 'invocation', target: {hex: p.hex!}}});
-    // Speed 1: 7 slots in place of his turn's 10.
-    expect([actionCost(p), p.slot! - now]).toEqual([10, 7]);
+    // Speed 1: 6 slots of his turn's 10, whatever a Wait costs (7).
+    expect([actionCost(p), p.slot! - now]).toEqual([10, 6]);
   });
 
   it('sets every unit of a hero with "heroes", the party picked too, and every Leap with "leap"', () => {

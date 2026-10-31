@@ -234,7 +234,9 @@ Invocation's hits as the `invocation` source and what it heals as
 `invocationHealPerFight`.
 `invocation-charge.mjs` (2026-10-31) Invocation's charge at 10 (built), 7,
 5, 3 and 1 slots (`ABILITY.invocation.charge`, a share of the Priest's
-action cost), Wait off, in `priest-invocation.mjs`'s rows.
+action cost), Wait off, in `priest-invocation.mjs`'s rows; and at 6
+(`c6-`), built since then, so `priest-invocation.mjs`'s `invocation-` and
+`wait-` rows reproduce only at their revision.
 `byzantium-hew.mjs` (2026-10-31) the swap with Hew in place of Leap
 (`ABILITY.hew`), the Cataphract without and with Armoured; only the rows
 with Byzantium in them, the rest from `byzantium-swap.mjs`.
