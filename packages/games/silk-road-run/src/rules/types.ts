@@ -59,6 +59,7 @@ export type AbilityId =
   | 'longshot'
   | 'blessing'
   | 'reave'
+  | 'hew'
   | 'axeThrow'
   // The Barbarian's since 2026-10-30, in place of Axe Throw.
   | 'leap'

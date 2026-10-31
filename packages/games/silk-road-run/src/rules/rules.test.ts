@@ -2063,6 +2063,25 @@ describe('the Barbarian', () => {
     expect(b2.shield).toBeUndefined();
   });
 
+  it('Hew hits a funnel, two spaces next to him and the one past them, and Empowers him 1 an enemy hit for 10 slots', () => {
+    // Set toward 0: the spaces along 0 and 1, and the one past both (Leap's landing along 0).
+    const funnel = [hexNeighbor(c, 0), hexNeighbor(c, 1), landing(0)];
+    const {s, b} = leaping({
+      'e-modao': funnel[0]!,
+      'e-mangudai': funnel[2]!,
+      'p-modao': funnel[1]!,
+    });
+    b.loadout = {abilities: ['hew', 'hold']};
+    expect(ABILITIES.hew.area!(mapOf(s), c, landing(0))).toEqual(funnel);
+    // Aimed only where it catches someone: here toward 0, 5 (the Duelist beside him) and 1.
+    expect(ABILITIES.hew.targets(s, mapOf(s), b, c).length).toBe(3);
+    const slot = s.currentSlot;
+    applyTurn(s, b, {action: {ability: 'hew', target: {hex: landing(0)}}});
+    // Power 3 here (the hero's own): the ally is hit too, only enemies Empower.
+    expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), hp(s, 'p-modao')]).toEqual([3, 3, 3]);
+    expect([b.empower, b.empowerUntil]).toEqual([2, slot + 10]);
+  });
+
   it('the AI leaps at an enemy 3 away off its lines, and counts it a threat there', () => {
     const {s, b} = leaping({'p-modao': front(1)[0]!, 'p-mangudai': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';

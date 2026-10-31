@@ -153,7 +153,9 @@ describe('the test stage', () => {
     expect(() => parseTestStage({...raw, elixir: {overdose: -1}})).toThrow(
       'elixir.overdose must be a whole number from 0 to 20.'
     );
-    expect(createTestFight(1, {...raw, elixir: undefined}).units[0]!.elixirOverdose).toBeUndefined();
+    expect(
+      createTestFight(1, {...raw, elixir: undefined}).units[0]!.elixirOverdose
+    ).toBeUndefined();
   });
 
   it('gives every Duelist the Swift Strike and walk "swiftStrike" sets', () => {

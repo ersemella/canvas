@@ -364,7 +364,8 @@ describe('the passives: position and allies', () => {
   });
 
   it('Spearhead is no hero’s, never offered at the caravanserai', () => {
-    for (const hero of Object.values(HEROES)) expect(hero.passives ?? []).not.toContain('spearhead');
+    for (const hero of Object.values(HEROES))
+      expect(hero.passives ?? []).not.toContain('spearhead');
     expect(NOT_OFFERED).toContain('spearhead');
   });
 

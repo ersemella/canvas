@@ -327,6 +327,24 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
+  // Hew: the same great axe, swung through a funnel.
+  hew: {
+    kind: 'attack',
+    rows: [
+      '............', //
+      '......##....',
+      '.....####+..',
+      '....#####+..',
+      '....=####+..',
+      '...=..###+..',
+      '...=...##...',
+      '..=.........',
+      '..=.........',
+      '.=..........',
+      '.=..........',
+      '............',
+    ],
+  },
   // A great axe in flight, turned on its side, with lines behind it.
   axeThrow: {
     kind: 'attack',

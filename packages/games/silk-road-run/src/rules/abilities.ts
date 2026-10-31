@@ -995,7 +995,13 @@ const elixir: AbilityDef = {
       if (overdoseOf(user) > 0) {
         // The overdose: Empowered first, then the Alchemist's power taken.
         if (u.power > 0) empower(ctx, u, elixirOverdose(user, u), user);
-        applyDamage(ctx, u, user.power, `The overdose takes ${user.power} from ${unitName(u)}`, user);
+        applyDamage(
+          ctx,
+          u,
+          user.power,
+          `The overdose takes ${user.power} from ${unitName(u)}`,
+          user
+        );
       } else if (u.side === user.side) {
         if (elixirHeals(u)) heal(ctx, u, user.power, user);
         // An amount of 0 gives none, rather than replacing an Empower it has.
@@ -2186,6 +2192,68 @@ const charge: AbilityDef = {
 
 // ─── Barbarian ───────────────────────────────────────────────────────────────
 
+/**
+ * Hew's funnel, set toward `dir`: the spaces next to `from` along `dir`
+ * and `dir + 1`, then the one past them touching both (2 away, off the
+ * six lines; its tip, where Hew is aimed). Yurts left out.
+ */
+function hewFunnel(map: MapData, from: Hex, dir: number): Hex[] {
+  const a = hexNeighbor(from, dir);
+  return [a, hexNeighbor(from, dir + 1), hexNeighbor(a, dir + 1)].filter((h) => walkable(map, h));
+}
+
+/** Hew's funnel's tip set toward `dir` (its aim). */
+const hewTip = (from: Hex, dir: number): Hex => hexNeighbor(hexNeighbor(from, dir), dir + 1);
+
+/** The spaces Hew covers aimed at `target`, its funnel's tip. */
+export function hewArea(map: MapData, from: Hex, target: Hex): Hex[] {
+  const dir = DIRECTIONS.find((d) => hexEquals(hewTip(from, d), target));
+  return dir === undefined ? [] : hewFunnel(map, from, dir);
+}
+
+/**
+ * Hew (owner, 2026-10-31): the Barbarian's great axe through a funnel, two
+ * spaces next to him and the one past them (`hewFunnel`), every unit there
+ * hit for his power, allies too; then he is Empowered for each enemy hit
+ * (`ABILITY.hew`), for slots, not turns.
+ */
+const hew: AbilityDef = {
+  id: 'hew',
+  name: 'Hew',
+  kind: 'attack',
+  summary: () =>
+    `Hits every unit on two spaces next to you and the space past them, allies included. Empowered ${ABILITY.hew.empowerPerHit} for each enemy hit, for ${ABILITY.hew.slots} slots.`,
+  area: hewArea,
+  targets(state, map, user, from) {
+    const out: ActionTarget[] = [];
+    for (const dir of DIRECTIONS) {
+      const caught = hewFunnel(map, from, dir).some((h) => {
+        const u = unitAt(state, h);
+        return u !== undefined && u !== user;
+      });
+      if (caught) out.push({hex: hewTip(from, dir)});
+    }
+    return out;
+  },
+  resolve(ctx, user, target) {
+    const caught = hewArea(ctx.map, user.hex!, target.hex!)
+      .map((h) => unitAt(ctx.state, h))
+      .filter((u): u is Unit => u !== undefined);
+    log(ctx, `${unitName(user)} hews.`);
+    const enemies = caught.filter((u) => hostile(u, user)).length;
+    for (const u of caught) hit(ctx, user, u, 'The axe');
+    const amount = enemies * ABILITY.hew.empowerPerHit;
+    if (!user.alive || amount <= 0) return;
+    // Over any Empower he has, for Hew's own slots.
+    user.empower = Math.max(user.empower ?? 0, amount);
+    user.empowerUntil = Math.max(
+      user.empowerUntil ?? 0,
+      lastsThrough(ctx.state, ABILITY.hew.slots)
+    );
+    log(ctx, `${unitName(user)} is Empowered ${user.empower}.`);
+  },
+};
+
 /** Reave's swipe toward direction `dir`: that space next to `from` and the two either side of it, yurts left out. */
 function reaveSwipe(map: MapData, from: Hex, dir: number): Hex[] {
   return [dir - 1, dir, dir + 1].map((d) => hexNeighbor(from, d)).filter((h) => walkable(map, h));
@@ -2691,6 +2759,7 @@ export const ABILITIES: Record<AbilityId, AbilityDef> = {
   reave,
   axeThrow,
   leap,
+  hew,
   smash,
   boulder,
   gore,

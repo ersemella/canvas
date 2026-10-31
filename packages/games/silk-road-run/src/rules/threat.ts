@@ -63,6 +63,13 @@ export function threatsTo(state: FightState, map: MapData, actor: Unit): Threat[
     const {q: fq, r: fr} = e.hex;
     if (has('bite') || has('grapple') || has('swiftStrike') || has('smash') || has('reave'))
       for (const [dq, dr] of AXIAL) mark(hexes, id(fq + dq, fr + dr), power);
+    // Hew: next to it, and each funnel's tip, 2 away off its lines.
+    if (has('hew'))
+      AXIAL.forEach(([aq, ar], i) => {
+        const [bq, br] = AXIAL[(i + 1) % 6]!;
+        mark(hexes, id(fq + aq, fr + ar), power);
+        mark(hexes, id(fq + aq + bq, fr + ar + br), power);
+      });
     // `over`: the spaces nearest it flown over, whatever is on them (Longshot's).
     const lanes = (oq: number, or: number, d: number, range = ABILITY.snapShot.range, over = 0) => {
       for (const [dq, dr] of AXIAL) {

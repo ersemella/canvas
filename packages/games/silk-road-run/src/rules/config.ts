@@ -911,6 +911,15 @@ export const ABILITY = {
    */
   reave: {throwRange: 3 as number},
   /**
+   * Hew (owner, 2026-10-31; the test stage's Barbarian as a tank, no hero's
+   * in runs): a funnel, the two spaces next to him either side of one way
+   * and the space past them that touches both, every unit there hit for his
+   * power, allies and Humphrey too. He is Empowered `empowerPerHit` for each
+   * enemy hit, for `slots` slots: 10, his own turn's at speed 1, so it
+   * lasts to his next turn (8, `RULES.durations.turn`, ends before it).
+   */
+  hew: {empowerPerHit: 1 as number, slots: 10 as number},
+  /**
    * Charge (owner, 2026-10-28; roster.md), the Cataphract's slam (owner,
    * 2026-10-29): each unit it hits that ends the charge with yurts or the
    * map's edge right behind it, along the charge, is slammed into them,

@@ -33,6 +33,7 @@ const NO_TARGET: Partial<Record<AbilityId, string>> = {
   bite: 'No enemy next to you.',
   swiftStrike: 'No enemy to dash through.',
   reave: 'No one next to you to swipe, nor in a line of 3 to throw at.',
+  hew: 'No one in a funnel of two spaces next to you and the one past them.',
   axeThrow: 'No one within 3 in a straight line.',
   leap: 'No free space to land on.',
   omen: 'No unit within 3 whose turn comes before your next.',

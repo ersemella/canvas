@@ -275,6 +275,8 @@ function strikable(state: FightState, u: Unit): Unit[] {
     // Leap: the two spaces in front of a landing, 3 away off its lines;
     // `forward` 2 away on them too, `splash` next to it as well.
     if (has('leap') && leapGap(u.hex!, e.hex, leapShapeOf(u)) === 0) return true;
+    // Hew: next to it, or the funnel's tip, 2 away off its lines.
+    if (has('hew') && (d === 1 || (d === 2 && !inLine))) return true;
     // Cleave: any space of its lines.
     if (
       has('cleave') &&
@@ -572,7 +574,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const caughtBy =
     ability === 'gale'
       ? hexNeighbors(target!.hex!)
-      : ability === 'cleave' || ability === 'reave' || ability === 'leap'
+      : ability === 'cleave' || ability === 'reave' || ability === 'leap' || ability === 'hew'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!, unit)
         : ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
           ? lungeCaught(state, unit.hex!, target, unit)
@@ -663,7 +665,10 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       // (a fall counted as a kill), for the unit's side.
       if (overdoseOf(unit) > 0) {
         const taken = Math.min(Math.max(0, unit.power - (u.shield ?? 0)), u.hp);
-        let gain = -(taken * weight(u) + (taken > 0 && taken >= u.hp && u.hero !== CAMEL ? AI.kill : 0));
+        let gain = -(
+          taken * weight(u) +
+          (taken > 0 && taken >= u.hp && u.hero !== CAMEL ? AI.kill : 0)
+        );
         if (taken < u.hp && u.power > 0 && (u.empower ?? 0) < elixirOverdose(unit, u))
           gain += 1 + empowerGuess(state, u, elixirOverdose(unit, u) - (u.empower ?? 0));
         value += hostile(u, unit) ? -gain : gain;
