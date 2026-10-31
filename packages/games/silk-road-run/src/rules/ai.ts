@@ -278,11 +278,11 @@ function strikable(state: FightState, u: Unit): Unit[] {
     // Leap: the two spaces in front of a landing, 3 away off its lines;
     // `forward` 2 away on them too, `splash` next to it as well.
     if (has('leap') && leapGap(u.hex!, e.hex, leapShapeOf(u)) === 0) return true;
-    // Wade In: as `line`, a line of `reach`; as `funnel`, next to it or the tip, 2 away off its lines.
-    if (has('wadeIn')) {
+    // Lunge: as `line`, a line of `reach`; as `funnel`, next to it or the tip, 2 away off its lines.
+    if (has('lunge')) {
       if (
-        ABILITY.wadeIn.shape === 'line'
-          ? inLine && d <= ABILITY.wadeIn.reach
+        ABILITY.lunge.shape === 'line'
+          ? inLine && d <= ABILITY.lunge.reach
           : d === 1 || (d === 2 && !inLine)
       )
         return true;
@@ -671,7 +671,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   const caughtBy =
     ability === 'gale'
       ? hexNeighbors(target!.hex!)
-      : ability === 'cleave' || ability === 'reave' || ability === 'leap' || ability === 'wadeIn'
+      : ability === 'cleave' || ability === 'reave' || ability === 'leap' || ability === 'lunge'
         ? ABILITIES[ability].area!(mapOf(state), unit.hex!, target!.hex!, unit)
         : ability === 'swiftStrike' && target?.hex && !unitAt(state, target.hex)
           ? lungeCaught(state, unit.hex!, target, unit)
@@ -931,7 +931,7 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
   // Grapple's throw (on the unit it grapples) hits nothing (owner, 2026-10-26).
   const throws = input.action.ability === 'grapple' && grappling(unit, hit);
   // Armour: One Eye's, unless it stands in the lane the eye faces, and
-  // Armoured's (Longshot Pierces both).
+  // Armoured's (Longshot Pierces both with `ABILITY.longshot.pierce`, off as built).
   const pierces = input.action.ability === 'longshot' && ABILITY.longshot.pierce;
   const armour = armourOf(undefined, hit, unit.hex, pierces);
   const damage =
@@ -1387,14 +1387,19 @@ export function chooseAiTurn(
       let winner = options[0]!;
       let value = -Infinity;
       const values = new Map<ScoredOption, number>();
+      // `AI.tieMargin`: options within it of the best are near-ties, searched
+      // exactly (the window opens that far below the best) and settled by
+      // what each does at once (`score`), so a hit now beats setting up the
+      // same hit for later.
+      const margin = AI.tieMargin;
       for (const option of options) {
         const next =
-          search(childOf(root, option), 1, depth - 1, value + option.cost, Infinity) - option.cost;
+          search(childOf(root, option), 1, depth - 1, value - margin + option.cost, Infinity) -
+          option.cost;
         values.set(option, next);
-        if (next > value) {
-          value = next;
+        if (next > value + margin || (next >= value - margin && option.score > winner.score))
           winner = option;
-        }
+        value = Math.max(value, next);
       }
       // The next, deeper iteration tries this one's best first (stable on
       // ties), so alpha-beta has a strong bound early and cuts off more.

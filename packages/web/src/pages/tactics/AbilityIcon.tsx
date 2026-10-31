@@ -345,8 +345,8 @@ const ICON: Record<IconId, Icon> = {
       '............',
     ],
   },
-  // Wade In: the same great axe, swung through a funnel.
-  wadeIn: {
+  // Lunge: the same great axe, swung through a funnel.
+  lunge: {
     kind: 'attack',
     rows: [
       '............', //

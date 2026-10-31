@@ -19,7 +19,7 @@ describe('the test stage', () => {
     // Byzantium's three as in a run: no override of the Barbarian left.
     expect(b.passives).toEqual(['fury']);
     expect(b.loadout).toBeUndefined();
-    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['wadeIn', 'hold']);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['lunge', 'hold']);
     expect(() => createRun(1, {test: true})).not.toThrow();
   });
 
@@ -96,15 +96,15 @@ describe('the test stage', () => {
     expect(createTestFight(1, {...raw, blessing: undefined}).units[0]!.blessesSelf).toBeUndefined();
   });
 
-  it('charges the Priest’s Invocation a Wait’s cost with "wait" on: 2/3 of his turn', () => {
+  it('charges the Priest’s Invocation 6 slots with "wait" on too', () => {
     const s = createTestFight(1, {player: [{hero: 'priest'}], enemy: [{hero: 'wolf'}], wait: true});
     const p = s.units.find((u) => u.hero === 'priest')!;
     p.slot = s.currentSlot;
     s.awaiting = p.id;
     const now = s.currentSlot;
     applyTurn(s, p, {action: {ability: 'invocation', target: {hex: p.hex!}}});
-    // Speed 1: 7 slots in place of his turn's 10.
-    expect([actionCost(p), p.slot! - now]).toEqual([10, 7]);
+    // Speed 1: 6 slots of his turn's 10, whatever a Wait costs (7).
+    expect([actionCost(p), p.slot! - now]).toEqual([10, 6]);
   });
 
   it('sets every unit of a hero with "heroes", the party picked too, and every Leap with "leap"', () => {
@@ -315,10 +315,13 @@ describe('the test stage', () => {
     expect(previewTurn(s, y.id, {action: {ability: 'hold', target: {}}})!.slot).toBe(actionCost(y));
   });
 
-  it('plays with Wait when "wait" says so: true for two thirds of a turn, or a share', () => {
+  it('plays with Wait as runs do, or as "wait" says: false for none, or a share', () => {
     const units = {player: [{hero: 'bokh'}], enemy: [{hero: 'wolf'}]};
     expect(createTestFight(1, units).waitShare).toBeUndefined();
-    expect(createTestFight(1, {...units, wait: false}).waitShare).toBeUndefined();
+    const off = createTestFight(1, {...units, wait: false});
+    expect(off.waitShare).toBe(1);
+    const grappler = off.units.find((u) => u.hero === 'bokh')!;
+    expect(aimSlot(off, grappler, 0, 'hold', true)).toBe(actionCost(grappler));
     const on = createTestFight(1, {...units, wait: true});
     expect(on.waitShare).toBeCloseTo(2 / 3);
     const bokh = on.units.find((u) => u.hero === 'bokh')!;

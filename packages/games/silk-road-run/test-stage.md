@@ -26,9 +26,9 @@ through a unit (aimed at the space he lands on); `"swiftStrike"`, below,
 tries other versions of him.
 The Priest plays as in a run since 2026-10-31: speed 1, defence 2,
 power 3, with Invocation in place of Blessing (a space within 3 and the
-spaces next to it, charged as a Hold costs; when his card comes back,
-enemies there take his power and allies there heal it, an Empower adding
-to both; with Wait on, as here, the charge is a Wait's 2/3 of a turn). `"blessing"`,
+spaces next to it, charged 6 slots, 3/5 of his turn, Wait on or off;
+when his card comes back, enemies there take his power and allies there
+heal it, an Empower adding to both). `"blessing"`,
 below, applies only to a Priest given Blessing with `"abilities"`.
 The Elixir (named Overdose since 2026-10-31) plays as in a run since
 2026-10-31, an overdose on one unit within 3 (balance.md, "The Elixir as an overdose"); `"elixir"`, below,
@@ -36,7 +36,7 @@ aims it in lines or sets the overdose's damage.
 **Byzantium's three as in a run** since 2026-10-31 (owner; balance.md,
 "Hew as a line, with Fury"), set here by `"heroes"`, `"charge"` and
 `"leap"` until they were built: the Barbarian its tank, speed 1, defence 3
-(health 8), power 2, with **Wade In** (Hew here first): the first unit up
+(health 8), power 2, with **Lunge** (Hew here first): the first unit up
 to 2 away along one of his six straight lines, ally or enemy, struck for
 his power, stepping in next to it first when it is 2 away, as a lunge
 (hail stops him short, and then he doesn't strike); and **Fury**: whenever
@@ -123,7 +123,7 @@ To fight the Steppe's boss instead, the Cyclops (`giant`): `"map":
 `giant` and two `wolf`. Speed 1, defence 5 (health 12), power 3. **One
 Eye**: Armour 3 against a hit (or a grapple's squeeze) from any unit not
 standing in its front lane, straight out the way its eye faces at any
-distance; a Piercing hit (Longshot) ignores it. The eye is drawn on the
+distance; a Piercing hit ignores it. The eye is drawn on the
 edge of its hex it faces. It starts facing across the board, and turns
 the way it last stepped on a walk, or toward what it aims at; being
 Pushed or Pulled doesn't turn it. **Smash**: melee, its power.
@@ -141,7 +141,7 @@ it, unhurt.
 | `camel` | Temee: `{}` for the usual camel, or with `speed`, `defence` or `at` of its own. `false`: no camel, so the fight ends only when a side is beaten. | `{}` |
 | `player` | Replaced by the start menu's party when started from there. Your units, 1 to 9, in party order (at most 11 without an `at`: the starting columns' spaces, fewer where a mountain stands). You control every one. | required |
 | `enemy` | The AI’s units, 1 to 9 (at most 11 without an `at`). | required |
-| `wait` | **Wait** (proposed, timeline.md 3.2): `true` and a turn that does nothing (Skip turn, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) sends the card two thirds of its action cost on, rounded: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10, so Skip turn reads +6 beside an ability's +9. A number above 0 and at most 1 sets the share instead (`0.5`). Both sides play by it; the AI's search doesn't weigh the time a Wait saves, so it Waits only when that happens to look best, and an AI that does weigh it was measured Waiting in place of walking (balance.md, "Wait"). `false`: today's rule. | `false` |
+| `wait` | **Wait** (timeline.md 3.2; in runs since 2026-10-31): a turn that does nothing (Skip turn, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) sends the card two thirds of its action cost on, rounded: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and 10, so Skip turn reads +6 beside an ability's +9. Left out or `true`: as in runs. A number above 0 and at most 1 sets the share instead (`0.5`); `false`: no Wait, a Hold a whole turn, as before. Both sides play by it. | as in runs |
 | `swiftStrike` | Every Duelist's Swift Strike, both sides (the dash and the straight walk as in a run since 2026-10-31, the rest switches off there; balance.md, "The Duelist's lunge and streak"): `lunge`, up to that many spaces straight at the first unit in line before the strike, stopped by yurts, units and the map's edge, ending next to it; `passThrough`, `true` and the lunge may also pass through the units on its way, each hit, to a free space past them (aimed at that space), striking the unit in front of it too; `jump`, `true` and it may also jump a unit next to it to the free space past it (aimed at that space), hitting it, and from there jump another unit next to it in the same turn, never the same one twice, the turn going on until no jump is left or Skip turn ends it (with `lunge` 1, the unit 2 away in line is hit stepping one space in); `chain`, `false` and a jump ends the turn; `dash`, Swift Strike only a dash of up to that many spaces straight, through the units on the spaces before the last, each hit, to the free space it lands on (aimed at), from `dashMin` out (`2`; `0`, exactly `dash`, or with yurts or the map's edge on that space one fewer); no strike in place (`3`; `0`, the strike next to him, with `lunge` and `jump`); `walk`, the Duelist's own walk; `straight`, `true` and it walks straight along one of the six directions, as the Outrider does, at most `walk` spaces; `haste`, the slots his card is Hastened when he hits (`0`: none); `streak`, the Haste on turns striking running, the first strike's, the second's and so on, the last held while it lasts (`[2, 3, 4]`), a turn without a strike, a walk included, starting it again. `streakResets`, `false` and it isn't started again, each hit of the fight raising the Haste. Each part left out keeps its own rule. | Swift Strike as in a run: a dash of 2 or 3 through a unit (`dash` 3, `dashMin` 2), Haste 3, a straight walk of 3; `"dash": 0` for the strikes next to him (a lunge, jumps) |
 | `blessing` | Every Priest's Blessing, both sides: `self`, `false` and it leaves him out, blessing only the units on the line aimed (an empty line then does nothing). | Blessing as built: he is blessed too, whatever line he aims |
 | `elixir` | Every Elixir, both sides, a hero's or one given in `abilities`: `line`, a number from 1 to 8 and it is aimed as Axe Throw is, at any unit on one of the six lines out from its user within that many spaces, over units and yurts, its effects as built (so the Alchemist can't give one to himself); `0`, as built. `overdose`, a number from 0 to 20: above 0, the unit given it, ally or enemy, is Empowered until its hits deal that much, for 8 slots, then hit for its user's power, no heal, hit or Weaken besides (6 as built); `0`, the Elixir before it (an ally healed his power and Empowered 2, an enemy hit and Weakened 2), at the built range of 3. | Elixir as built: an overdose to 6, any unit within 3, himself too |
@@ -159,7 +159,7 @@ Any field starting with `$` (like `$comment`) is ignored, for notes.
 | `speed` | 0 to 30. Its card goes 60 ÷ (speed + 5) slots on after each turn, rounded. | the hero's |
 | `defence` | 0 to 30. Health is (1 + defence) × 2. | the hero's |
 | `power` | 0 to 30. Every ability deals exactly this. | the hero's |
-| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"alignment"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"wadeIn"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
+| `abilities` | Up to 2 of `"snapShot"`, `"skirmish"`, `"volley"`, `"feignedRetreat"`, `"hail"`, `"sunlight"`, `"gale"`, `"grapple"` (which throws, once it holds a unit), `"haul"`, `"shove"`, `"bite"`, `"cleave"`, `"elixir"`, `"swiftStrike"`, `"omen"`, `"alignment"`, `"stomp"`, `"longshot"`, `"charge"`, `"blessing"`, `"invocation"`, `"reave"`, `"smash"`, `"boulder"`, `"gore"`, `"bananaFan"`, `"fanFlames"`, `"lunge"`, on any hero (a unit has at most 2 abilities besides Hold). Hold (and so moving) is always there. `[]`: Hold only. | the hero's starting kit |
 | `passives` | Any of the passives (progression.md, 19.8; no hero has one in a run yet): `"steadyGait"`, `"secondWind"`, `"patient"`, `"momentum"`, `"rooted"`, `"unstoppable"`, `"lightStep"`, `"rebound"`, `"hardened"`, `"lastStand"`, `"piercingEye"`, `"opportunist"`, `"bulwark"`, `"glassCannon"`, `"ironWill"`, `"shakeLoose"`, `"flanker"`, `"loneWolf"`, `"rally"`, `"vengeance"`, `"fury"` (whenever it is hit, its card is Hastened 5; the Barbarian's own), `"oneEye"` (the giant's: it faces a way only with it) or `"devoted"` (the Bull Demon King's and Princess Iron Fan's: a hit on one Hastens every other Devoted unit of its side 3), on any unit. Shown on its stat sheet. | none |
 | `at` | Its starting space, `{"col": c, "row": r}`. | a random space on its side's two starting columns (yours the two on the right edge, the enemy's the two on the left), never the camel's starting corner or its exit |
 

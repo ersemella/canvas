@@ -6098,7 +6098,7 @@ and its skill. Unfinished fights at most 2.3%.
 - **No skill from it** (span 5.8 against 5.7): it fires on being hit.
 - Byzantium's own seats as before, bent by the Priest's Invocation.
 - **Built (owner, 2026-10-31)**, in runs: the Barbarian Byzantium's tank
-  with Wade In (Hew renamed) and Fury at Haste 5; the Cataphract its
+  with Lunge (Hew renamed) and Fury at Haste 5; the Cataphract its
   damage hero, braced after each charge (roster.md).
 
 ### Alignment before his next turn (later 2026-10-31)
@@ -6209,6 +6209,129 @@ Byzantium's party, by a novice and an expert):
   is unmeasured. Above 7 he is weak whatever the skill; at 5 and under
   too strong, and a novice's party suffers for it.
 
+### Invocation at 6 slots, as built (2026-10-31)
+
+Built (the owner) after "Invocation's charge": the charge **0.6 of his
+action cost, 6 slots at speed 1** (`ABILITY.invocation.charge` 0.6), Wait
+on or off. `experiments/invocation-charge.mjs`'s `c6-` rows on `fb093cd`'s
+rules, the same seeds and rows; unfinished fights at most 0.3%.
+
+| Charge | Steppe | China | Persia | others' | Storm C. in his | Alchemist in his | Magus in his | kept | **score** |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 7 | 41.8 | 36.3 | 49.2 | 42.4 | 56.0 | 61.3 | 44.8 | 46.0 | 44.2 |
+| **6 (built)** | 51.0 | 43.5 | 53.1 | 49.2 | 47.3 | 63.5 | 44.8 | 48.1 | **48.7** |
+| 5 | 55.8 | 49.8 | 62.2 | 55.9 | 35.5 | 57.0 | 35.0 | 57.5 | 56.7 |
+
+| Charge | His turns | Casting | Hold | Lives through | Enemies hit | Damage | Healed |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| **6** | 2.7–3.0 | 45–63% | 3–8% | 38–50% | 1.5–2.4 | 4.3–7.2 | 4.3–8.0 |
+
+| Charge | Priest novice | expert | **span** | Party novice | expert | **span** |
+|---:|---:|---:|---:|---:|---:|---:|
+| 7 | 44.8% | 49.8% | 5.0 | 46% | 53.3% | 7.3 |
+| **6** | 41.5% | 50.5% | **9.0** | 35.1% | 57.4% | **22.3** |
+| 5 | 43.8% | 50.8% | 7.0 | 37.6% | 54.8% | 17.2 |
+
+- **Even as a score**: 48.7%, inside the band, between 7's 44.2% and 5's
+  56.7% as estimated. Even in the Steppe's and Persia's seats (51.0%,
+  53.1%) and against the Storm Caller and the Magus in his own; under in
+  China's (43.5%) and against the Alchemist in his (36.5% kept), the
+  Alchemist's Overdose being strong in Byzantium's party.
+- **The skill gap is large**: the Priest's own span 9.0 (3.3 at 10, 0.8
+  with Blessing), in the tanks' 5.3–13.7; Byzantium's party 22.3, the
+  largest measured (the Duelist's 16.7 the most for one hero), the novice
+  party losing most (35.1%). At ±3.5 a span, 6's and 5's party spans
+  (17.2) agree; what is clear is a jump from 7–10's 7.3–9.7 to 17–22 at 6
+  and under. A player who places the area and keeps allies in it gains a
+  lot; one who doesn't, or the shallow AI, loses a lot.
+- **Open**: whether a party span of about 20 is wanted (a hard support to
+  play well, and an enemy Priest much weaker in a novice AI's hands than an
+  expert's); and China's seat and the Alchemist's under even.
+
+### A horizon of slots (2026-10-31)
+
+Item 2 of what Wait needs from the AI: a line of the search ending at a
+stretch of track, not a count of decisions, so a line that Waits sees as
+many enemy turns as one that acts. Built as `AI.horizonSlots`, **off**
+(0). `experiments/horizon.mjs`, 800 fights a row, on `565d922`: both
+sides searching up to 6 decisions (narrowing 4, 3, 2, four times the
+work) with reach and the track at 0.25, one side with Wait (Patient 3),
+the search cut by decisions only (`d6`) or at 6 or 9 slots too; and one
+side's AI with the horizon against the same deep search without it,
+no Wait (`ai-h6`). Stopped once the shipping measurements were in, so
+some rows are missing.
+
+| Mirror | Wait, decisions only | Wait, horizon 6 | Wait, horizon 9 | The horizon's AI |
+|---|---:|---:|---:|---:|
+| Steppe | 49.3% | 49.9% | 47.4% | **23.4%** |
+| China | **58.8%** | 56.6% | | |
+| Persia | 42.8% | 47.5% | 40.8% | 50.4% |
+| Byzantium | 51.4% | 53% | | |
+
+The horizon changes little for Wait (+0.6 to +4.7 at 6 slots, worse at
+9) and can cripple the AI: on the Steppe the side cutting its lines at 6
+slots wins 23.4% against the same search without, its lines ending
+before the hits they set up land. **Left off.** The deeper search alone
+is what found Wait's first clear worth, China's 58.8%: the browser's AI,
+some 11 decisions deep, is the one that plays it in runs.
+
+### A Wait always searched (2026-10-31)
+
+Item 4: a Hold in place that brings the card back sooner joins the
+options a decision searches on, tried if it wasn't (`AI.keepWait`, the
+root's at 1, every decision's at 2), **off** (0).
+`experiments/keep-wait.mjs`, 800 fights a row, on `dbd9bbb`, with reach
+and the track at 0.25 (the same as reach.mjs's `waitm0.25-` rows
+without it), production's search, one side with Wait:
+
+| Mirror | Without (waitm0.25) | Root | Every decision |
+|---|---:|---:|---:|
+| Steppe | 49.4% | 51% | 49.5% |
+| China | 45.8% | 47.4% | 46.3% |
+| Persia | 48.2% | 46.8% | 47.3% |
+| Byzantium | 50.8% | 51.5% | 50.3% |
+
+Nothing: the search already tries a Wait often enough, and doesn't find
+it better when it does. Left off at first; **on at the root since later
+2026-10-31** (`keepWait` 1, the owner's call with Wait in runs: no gain
+or loss measured, the root's the cheaper of the two).
+
+### Wait in runs (2026-10-31)
+
+The owner's call, after the four AI items: **Wait is in runs**
+(`RULES.waitShare` 2/3), and with it the AI that plays it: reach and
+the track in the leaf at 0.25 (`AI.reachShare`, `AI.leafTrack`), and
+near-ties at the root settled by what each option does at once
+(`AI.tieMargin` 0.05: with reach counted, stepping in to hit next turn
+scored a hair over hitting now, the Barbarian walking past a free Axe
+Throw). The horizon stays off; the kept Wait was turned on at the root
+later that day (`keepWait` 1, "A Wait always searched"), after these
+rows. The browser's AI
+searches about 6% shallower with the leaf's terms (11.9 → 11.2 decisions
+on average over 48 decisions, `AI.browser`'s 400 ms).
+`experiments/wait-ship.mjs`, 800 fights a row, on `8fe8c1d`: today's
+game (`built`) against the game before (`before`: all four off).
+
+| | Before | Wait in runs |
+|---|---:|---:|
+| Steppe mirror (player side) | 64.6% | 64.9% |
+| China mirror | 41% | 52% |
+| Persia mirror | 77.6% | 67.8% |
+| Byzantium mirror | 90.6% | 86.4% |
+| China v Steppe | 45.6% | **30.6%** |
+| Persia v Steppe | 70.1% | 64.5% |
+| Byzantium v Steppe | 11.4% | 22.9% |
+| Persia v China | 59.8% | 62.9% |
+| Byzantium v China | 7.6% | 16.4% |
+| Byzantium v Persia | 19.1% | 33.4% |
+
+The AI as built against the AI before, on today's rules, one side each:
+Steppe 52.4%, China 55.5%, Persia 60.7%, Byzantium 56.6%. The mirrors'
+side bias shrinks (Persia's 77.6% → 67.8%, China's 41% → 52%); China
+loses ground (15 points against the Steppe), Byzantium, weak since its
+rework of the day, gains 9–14. Which of Wait and the AI moves China is
+not separated: the first row to run if China needs tuning.
+
 ### Alignment as swaps only, with his own card and Humphrey's (later 2026-10-31)
 
 Asked for (owner): Alignment as **swaps only** (`ABILITY.alignment.swaps`,
@@ -6221,7 +6344,7 @@ among them) on the pool's earliest slots and the other side's on its
 latest, and each single swap of an enemy's card before one of its own.
 Same rows (`experiments/alignment.mjs`, 400 fights, main as of the change;
 Byzantium's tank and damage hero swapped in runs since the rows above, so
-Omen's Byzantine rows moved):
+Omen's Byzantine rows moved; before Wait came into runs, ab7c0e7):
 
 | Seat | Omen | Alignment, swaps |
 |---|---:|---:|

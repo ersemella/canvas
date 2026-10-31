@@ -378,7 +378,7 @@ describe('a Wait always searched (AI.keepWait)', () => {
       }
     };
     // Without Wait a Hold is no sooner: nothing changes.
-    expect(work(1)).toBe(work(0));
+    expect(work(1, 1)).toBe(work(0, 1));
     // With it, the Wait is searched on as well.
     expect(work(1, 2 / 3)).toBeGreaterThan(work(0, 2 / 3));
   });
@@ -389,6 +389,7 @@ describe('the leaf counting reach (AI.reachShare)', () => {
   /** The player's side's leaf with the term at `share`, less without it. */
   const reach = (s: FightState, share = 1) => {
     const saved = ai.reachShare;
+    ai.reachShare = 0;
     const off = evaluatePosition(s, 'player');
     ai.reachShare = share;
     try {

@@ -13,7 +13,8 @@ const regions = {
 };
 const byzantium = ['cataphract', 'varangian', 'priest'];
 const seat = (party, i, hero) => party.map((h, j) => (j === i ? hero : h));
-const charges = {c10: null, c7: 0.7, c5: 0.5, c3: 0.3, c1: 0.1};
+// 6 (`c6-`, 0.6) built since later 2026-10-31; `c10-` (null) a Hold's cost.
+const charges = {c10: null, c7: 0.7, c6: 0.6, c5: 0.5, c3: 0.3, c1: 0.1};
 const novice = {depth: 1, work: 220};
 const expert = {depth: 4, work: 4 * 220};
 export const experiments = {};

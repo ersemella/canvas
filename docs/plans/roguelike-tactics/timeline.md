@@ -24,9 +24,9 @@ After a unit's turn, its card goes to:
 ```
 slot = current slot + round(actionBase × speedPivot ÷ (speed + speedPivot))      (actionBase = 12, speedPivot = 5)
 ```
-- The same for every turn: an ability, a move, a Hold, or a skipped turn (Stunned, or nothing to do but Hold).
+- The same for every turn: an ability, a move, or a Stunned turn; a Hold in place or a turn skipped with nothing to do but Hold is a Wait (below).
 - **Temee's card** follows the same rule, whether it stepped or waited: speed 0 (owner, 2026-10-23), so always 12 slots.
-- **Wait (Proposed 2026-10-30, built off):** a turn that does nothing (a Hold without a walk, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) goes `RULES.waitShare` of the cost on, rounded, at least 1: at 2/3, 5, 6 and 7 slots for speeds 3, 2 and 1. Measured worth nothing to the side that has it, and a loss in China's mirror, since the AI can't price the third of a turn it gives up ([balance.md](balance.md), "Wait"). With the track in the AI's leaf (`AI.leafTrack`) it Waits where it should walk and loses more, a walk priced only as a tiebreaker; so it is left to play-testing. 1, today's rule.
+- **Wait (Decided 2026-10-31, the owner's call; proposed 2026-10-30):** a turn that does nothing (a Hold without a walk, or a turn skipped with only Hold to choose; not a Stunned one, nor Temee's) goes `RULES.waitShare` (2/3) of the cost on, rounded, at least 1: 5, 6 and 7 slots for speeds 3, 2 and 1. The AI plays it with reach and the track in its leaf at 0.25; the measurements, from worth nothing to Waiting in place of walking to the AI that ships, are in [balance.md](balance.md), "Wait" to "Wait in runs".
 - Speed runs 1 to 3 for the heroes (9.1), so costs run 8 to 10; up to speed 10 they run down to 4. A cost is never less than 1 slot. Whole slots bunch the top end: speeds 6, 7 and 8 all cost 5, and 9 and 10 cost 4 (a finer track or a carried fraction would separate them). Collisions go to the faster card (3.3).
 
 ### 3.3 Collisions (Decided)

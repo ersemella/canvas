@@ -447,7 +447,7 @@ describe('the track', () => {
     );
   });
 
-  it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did (3.2)', () => {
+  it('places a card 60 ÷ (speed + 5) slots on, rounded, whatever the turn did but a Wait (3.2)', () => {
     const s = setup({
       'p-camel': at(0, 0),
       'p-mangudai': at(1, 3),
@@ -463,7 +463,7 @@ describe('the track', () => {
     expect(aimSlot(s, b)).toBe(34);
     s.currentSlot = 35;
     expect(aimSlot(s, m)).toBe(43);
-    // A move and an ability place it alike.
+    // A move and an ability place it alike; a Hold in place is a Wait.
     s.currentSlot = 25;
     m.slot = 25;
     s.awaiting = m.id;
@@ -472,7 +472,7 @@ describe('the track', () => {
     const held = cloneFight(s);
     applyTurn(held, unit(held, m.id), {action: {ability: 'hold'}});
     expect(unit(moved, m.id).slot).toBe(33);
-    expect(unit(held, m.id).slot).toBe(33);
+    expect(unit(held, m.id).slot).toBe(25 + waitCost(m));
   });
 
   it('gives the faster more turns: Outriders before Grappler, Grappler before Temee', () => {
@@ -1539,6 +1539,8 @@ describe('abilities', () => {
 
   it('hail covers one space exactly two away: a unit there is Immobilized for `RULES.durations.hail` slots', () => {
     const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    // Its Holds a whole turn each, so its second comes past the hail's slots.
+    s.waitShare = 1;
     const storm = unit(s, 'p-storm');
     const targets = ABILITIES.hail.targets(s, STEPPE, storm, storm.hex!);
     expect(targets.length).toBeGreaterThan(0);
@@ -1924,7 +1926,7 @@ describe('the Duelist', () => {
     const y = unit(s, 'p-youxia');
     y.slot = s.currentSlot;
     applyTurn(s, y, {action: {ability: 'hold', target: {}}});
-    expect(y.slot).toBe(actionCost(y));
+    expect(y.slot).toBe(waitCost(y));
   });
 });
 
@@ -1939,7 +1941,7 @@ describe('the Barbarian', () => {
   };
   /**
    * A fight with no yurts and the Barbarian at `c` to act, carrying `kit`
-   * (Reave, as first built, unless given; null for its own, Wade In). The
+   * (Reave, as first built, unless given; null for its own, Lunge). The
    * kits kept for measuring (Reave, Axe Throw, Leap) at the power 3 they
    * were built with (his 2 since 2026-10-31).
    */
@@ -1952,7 +1954,7 @@ describe('the Barbarian', () => {
     s.tiles = {};
     const b = unit(s, who);
     if (kit) b.loadout = {abilities: [kit, 'hold']};
-    if (kit && kit !== 'wadeIn') b.power = 3;
+    if (kit && kit !== 'lunge') b.power = 3;
     b.slot = s.currentSlot;
     s.awaiting = b.id;
     return {s, b};
@@ -1961,7 +1963,7 @@ describe('the Barbarian', () => {
     ready(placements, who, 'axeThrow');
   const leaping = (placements: Record<string, Hex>, who = 'p-varangian') =>
     ready(placements, who, 'leap');
-  const wading = (placements: Record<string, Hex>, who = 'p-varangian') =>
+  const lunging = (placements: Record<string, Hex>, who = 'p-varangian') =>
     ready(placements, who, null);
   const hp = (s: FightState, id: string) => unit(s, id).maxHp - unit(s, id).hp;
   /** Leap's landing setting out along `dir`, and the two spaces in front of it. */
@@ -1971,10 +1973,10 @@ describe('the Barbarian', () => {
     hexNeighbor(landing(dir), dir + 1),
   ];
 
-  it('has speed 1, power 2, defence 3, Wade In and Fury, and is Byzantium’s tank on the roster', () => {
-    const {b} = wading({});
+  it('has speed 1, power 2, defence 3, Lunge and Fury, and is Byzantium’s tank on the roster', () => {
+    const {b} = lunging({});
     expect([b.speed, b.power, b.defence, b.maxHp]).toEqual([1, 2, 3, healthOf(3)]);
-    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['wadeIn', 'hold']);
+    expect(abilitiesOf(b).map((d) => d.id)).toEqual(['lunge', 'hold']);
     expect(b.passives).toEqual(['fury']);
     expect(ROSTER).toContain('varangian');
     expect(REGIONS.byzantium.heroes).toEqual(['varangian', 'cataphract', 'priest']);
@@ -2077,46 +2079,46 @@ describe('the Barbarian', () => {
     expect(b2.shield).toBeUndefined();
   });
 
-  it('Wade In as `funnel` hits two spaces next to him and the one past them, and with `shieldPerHit` Shields him 1 an enemy hit for 10 slots', () => {
+  it('Lunge as `funnel` hits two spaces next to him and the one past them, and with `shieldPerHit` Shields him 1 an enemy hit for 10 slots', () => {
     onTestFinished(() => {
-      Object.assign(ABILITY.wadeIn, {shape: 'line', shieldPerHit: 0});
+      Object.assign(ABILITY.lunge, {shape: 'line', shieldPerHit: 0});
     });
-    Object.assign(ABILITY.wadeIn, {shape: 'funnel', shieldPerHit: 1});
+    Object.assign(ABILITY.lunge, {shape: 'funnel', shieldPerHit: 1});
     // Set toward 0: the spaces along 0 and 1, and the one past both (Leap's landing along 0).
     const funnel = [hexNeighbor(c, 0), hexNeighbor(c, 1), landing(0)];
-    const {s, b} = wading({
+    const {s, b} = lunging({
       'e-modao': funnel[0]!,
       'e-mangudai': funnel[2]!,
       'p-modao': funnel[1]!,
     });
-    expect(ABILITIES.wadeIn.area!(mapOf(s), c, landing(0))).toEqual(funnel);
+    expect(ABILITIES.lunge.area!(mapOf(s), c, landing(0))).toEqual(funnel);
     // Aimed only where it catches someone: here toward 0, 5 (the Duelist beside him) and 1.
-    expect(ABILITIES.wadeIn.targets(s, mapOf(s), b, c).length).toBe(3);
+    expect(ABILITIES.lunge.targets(s, mapOf(s), b, c).length).toBe(3);
     const slot = s.currentSlot;
-    applyTurn(s, b, {action: {ability: 'wadeIn', target: {hex: landing(0)}}});
+    applyTurn(s, b, {action: {ability: 'lunge', target: {hex: landing(0)}}});
     // His power 2: the ally is hit too, only enemies Shield him.
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), hp(s, 'p-modao')]).toEqual([2, 2, 2]);
     expect([b.shield, b.shieldUntil, b.empower]).toEqual([2, slot + 10, undefined]);
   });
 
-  it('Wade In strikes the first unit up to 2 away in a straight line, stepping in next to it first', () => {
-    const {s, b} = wading({
+  it('Lunge strikes the first unit up to 2 away in a straight line, stepping in next to it first', () => {
+    const {s, b} = lunging({
       'e-modao': along(c, 0, 2),
       'e-mangudai': along(c, 0, 3),
       'p-modao': hexNeighbor(c, 2),
       'e-storm': along(c, 4, 3),
     });
-    expect(ABILITY.wadeIn).toMatchObject({shape: 'line', reach: 2, shieldPerHit: 0});
-    const aims = ABILITIES.wadeIn.targets(s, mapOf(s), b, c).map((t) => hexKey(t.hex!));
+    expect(ABILITY.lunge).toMatchObject({shape: 'line', reach: 2, shieldPerHit: 0});
+    const aims = ABILITIES.lunge.targets(s, mapOf(s), b, c).map((t) => hexKey(t.hex!));
     // The Vanguard 2 away (not the Outrider behind it), the ally next to him; not the Storm Caller 3 away.
     expect(aims.sort()).toEqual([hexKey(along(c, 0, 2)), hexKey(hexNeighbor(c, 2))].sort());
-    applyTurn(s, b, {action: {ability: 'wadeIn', target: {hex: along(c, 0, 2)}}});
+    applyTurn(s, b, {action: {ability: 'lunge', target: {hex: along(c, 0, 2)}}});
     expect(b.hex).toEqual(hexNeighbor(c, 0));
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), b.shield]).toEqual([2, 0, undefined]);
   });
 
   it('Fury Hastens him 5 whenever he is hit', () => {
-    const {s, b} = wading({'e-modao': hexNeighbor(c, 0)});
+    const {s, b} = lunging({'e-modao': hexNeighbor(c, 0)});
     b.slot = s.currentSlot + 10;
     const ctx = {state: s, map: mapOf(s), slot: s.currentSlot};
     hit(ctx, unit(s, 'e-modao'), b, 'A test hit');
@@ -2134,11 +2136,11 @@ describe('the Barbarian', () => {
     expect(threatDamage([threat], s, m)).toBe(b.power);
   });
 
-  it('the AI wades in at an enemy 2 away in line, and counts it a threat there', () => {
-    const {s, b} = wading({'p-mangudai': along(c, 3, 2), 'p-modao': at(0, 8)}, 'e-varangian');
+  it('the AI lunges at an enemy 2 away in line, and counts it a threat there', () => {
+    const {s, b} = lunging({'p-mangudai': along(c, 3, 2), 'p-modao': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';
     const turn = chooseAiTurn(s, b);
-    expect(turn.action.ability).toBe('wadeIn');
+    expect(turn.action.ability).toBe('lunge');
     const m = unit(s, 'p-mangudai');
     const threat = threatsTo(s, mapOf(s), m).find((t) => t.enemyId === b.id)!;
     expect(threatDamage([threat], s, m)).toBe(b.power);
@@ -2963,7 +2965,7 @@ describe('the Ranger', () => {
     }
   });
 
-  it('Longshot hits the first unit in line, Piercing, and stays put', () => {
+  it('Longshot hits the first unit in line, Armour standing against it, and stays put', () => {
     const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
     const bokh = unit(s, 'e-bokh');
     bokh.passives = ['hardened'];
@@ -2971,10 +2973,24 @@ describe('the Ranger', () => {
     expect(isTarget(s, a, bokh.hex!)).toBe(true);
     expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
     applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
-    // Armour 1 (Hardened) Pierced: the full 3.
-    expect(bokh.hp).toBe(bokh.maxHp - 3);
+    // Armour 1 (Hardened), no Pierce: 3 less 1.
+    expect(bokh.hp).toBe(bokh.maxHp - 2);
     expect(bokh.hex).toEqual(along(c, 0, 2));
     expect(bokh.slot).toBe(5);
+  });
+
+  it('Longshot with `pierce` Pierces Armour', () => {
+    const was = {...ABILITY.longshot};
+    Object.assign(ABILITY.longshot, {pierce: true});
+    try {
+      const {s, a} = ready({'e-bokh': along(c, 0, 2)});
+      const bokh = unit(s, 'e-bokh');
+      bokh.passives = ['hardened'];
+      applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
+      expect(bokh.hp).toBe(bokh.maxHp - 3);
+    } finally {
+      Object.assign(ABILITY.longshot, was);
+    }
   });
 
   it('Longshot with `push` Pushes the unit it hits', () => {
@@ -5146,7 +5162,7 @@ describe('previews, the AI and the run', () => {
     const bokh = unit(s, 'p-bokh');
     s.awaiting = bokh.id;
     const input: TurnInput = {action: {ability: 'hold'}};
-    const aim = s.currentSlot + actionCost(bokh);
+    const aim = s.currentSlot + waitCost(bokh);
     expect(previewTurn(s, bokh.id, input)).toMatchObject({aimSlot: aim, slot: aim});
     // Cards in the aimed slot and the one after: the card yields past both.
     unit(s, 'e-bokh').slot = aim;
@@ -5440,7 +5456,7 @@ describe('the Priest’s Invocation', () => {
     expect(offered.some((x) => hexEquals(x.hex!, t))).toBe(true);
   });
 
-  it('does nothing when cast; his card goes a Hold’s cost on, charging', () => {
+  it('does nothing when cast; his card goes 6 slots on, 3/5 of his turn, charging', () => {
     const {s, p} = ready({'p-bokh': t, 'e-bokh': hexNeighbor(t, 0)});
     const ally = unit(s, 'p-bokh');
     const enemy = unit(s, 'e-bokh');
@@ -5448,7 +5464,7 @@ describe('the Priest’s Invocation', () => {
     invoke(s, p, t);
     expect(ally.hp).toBe(2);
     expect(enemy.hp).toBe(enemy.maxHp);
-    expect(p.slot).toBe(waitCost(p));
+    expect([actionCost(p), p.slot]).toEqual([10, 6]);
     expect(charging(s, p)).toBe(true);
   });
 
@@ -5486,15 +5502,15 @@ describe('the Priest’s Invocation', () => {
     expect(enemy.hp).toBe(enemy.maxHp - p.power - 2);
   });
 
-  it('with `charge` set, charges that share of his turn in place of a Hold’s cost', () => {
+  it('with `charge` null, charges a Hold’s cost, as first built', () => {
     const inv = ABILITY.invocation as {charge: number | null};
     onTestFinished(() => {
-      inv.charge = null;
+      inv.charge = 0.6;
     });
-    inv.charge = 0.5;
+    inv.charge = null;
     const {s, p} = ready({'e-bokh': t});
     invoke(s, p, t);
-    expect(p.slot).toBe(Math.round(actionCost(p) * 0.5));
+    expect(p.slot).toBe(waitCost(p));
   });
 
   it('heals the Priest himself when he stands in it', () => {

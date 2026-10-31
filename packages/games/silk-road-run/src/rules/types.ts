@@ -61,7 +61,7 @@ export type AbilityId =
   // The Priest's since 2026-10-31, in place of Blessing.
   | 'invocation'
   | 'reave'
-  | 'wadeIn'
+  | 'lunge'
   // The test stage's Magus's in place of Omen (owner, 2026-10-31).
   | 'alignment'
   | 'axeThrow'
@@ -473,7 +473,7 @@ export interface ShotInAir {
    * Invocation's centre (`ability`), its area the space and those next to it.
    */
   hex?: Hex;
-  /** The Priest's Invocation (charged as a Hold costs); absent for an Outrider's arrows. */
+  /** The Priest's Invocation (charged, `ABILITY.invocation.charge`); absent for an Outrider's arrows. */
   ability?: 'invocation';
   /**
    * The Outrider's Empower when it drew: the arrow carries it, though the

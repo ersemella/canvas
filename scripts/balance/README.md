@@ -118,6 +118,7 @@ either core's side, and a Storm Caller that can't hurt keeping back
 `wait.mjs` (2026-10-30) measures Wait (`RULES.waitShare`): one side with it, as Patient 3 or 4 (`RULES.patientSlots`) on its every unit, at production's search and a deep one against the same search without; and both sides with it at 2/3 against the built rule, the four regions' mirrors and parties. `wait-china.mjs` gives it to one Chinese hero at a time, with Patient saving 0 as the control.
 `wait-leaf.mjs` (2026-10-30) measures the search's leaf counting the track (`AI.leafTrack`), one side's AI with it, and Wait for one side with both AIs using it.
 `reach.mjs` (2026-10-31) measures the leaf counting each unit's best hit from where it stands (`AI.reachShare`): one side's AI with it, and Wait for one side with both AIs using it, with the track at 1 (`wait`) or at reach's weight (`waitm`).
+`horizon.mjs` (2026-10-31) measures a horizon of slots for the search (`AI.horizonSlots`), with Wait and as the AI alone; `keep-wait.mjs` a Wait always searched (`AI.keepWait`); `wait-ship.mjs` Wait in runs with its AI against the game before, and the AI against the AI before.
 `spearhead.mjs` (2026-10-30) measures Spearhead (`SPEARHEAD`), the Vanguard's allies next to it Hastened when it's hit: one side's Vanguard with it in China's mirror, and the Vanguard's six role-seat rows of `roles-twelve.mjs` with and without it (`patch` giving it to every Vanguard); suffixes `-h5`, `-h6` its Haste, `-a1`, `-a2` the AI's allies seeking it (`AI.spearheadShare`), `-r2` allies within 2 (`SPEARHEAD.range`); since the Vanguard starts with it at range 2 (2026-10-30), its other rows reproduce only at their revision.
 
 `elixir-swap.mjs` (2026-10-27) measures the Elixir swapping an ally's
@@ -234,7 +235,9 @@ Invocation's hits as the `invocation` source and what it heals as
 `invocationHealPerFight`.
 `invocation-charge.mjs` (2026-10-31) Invocation's charge at 10 (built), 7,
 5, 3 and 1 slots (`ABILITY.invocation.charge`, a share of the Priest's
-action cost), Wait off, in `priest-invocation.mjs`'s rows.
+action cost), Wait off, in `priest-invocation.mjs`'s rows; and at 6
+(`c6-`), built since then, so `priest-invocation.mjs`'s `invocation-` and
+`wait-` rows reproduce only at their revision.
 `byzantium-hew.mjs` (2026-10-31) the swap with Hew in place of Leap
 (`ABILITY.hew`), the Cataphract without and with Armoured; only the rows
 with Byzantium in them, the rest from `byzantium-swap.mjs`.
@@ -244,8 +247,8 @@ Shield (`ABILITY.hew.shieldPerHit`); every role-seat row and their skill.
 `byzantium-fury.mjs` (2026-10-31) Hew as a line of 2, stepping in
 (`ABILITY.hew.shape` `line`), with Fury (`FURY`) and without; on the
 Priest's Invocation.
-Since the Barbarian took it in runs (2026-10-31), Hew is Wade In
-(`wadeIn`, `ABILITY.wadeIn`), and the Barbarian and the Cataphract are
+Since the Barbarian took it in runs (2026-10-31), Hew is Lunge
+(`lunge`, `ABILITY.lunge`), and the Barbarian and the Cataphract are
 built as the swap; the four `byzantium-*.mjs` files reproduce only at
 their revision.
 

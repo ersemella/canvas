@@ -46,7 +46,7 @@ export const ABILITY_EFFECT: Partial<
   haul: drawHaul,
   cleave: drawCleave,
   reave: drawReave,
-  wadeIn: drawCleave,
+  lunge: drawCleave,
   axeThrow: drawAxeThrow,
   swiftStrike: drawSwiftStrike,
   elixir: drawElixir,

@@ -47,7 +47,7 @@ const LORE: Partial<Record<HeroId, string>> = {
   archer:
     'A foot archer of the royal army, whose heavy arrows punch through armour. The Ranger hits harder than anyone, and the first unit in its line staggers, losing time, but it is frail and must be kept out of reach.',
   varangian:
-    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow and hard to fell: it wades in on the first foe up to two spaces away in a straight line and brings its great axe down, and every blow it takes only quickens its fury.',
+    'A guardsman from the far north, sworn to the emperor and paid in gold. The Barbarian is slow and hard to fell: it lunges at the first foe up to two spaces away in a straight line and brings its great axe down, and every blow it takes only quickens its fury.',
   priest:
     'A priest of the imperial city, who walks with the army to tend the wounded. The Priest is slow to pray, but his prayers are answered: he calls on heaven over a patch of ground, and when his prayer is done, it mends every friend there, himself too, and smites every foe who has not got out of the way.',
   cataphract:

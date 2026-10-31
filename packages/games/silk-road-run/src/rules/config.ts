@@ -21,13 +21,14 @@ export const RULES = {
   actionBase: 12,
   speedPivot: 5,
   /**
-   * Wait (timeline.md, 3.2; proposed 2026-10-30): a turn that does nothing,
-   * a Hold without a walk or a turn skipped with only Hold to choose (not
-   * a Stunned one, nor Temee's), sends the card this share of its action
-   * cost on, rounded, at least 1: at 2/3, 5, 6 and 7 slots for speeds 3, 2
-   * and 1 in place of 8, 9 and 10. 1 turns it off.
+   * Wait (timeline.md, 3.2; in runs since 2026-10-31, the owner's call,
+   * proposed 2026-10-30): a turn that does nothing, a Hold without a walk
+   * or a turn skipped with only Hold to choose (not a Stunned one, nor
+   * Temee's), sends the card this share of its action cost on, rounded, at
+   * least 1: 5, 6 and 7 slots for speeds 3, 2 and 1 in place of 8, 9 and
+   * 10. 1 turns it off.
    */
-  waitShare: 1 as number,
+  waitShare: (2 / 3) as number,
   /** Patient's saving (19.8): an idle turn's card goes this many slots fewer on, after Wait. */
   patientSlots: 2 as number,
   /** Temee's starting slot (3.4), after every other unit's starting card. */
@@ -268,8 +269,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Ranger (owner, 2026-10-27; roster.md): a Persian foot archer, a
    * candidate for Persia's damage hero beside the Cataphract. Speed 2,
    * defence 1 (health 4) and power 3, the most of any hero, are the
-   * owner's. Longshot hits the first unit in line, Piercing
-   * (`ABILITY.longshot`).
+   * owner's. Longshot hits the first unit in line (`ABILITY.longshot`),
+   * Piercing until 2026-10-31 (owner).
    */
   archer: {
     name: 'Ranger',
@@ -283,8 +284,8 @@ export const HEROES: Record<HeroId, HeroStats> = {
    * The Barbarian (owner, 2026-10-28; roster.md): Byzantium's tank since
    * 2026-10-31 (owner; its damage hero before, the Cataphract its tank), a
    * Varangian guardsman with a great axe. Speed 1, defence 3 (health 8),
-   * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before), Wade
-   * In (`ABILITY.wadeIn`; Hew on the test stage) and Fury (`FURY`, Haste 5)
+   * power 2 (owner, 2026-10-31; speed 1, defence 2, power 3 before),
+   * Lunge (`ABILITY.lunge`; Hew on the test stage, then Wade In) and Fury (`FURY`, Haste 5)
    * as measured in balance.md, "Hew as a line, with Fury". Before that: Leap (owner,
    * 2026-10-30): over anything to a free space 2 away off his straight
    * lines, hitting the two spaces in front of where he lands. In place of
@@ -301,7 +302,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 1,
     defence: 3,
     power: 2,
-    abilities: ['wadeIn', 'hold'],
+    abilities: ['lunge', 'hold'],
     passives: ['fury'],
   },
   /**
@@ -558,7 +559,8 @@ export const ABILITY = {
   /**
    * Longshot (owner, 2026-10-27; roster.md), the Ranger's: down any of
    * its six lines, at any range, the first unit in line hit, stopped by
-   * yurts as Snap Shot (`first`), and Piercing (`pierce`); Pushed 1
+   * yurts as Snap Shot (`first`); Piercing (`pierce`) until 2026-10-31,
+   * when the owner took it off, so Armour now stands against it; Pushed 1
    * (`push`) from 2026-10-28 until later that day (owner: balance.md,
    * "Longshot's Push, flying over the spaces next to the Ranger", 55.2%
    * in the Steppe's damage seat with it, 49.6% without); Delayed 3, `delay`, from later
@@ -585,7 +587,7 @@ export const ABILITY = {
     camel: true as boolean,
     falloff: Infinity as number,
     first: true as boolean,
-    pierce: true as boolean,
+    pierce: false as boolean,
     push: 0 as number,
     delay: 0 as number,
     weaken: 0 as number,
@@ -630,18 +632,19 @@ export const ABILITY = {
   /**
    * Invocation (owner, 2026-10-31), the Priest's in place of Blessing: a
    * space within `range` (no line of fire) and every space within `radius`
-   * of it. Charged: it does nothing as he casts it, his card going as many
-   * slots on as a Hold would send it (`waitCost`), greyed while it charges;
+   * of it. Charged: it does nothing as he casts it, his card going
+   * `charge` of his action cost on, rounded (6 slots at speed 1; owner,
+   * 2026-10-31, as measured even, balance.md, "Invocation's charge"; a
+   * Hold's cost, 10, before), greyed while it charges;
    * when it comes back, every enemy in the area then takes his power and
    * every ally there, himself and the camel too, is healed his power (an
    * Empower he cast it with adding to the hit and the heal alike)
    * (`landShots`), and his card goes his action cost on, a full turn. A
    * Stun before it lands loses it, as a drawn arrow.
-   * `charge`, a switch for measuring: null as built (a Hold's cost, so a
-   * Wait's when Wait is on); a share of his action cost, rounded, at least
-   * 1, in its place (balance.md, "Invocation's charge").
+   * `charge` null charges a Hold's cost instead (a Wait's when Wait is
+   * on), as first built.
    */
-  invocation: {range: 3 as number, radius: 1 as number, charge: null as number | null},
+  invocation: {range: 3 as number, radius: 1 as number, charge: 0.6 as number | null},
   blessing: {
     mode: 'heal' as 'heal' | 'track',
     scale: 'bands' as 'cap' | 'bands',
@@ -944,7 +947,7 @@ export const ABILITY = {
    */
   reave: {throwRange: 3 as number},
   /**
-   * Wade In (owner, 2026-10-31; Hew on the test stage, renamed when the
+   * Lunge (owner, 2026-10-31; Hew on the test stage, Wade In when the
    * Barbarian took it in runs the same day), his: `shape` `line` as built,
    * below. First a funnel, the two spaces next to him either side of one way
    * and the space past them that touches both, every unit there hit for his
@@ -957,7 +960,7 @@ export const ABILITY = {
    * or enemy, hit for his power; one further than next to him, he steps
    * in until next to it first, as a lunge (stopped by hail).
    */
-  wadeIn: {
+  lunge: {
     shape: 'line' as 'funnel' | 'line',
     reach: 2 as number,
     shieldPerHit: 0 as number,
@@ -1109,9 +1112,12 @@ export const AI = {
    * search's leaf (`evaluatePosition`) counts for how soon each card comes
    * back, × the share of a turn it is from its next turn × its turn's
    * worth (`trackPoints` in ai.ts), and the actor's own card in its
-   * screening. 0 as built: the leaf has no track.
+   * screening. 0.25 since 2026-10-31, with Wait in runs and `reachShare`
+   * at the same weight, so a third of a turn saved and a hit set up are
+   * priced alike (balance.md, "Walks priced by the hit they set up"); at
+   * 1 without reach the AI Waited in place of walking.
    */
-  leafTrack: 0 as number,
+  leafTrack: 0.25 as number,
   /**
    * A switch for measuring (2026-10-30; balance.md, "Spearhead"): a unit
    * standing next to an ally with Spearhead is worth this × the Haste it
@@ -1125,9 +1131,11 @@ export const AI = {
    * hit they set up"): what the search's leaf counts for each unit's best
    * hit from where it stands (`reachPoints` in ai.ts), its side's for it
    * and the other's against, × this share; and screening counts the
-   * actor's own. 0 as built: a walk is worth only `perHexFromEnemy`.
+   * actor's own. 0.25 since 2026-10-31 (1.5 to 11 points stronger in the
+   * mirrors, the browser's search about 6% shallower); 0, a walk is worth
+   * only `perHexFromEnemy`.
    */
-  reachShare: 0 as number,
+  reachShare: 0.25 as number,
   /**
    * A switch for measuring (2026-10-31; balance.md, "A horizon of
    * slots"): a line of the search ends once the track is this many slots
@@ -1137,13 +1145,22 @@ export const AI = {
    */
   horizonSlots: 0 as number,
   /**
-   * A switch for measuring (2026-10-31; balance.md, "A Wait always
+   * A Wait always searched (2026-10-31; balance.md, "A Wait always
    * searched"): a Hold in place that brings the card back sooner than its
    * action cost (a Wait) joins the options a decision searches on, played
-   * if it wasn't tried: the root's at 1, every decision's at 2. 0 as
-   * built: a Hold is searched only if it screens among the best.
+   * if it wasn't tried: the root's at 1, every decision's at 2. 1 since
+   * 2026-10-31 (the owner's call; measured no gain or loss at either, the
+   * root's the cheaper); 0, a Hold is searched only if it screens among
+   * the best.
    */
-  keepWait: 0 as number,
+  keepWait: 1 as number,
+  /**
+   * Root options whose searched values are within this of the best are
+   * near-ties, settled by what each does at once (2026-10-31; balance.md,
+   * "Walks priced by the hit they set up"): with reach counted, stepping in
+   * to hit next turn could score a hair over hitting now.
+   */
+  tieMargin: 0.05 as number,
   /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
