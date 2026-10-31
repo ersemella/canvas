@@ -748,6 +748,12 @@ export const ABILITY = {
    * Empower or Weaken; `poison`, any unit healed the Alchemist's power, then
    * losing 1 every `poisonEvery` slots until its power + `poisonExtra` is
    * lost (`Unit.poison`), no Empower, Weaken or hit.
+   * `overdose` (owner's idea, 2026-10-31; 0 as built): above 0, the unit
+   * given it, ally or enemy, is Empowered (one that hits) up to that
+   * damage, its power + Empower `overdose` (at least 1), for
+   * `RULES.durations.turn` slots, and takes the Alchemist's power (as
+   * hail's damage: a Shield takes it, Armour not; it can fell the unit).
+   * No heal, hit or Weaken.
    */
   elixir: {
     range: 2 as number,
@@ -764,6 +770,7 @@ export const ABILITY = {
     mode: 'built' as 'built' | 'alternate' | 'poison',
     poisonEvery: 6 as number,
     poisonExtra: 1 as number,
+    overdose: 0 as number,
   },
   /**
    * Swift Strike (owner, 2026-10-26; Ten Paces until renamed the same day),

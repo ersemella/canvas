@@ -3640,6 +3640,31 @@ describe('the Vanguard and the Alchemist', () => {
     });
   });
 
+  it('Elixir as an overdose (`overdose` 6): ally or enemy Empowered until its hits deal 6, and takes the power', () => {
+    withElixir({overdose: 6}, 1, () => {
+      const from = at(4, 4);
+      const ally = hexNeighbor(from, 0);
+      const enemy = hexNeighbor(from, 3);
+      const s = setup({'p-alchemist': from, 'p-mangudai': ally, 'e-modao': enemy}, party);
+      s.units.forEach((u) => (u.controller = 'human'));
+      const alchemist = unit(s, 'p-alchemist');
+      const a = unit(s, 'p-mangudai');
+      const e = unit(s, 'e-modao');
+      alchemist.slot = 1;
+      a.slot = 100;
+      e.slot = 100;
+      expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: ally}}});
+      expect(a.empower).toBe(4);
+      expect(a.hp).toBe(a.maxHp - 1);
+      alchemist.slot = s.currentSlot + 1;
+      expect(advanceToDecision(s)!.id).toBe('p-alchemist');
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: enemy}}});
+      expect(e.empower).toBe(4);
+      expect(e.hp).toBe(e.maxHp - 1);
+    });
+  });
+
   /** The burst (2026-10-26, built until later that day). */
   const burst = {
     range: 1,
