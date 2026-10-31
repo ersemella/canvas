@@ -283,8 +283,12 @@ describe('the track', () => {
     expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
     expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
     // At most two abilities besides Hold (owner, 2026-10-25): each hero
-    // takes one of its upgrades.
-    for (const h of ROSTER) expect(hasRoomForAbility(HEROES[h].abilities)).toBe(true);
+    // takes one of its upgrades; the Alchemist, with none, starts with two
+    // (the overdose and Sedative, owner, 2026-10-31).
+    for (const h of ROSTER)
+      expect(hasRoomForAbility(HEROES[h].abilities)).toBe(h !== 'alchemist');
+    expect(HEROES.alchemist.abilities).toEqual(['elixir', 'sedative', 'hold']);
+    expect(HEROES.alchemist.upgrades).toBeUndefined();
     expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(false);
     expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish'])).toBe(false);
     expect(hasRoomForAbility([...HEROES.storm.abilities, 'sunlight'])).toBe(false);

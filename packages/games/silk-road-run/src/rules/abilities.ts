@@ -1031,8 +1031,8 @@ const sedativeTakes = (u: Unit | undefined): u is Unit =>
   u !== undefined && u.alive && (u.hp < u.maxHp || sedation(u) > (u.weaken ?? 0));
 
 /**
- * Sedative (owner's idea, 2026-10-31; `ABILITY.sedative`, in no kit as
- * built): a unit within 3, the Alchemist too, ally or enemy, no line of
+ * Sedative (owner, 2026-10-31; `ABILITY.sedative`, the Alchemist's
+ * second ability): a unit within 3, the Alchemist too, ally or enemy, no line of
  * fire, healed the Alchemist's power and Weakened so its hits deal nothing
  * for `RULES.durations.turn` slots.
  */

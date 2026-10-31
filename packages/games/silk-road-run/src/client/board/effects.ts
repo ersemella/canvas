@@ -50,6 +50,8 @@ export const ABILITY_EFFECT: Partial<
   axeThrow: drawAxeThrow,
   swiftStrike: drawSwiftStrike,
   elixir: drawElixir,
+  // The same flask, for the Sedative.
+  sedative: drawElixir,
   omen: drawOmen,
   blessing: drawBlessing,
   stomp: drawStomp,

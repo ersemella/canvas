@@ -5619,7 +5619,8 @@ reproducing its 44.5% exactly). Unfinished fights at most 0.5%.
   37–52%): the Sedative gives him something to do on the turns the
   overdose had no hit to set up. He lives about as often (42–86%).
 
-Not built.
+**Built (owner, 2026-10-31): Sedative the Alchemist's second ability**,
+in runs and on the test stage, at 47.4% as measured.
 
 ### The Barbarian and the Cataphract swapped (2026-10-31)
 
