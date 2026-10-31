@@ -322,3 +322,41 @@ describe('allies seeking Spearhead (AI.spearheadShare)', () => {
     expect(next).toBeGreaterThan(0);
   });
 });
+
+describe('the leaf counting reach (AI.reachShare)', () => {
+  const ai = AI as {reachShare: number};
+  /** The player's side's leaf with the term at `share`, less without it. */
+  const reach = (s: FightState, share = 1) => {
+    const saved = ai.reachShare;
+    const off = evaluatePosition(s, 'player');
+    ai.reachShare = share;
+    try {
+      return evaluatePosition(s, 'player') - off;
+    } finally {
+      ai.reachShare = saved;
+    }
+  };
+  const open = (placements: Record<string, Hex>) => {
+    const s = setup(placements);
+    s.tiles = Object.fromEntries(Object.keys(STEPPE.tiles).map((k) => [k, 'sand']));
+    return s;
+  };
+
+  it('counts the best hit each side could make from where it stands, for its side', () => {
+    // The Outrider has a clear lane on the Grappler, which can't reach it.
+    const s = open({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
+    expect(reach(s)).toBe(HEROES.mangudai.power);
+    expect(reach(s, 0.5)).toBe(HEROES.mangudai.power / 2);
+    // Side by side, each reaches the other.
+    const close = open({'p-mangudai': hex(0, 0), 'e-bokh': hex(1, 0)});
+    expect(reach(close)).toBe(HEROES.mangudai.power - HEROES.bokh.power);
+  });
+
+  it('no more than the target’s health, and a lane blocked by an ally counts nothing', () => {
+    const s = open({'p-mangudai': hex(0, 0), 'e-bokh': hex(3, 0)});
+    unit(s, 'e-bokh').hp = 1;
+    expect(reach(s)).toBe(1);
+    const blocked = open({'p-mangudai': hex(0, 0), 'p-bokh': hex(1, 0), 'e-bokh': hex(3, 0)});
+    expect(reach(blocked)).toBe(0);
+  });
+});

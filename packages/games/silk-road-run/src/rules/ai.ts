@@ -59,7 +59,7 @@ import {
   unusableReason,
 } from './abilities';
 import {allowedTargets} from './choices';
-import {threatDamage, threatsTo} from './threat';
+import {threatDamage, threatOn, threatsTo} from './threat';
 import type {Threat} from './threat';
 import {RuleError, advanceToDecision, applyTurn, charging, cloneFight, mapOf} from './fight';
 import {actionCost as cardCost, aimSlot, chargeOf} from './track';
@@ -471,6 +471,8 @@ export function scoreOutcome(
   }
   score -= quarryGap(after, me, huntsTemee(before, actor)) * AI.perHexFromEnemy;
   score += spearheadPoints(after, me);
+  // `AI.reachShare`: the hit the turn leaves it able to make next, as the leaf counts it.
+  if (AI.reachShare && me.alive) score += reachOf(after, me) * AI.reachShare;
   return score;
 }
 
@@ -509,6 +511,58 @@ function trackPoints(state: FightState, side: Side): number {
     if (!u.alive || u.slot === null || charging(state, u)) continue;
     const owed = ((u.slot - state.currentSlot) / cardCost(u)) * turnValue(u) * AI.leafTrack;
     score += u.side === side ? -owed : owed;
+  }
+  return score;
+}
+
+/**
+ * The best hit `u` could make on its next turn from where it stands, in
+ * the units `scoreOutcome` uses (a hit on Temee at `AI.camelHealthWeight`,
+ * no more than its target's health): `threatsTo`'s map of what `u` reaches,
+ * with every other unit standing where it is. 0 for a unit off the board,
+ * off the track or with no power.
+ */
+function reachOf(state: FightState, u: Unit, threats?: Threat[]): number {
+  if (!u.alive || !u.hex || u.slot === null) return 0;
+  // A stand-in for the other side, on no space, so every unit blocks lanes.
+  threats ??= threatsTo(state, mapOf(state), {
+    ...u,
+    side: u.side === 'player' ? 'enemy' : 'player',
+  });
+  const mine = threats.find((t) => t.enemyId === u.id);
+  if (!mine) return 0;
+  let best = 0;
+  for (const v of state.units) {
+    if (!v.alive || !v.hex || !hostile(v, u)) continue;
+    const hit = threatOn(mine, v.hex);
+    if (hit <= 0) continue;
+    best = Math.max(best, Math.min(hit, v.hp) * (v.hero === CAMEL ? AI.camelHealthWeight : 1));
+  }
+  return best;
+}
+
+/**
+ * `AI.reachShare` (2026-10-31; balance.md, "Walks priced by the hit they
+ * set up"): what each unit could hit next from where it stands
+ * (`reachOf`), its side's for `side`, the other's against, × the share.
+ * So a walk is worth the hit it sets up, past the turns the search plays,
+ * and standing in an enemy's reach costs what it could take; without it a
+ * walk is only `AI.perHexFromEnemy` a space closed.
+ */
+function reachPoints(state: FightState, side: Side): number {
+  if (!AI.reachShare) return 0;
+  const map = mapOf(state);
+  // One threat map per side: what the player's units reach, then the enemy's.
+  const of = (s: Side): Threat[] => {
+    const stand = state.units.find((u) => u.side !== s);
+    return stand ? threatsTo(state, map, {...stand, hex: null}) : [];
+  };
+  const reaches = {player: of('player'), enemy: of('enemy')};
+  let score = 0;
+  for (const u of state.units) {
+    if (u.hero === CAMEL) continue;
+    const reach = reachOf(state, u, reaches[u.side]);
+    score += (u.side === side ? 1 : -1) * reach * AI.reachShare;
   }
   return score;
 }
@@ -1083,7 +1137,11 @@ export function evaluatePosition(state: FightState, side: Side): number {
   const own = state.units.some((u) => u.alive && u.side === side);
   const other = state.units.some((u) => u.alive && u.side !== side);
   if (!own || !other) return own ? AI.victory : other ? -AI.victory : 0;
-  let score = camelProgress(state, side) + shotPoints(state, side) + trackPoints(state, side);
+  let score =
+    camelProgress(state, side) +
+    shotPoints(state, side) +
+    trackPoints(state, side) +
+    reachPoints(state, side);
   for (const u of state.units) {
     if (!u.alive) continue;
     // The camel's death ends the fight, so it has no kill value: its health is weighed instead.

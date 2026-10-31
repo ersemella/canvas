@@ -1075,6 +1075,14 @@ export const AI = {
    */
   spearheadShare: 0 as number,
   /**
+   * A switch for measuring (2026-10-31; balance.md, "Walks priced by the
+   * hit they set up"): what the search's leaf counts for each unit's best
+   * hit from where it stands (`reachPoints` in ai.ts), its side's for it
+   * and the other's against, × this share; and screening counts the
+   * actor's own. 0 as built: a walk is worth only `perHexFromEnemy`.
+   */
+  reachShare: 0 as number,
+  /**
    * The AI's one step of lookahead (threat.ts): minus this × the damage the
    * enemies acting before its next turn could deal the unit where it ends
    * × the share of its health that is, and this share of `kill` if it

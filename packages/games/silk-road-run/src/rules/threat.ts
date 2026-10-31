@@ -13,6 +13,7 @@ import {dashOf, elixirLineRange, leapShapeOf, lungeOf, passesThrough} from './ab
 import {blocks, tileAt} from './map';
 import {hasPassive} from './passives';
 import type {MapData} from './map';
+import type {Hex} from '@canvas/engine/server';
 import type {AbilityId, FightState, Unit} from './types';
 
 export interface Threat {
@@ -41,6 +42,11 @@ function boardOf(map: MapData): Map<number, string> {
     boards.set(map, b);
   }
   return b;
+}
+
+/** The most `threat`'s hit could deal on `h`. */
+export function threatOn(threat: Threat, h: Hex): number {
+  return threat.hexes.get(id(h.q, h.r)) ?? 0;
 }
 
 function mark(hexes: Map<number, number>, key: number, d: number): void {
