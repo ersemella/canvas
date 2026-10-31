@@ -80,6 +80,7 @@ export {
   alignmentPool,
   alignmentSelfSlot,
   alignmentUnits,
+  eclipseCaught,
   unusableReason,
 } from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
@@ -102,6 +103,7 @@ export {PASSIVES, passivesOf} from './rules/passives';
 export type {PassiveDef, PassiveGroup} from './rules/passives';
 export {
   exitSealed,
+  hostile,
   isImmobilized,
   isStunned,
   movementCap,

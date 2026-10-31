@@ -588,6 +588,7 @@ export function TacticsPage() {
         }
         keys={!phone}
         needsTarget={needsTarget}
+        choice={plan.choice}
         confirm={input ? (nextTurn(fight, preview) ?? {text: '', blocked: true}) : null}
         onMove={toggleMove}
         onAbility={chooseAbility}

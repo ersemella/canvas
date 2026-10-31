@@ -9,7 +9,18 @@
  * caravanserai drafts them with the stat provisions (19.3): the party's
  * picks, and the rival's for the enemy (`fitRank`).
  */
-import {ARMOURED, BATTLE_CRY, BLOODLUST, DEVOTED, FURY, HEROES, ONE_EYE, RULES, SPEARHEAD, UPGRADE} from './config';
+import {
+  ARMOURED,
+  BATTLE_CRY,
+  BLOODLUST,
+  DEVOTED,
+  FURY,
+  HEROES,
+  ONE_EYE,
+  RULES,
+  SPEARHEAD,
+  UPGRADE,
+} from './config';
 import type {Rarity} from './config';
 import type {AbilityId, HeroId, PassiveId, Unit} from './types';
 

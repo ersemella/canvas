@@ -53,6 +53,7 @@ export const ABILITY_EFFECT: Partial<
   sedative: drawSedative,
   omen: drawOmen,
   alignment: drawOmen,
+  eclipse: drawOmen,
   blessing: drawBlessing,
   stomp: drawStomp,
   bite: drawBite,

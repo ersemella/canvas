@@ -1015,6 +1015,15 @@ export const ABILITY = {
    * (balance.md, "Alignment as swaps only"), so off (owner, later
    * 2026-10-31): the line's cards and Humphrey's only.
    */
+  /**
+   * Eclipse (owner, 2026-10-31; the test stage's Magus's after Alignment,
+   * no hero's in runs; the name a placeholder): a space within `range` and
+   * the spaces next to it (`radius`), every unit there, of either side,
+   * Humphrey too, not Inevitable, Hastened `slots`, or every one Delayed
+   * `slots`, his choice each cast. 6, measured even (51.3% as a score;
+   * 3 27.3%, 5 43%, 7 58.3%; balance.md, "Eclipse").
+   */
+  eclipse: {range: 3 as number, radius: 1 as number, slots: 6 as number},
   alignment: {
     swaps: true as boolean,
     self: false as boolean,

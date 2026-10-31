@@ -2119,7 +2119,7 @@ describe('the Barbarian', () => {
     expect([hp(s, 'e-modao'), hp(s, 'e-mangudai'), b.shield]).toEqual([2, 0, undefined]);
   });
 
-  it('with a Push (`Unit.lungePush`, the test stage\'s) Lunge Pushes the unit struck away from him', () => {
+  it("with a Push (`Unit.lungePush`, the test stage's) Lunge Pushes the unit struck away from him", () => {
     const {s, b} = lunging({'e-modao': along(c, 0, 2), 'e-storm': along(c, 3, 1)});
     expect(ABILITY.lunge.push).toBe(0);
     b.lungePush = 1;
@@ -2131,12 +2131,14 @@ describe('the Barbarian', () => {
     expect(hp(s, 'e-modao')).toBe(2);
   });
 
-  it('with Bloodlust (the test stage\'s) is Empowered 1 for 10 slots when his hit damages an enemy, not an ally', () => {
+  it("with Bloodlust (the test stage's) is Empowered 1 for 10 slots when his hit damages an enemy, not an ally", () => {
     const {s, b} = lunging({'e-modao': hexNeighbor(c, 0), 'p-modao': hexNeighbor(c, 3)});
     b.passives = ['fury', 'bloodlust'];
     expect(BLOODLUST).toEqual({empower: 1, slots: 10, stacks: false, max: 3});
     const ally = cloneFight(s);
-    applyTurn(ally, unit(ally, b.id), {action: {ability: 'lunge', target: {hex: hexNeighbor(c, 3)}}});
+    applyTurn(ally, unit(ally, b.id), {
+      action: {ability: 'lunge', target: {hex: hexNeighbor(c, 3)}},
+    });
     expect(unit(ally, b.id).empower).toBeUndefined();
     const slot = s.currentSlot;
     applyTurn(s, b, {action: {ability: 'lunge', target: {hex: hexNeighbor(c, 0)}}});
@@ -2155,7 +2157,7 @@ describe('the Barbarian', () => {
     }
   });
 
-  it('with Battle Cry (the test stage\'s) is Hastened 3 when hit, and each ally within 2', () => {
+  it("with Battle Cry (the test stage's) is Hastened 3 when hit, and each ally within 2", () => {
     const {s, b} = lunging({
       'e-modao': hexNeighbor(c, 0),
       'p-modao': along(c, 3, 2),
@@ -2582,6 +2584,58 @@ describe('the Magus', () => {
         expect([unit(c1, 'e-mangudai').slot, unit(c1, 'p-camel').slot]).toEqual([12, 2]);
         expect(unit(c1, 'p-magus').slot).toBe(actionCost(m));
       });
+    });
+  });
+
+  describe("Eclipse (the test stage's, after Alignment)", () => {
+    const eclipseSetup = () => {
+      // Two enemies side by side 3 away, an ally next to them, one far off.
+      const t = hexNeighbor(hexNeighbor(hexNeighbor(c, 0), 0), 0);
+      const s = setup(
+        {
+          'p-magus': c,
+          'e-mangudai': t,
+          'e-bokh': hexNeighbor(t, 1),
+          'p-bokh': hexNeighbor(t, 3),
+          'p-mangudai': hexNeighbor(c, 3),
+        },
+        party
+      );
+      const m = unit(s, 'p-magus');
+      m.loadout = {...m.loadout, abilities: ['eclipse', 'hold']};
+      m.slot = s.currentSlot;
+      unit(s, 'e-mangudai').slot = 2;
+      unit(s, 'e-bokh').slot = 4;
+      unit(s, 'p-bokh').slot = 9;
+      unit(s, 'p-mangudai').slot = 6;
+      return {s, m, t};
+    };
+    const n = () => ABILITY.eclipse.slots;
+
+    it('Delays every unit on a space within 3 and next to it, of either side', () => {
+      const {s, m, t} = eclipseSetup();
+      applyTurn(s, m, {action: {ability: 'eclipse', target: {hex: t, mode: 'delay'}}});
+      expect(
+        ['e-mangudai', 'e-bokh', 'p-bokh', 'p-mangudai'].map((id) => unit(s, id).slot)
+      ).toEqual([2 + n(), 4 + n(), 9 + n(), 6]);
+    });
+
+    it('or Hastens every one, never before the next slot', () => {
+      const {s, m, t} = eclipseSetup();
+      applyTurn(s, m, {action: {ability: 'eclipse', target: {hex: t, mode: 'haste'}}});
+      expect(unit(s, 'p-bokh').slot).toBe(9 - n());
+      expect(unit(s, 'e-mangudai').slot).toBeLessThanOrEqual(2);
+      expect(unit(s, 'e-mangudai').slot).toBeGreaterThanOrEqual(1);
+    });
+
+    it('reaches only spaces within 3 with a unit by them, and needs a choice', () => {
+      const {s, m, t} = eclipseSetup();
+      const targets = ABILITIES.eclipse.targets(s, mapOf(s), m, c);
+      expect(targets.every((x) => hexDistance(x.hex!, c) <= 3)).toBe(true);
+      expect(targets).toContainEqual({hex: t, mode: 'haste'});
+      expect(tryTurn(s, 'p-magus', {action: {ability: 'eclipse', target: {hex: t}}})).toThrow(
+        RuleError
+      );
     });
   });
 

@@ -1,4 +1,4 @@
-import {Button, Stack} from '@mantine/core';
+import {Button, SegmentedControl, Stack} from '@mantine/core';
 import {hexToPixel} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
@@ -102,6 +102,15 @@ export function TurnControls(props: {
   portraitOpen?: boolean;
   /** Desktop: each choice shows its number key. */
   keys?: boolean;
+  /**
+   * A choice the aimed ability still offers (Eclipse: Delay or Haste),
+   * beside Skip turn so the section keeps its height.
+   */
+  choice?: {
+    value: string;
+    options: {value: string; label: string}[];
+    onChange: (value: string) => void;
+  } | null;
   children?: React.ReactNode;
 }) {
   const {unit, ability, plannedMove, moving, confirm} = props;
@@ -214,6 +223,19 @@ export function TurnControls(props: {
       <div className={styles.confirmRow}>
         {props.onPortrait && (
           <UnitPortrait unit={unit} open={Boolean(props.portraitOpen)} onTap={props.onPortrait} />
+        )}
+        {props.choice && (
+          <SegmentedControl
+            data-testid="ability-choice"
+            value={props.choice.value}
+            data={props.choice.options}
+            onChange={(value) => {
+              props.choice!.onChange(value);
+              // Its radio gives up focus, so Enter, Esc and the number keys still work.
+              (document.activeElement as HTMLElement | null)?.blur();
+            }}
+            disabled={props.waiting}
+          />
         )}
         {props.children}
         {props.menu}

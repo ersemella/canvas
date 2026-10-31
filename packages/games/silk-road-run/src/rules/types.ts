@@ -64,6 +64,8 @@ export type AbilityId =
   | 'lunge'
   // The test stage's Magus's in place of Omen (owner, 2026-10-31).
   | 'alignment'
+  // The test stage's Magus's after Alignment (owner, 2026-10-31).
+  | 'eclipse'
   | 'axeThrow'
   // The Barbarian's since 2026-10-30, in place of Axe Throw.
   | 'leap'
@@ -587,6 +589,8 @@ export interface ActionTarget {
    * on the line not listed keep theirs.
    */
   cards?: CardPlacement[];
+  /** Eclipse's choice (owner, 2026-10-31): every unit it reaches Hastened, or every one Delayed. */
+  mode?: 'haste' | 'delay';
 }
 
 /** One card Alignment places: the unit on `hex`, its card on `slot`. */
