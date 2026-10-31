@@ -1243,7 +1243,7 @@ the menu) and the canvas's overlay are drawn as the pixel art is, so the
 game reads as one thing. Layout, labels and states are unchanged.
 
 - **One palette** (`src/client/palette.ts`, `PALETTE`), 27 colours in
-  ramps: dusk (the night panels and the track: warm walnut and umber since 2026-10-31, was cool violet-grey), sand (the board), lapis
+  ramps: dusk (the night panels and the track), sand (the board), lapis
   (everything yours: deep for your units' rugs and cards, light for your
   actions, i.e. targeting, the path, Confirm, and your names; blue is the sand's opposite, so it reads on the board, and the
   light shade still shows over your own deep hexes), madder (everything
