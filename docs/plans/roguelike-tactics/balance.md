@@ -6856,6 +6856,101 @@ runs reaching each stage:
 - Even across the role seats, then, but a step weaker where every run
   starts. Untried: Delay 7 (58.3% in fights), or more range or radius.
 
+### A second full check, the game as built (2026-11-01)
+
+Asked for: another balance check, after "Full balance check, the game as
+built" above. Built since: the Barbarian's Battle Cry (Haste 5 for him and
+allies within 2) in place of Fury, the Magus's Eclipse at 6 in place of
+Omen, and the Cataphract with neither brace nor slam.
+`experiments/full-check.mjs` unchanged (no patch), the same seeds and 400
+fights a row, on `f639667`. Every row with no Persian or Byzantine hero
+in it came out exactly as before (China against the Steppe 25.8% again),
+so the differences below are those three changes. Unfinished 0–0.8%.
+
+Party against party (the second side's wins; the last check in brackets):
+
+| | Steppe | China | Persia |
+|---|---:|---:|---:|
+| China | 25.8% (25.8) | | |
+| Persia | **51.5%** (60.8) | **54.8%** (71.3) | |
+| Byzantium | 30.8% (32.5) | 38.8% (39) | **64.3%** (60.9) |
+
+Each region's mean against the other three: **the Steppe 64.0%** (60.3),
+Persia 47.3% (57.1), Byzantium 44.6% (44.1), China 44.1% (38.5).
+
+Each hero in its role's seat of the other regions' mirrors, as before:
+
+| Tank seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score (before) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Grappler | | 50.1% | 52.8% | 67.8% | 56.9% | 47.5% | 52.2% (54.8) |
+| Vanguard | 45.3% | | 49.4% | 61.8% | 52.2% | 43% | 47.6% (52.2) |
+| Juggernaut | 65% | 52.3% | | 55% | 57.4% | 48% | 52.7% (54.2) |
+| **Barbarian** | 47.3% | 68.5% | 53.9% | | 56.6% | 38.5% | **47.5%** (38.8) |
+
+| Damage seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score (before) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Outrider | | 56.6% | 51.6% | 41.5% | 49.9% | 50.2% | 50% (47.2) |
+| Duelist | 46.8% | | 53% | 52.8% | 50.9% | 49% | 50% (47) |
+| Ranger | 55.4% | 47% | | 42.3% | 48.2% | 44.5% | 46.3% (47.5) |
+| **Cataphract** | 47.3% | 49.3% | 62% | | 52.9% | 54.5% | **53.7%** (58.2) |
+
+| Support seat of | Steppe | China | Persia | Byzantium | Others' | Kept | Score (before) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Storm Caller | | 62.8% | 40.3% | 46.8% | 50% | 60.9% | 55.4% (54.5) |
+| **Alchemist** | 35.3% | | 38.5% | 72% | 48.6% | 41% | **44.8%** (43.5) |
+| Magus (Eclipse) | **34.8%** | 62.3% | | 42.5% | 46.5% | 57.3% | 51.9% (52.3, Omen) |
+| Priest | 47.3% | 52% | 49.3% | | 49.5% | 46.2% | 47.9% (49.6) |
+
+Skill, as before (only the Persian and Byzantine rows changed):
+
+| Hero / party | Novice | Expert | Span (before) |
+|---|---:|---:|---:|
+| **Magus (Eclipse)** | 24.5% | 51.3% | **26.8** (28.5, Omen) |
+| Cataphract (Charge alone) | 43% | 54% | 11.0 (9.5) |
+| Barbarian (Battle Cry) | 47.5% | 54.5% | 7.0 (4.2) |
+| Juggernaut, Ranger, Priest | | | 11.3, 8.0, 7.2 (the same) |
+| **Persia's party** | **12.8%** | 52% | 39.2 (41.5) |
+| Byzantium's party | 26.8% | 49.5% | 22.7 (21) |
+| Steppe's, China's | | | 32.8, 29.2 (the same) |
+
+- **The Steppe is now the strong region** (64.0%), beating China 74.2%
+  and Byzantium 69.2%, and Persia about even (48.5%). Nothing on the
+  Steppe changed: the others came down, or not up to it.
+- **Persia fell about 10 points** (57.1% to 47.3%), 9.3 against the
+  Steppe and 16.5 against China: Eclipse in place of Omen. As a score the
+  Magus is still even (51.9%), but it is made of a strong kept seat
+  (57.3%, Eclipse on both sides of Persia's mirror) and weak seats
+  abroad, 34.8% beside the Steppe's heroes (46.7% with Omen) as "Eclipse
+  in runs" found. The party loses more than the hero's score shows.
+- **The Barbarian is no longer the weak tank**: 47.5% (38.8%), kept
+  38.5% (27.2%), 68.5% in China's seat; Battle Cry is worth about 9
+  points. Byzantium gains 3.4 against Persia, but loses 1.7 against the
+  Steppe and is about level against China: its mean barely moves (44.6%).
+- **The Cataphract is no longer the strong one**: 53.7% (58.2%), the
+  other damage heroes still under him in his own seat (Outrider 41.5%,
+  Ranger 42.3%; the Duelist 52.8%). Above "Neither"'s 50.9%, likely
+  Battle Cry beside him.
+- **China is level with Byzantium and Persia** (44.1%), but only because
+  Persia fell; it is still 25.8% against the Steppe. **The Alchemist is
+  still the weakest support** (44.8%): 35.3% and 38.5% beside the Steppe's
+  and Persia's heroes, 72% beside Byzantium's.
+- **Vanguard 47.6%** (52.2%): Battle Cry's Barbarian beats him in China's
+  seat now, and his seat in Byzantium's is less easy (61.8% from 72.5%).
+- **Every hero is within about 5 points but the Alchemist** (−5.2) and
+  the Ranger (−3.7): tanks 47.5–52.7%, damage 46.3–53.7%, supports
+  44.8–55.4%. A narrower spread than the last check (38.8–58.2%).
+- **Skill**: Persia's novices win 12.8%, the lowest of any party; the
+  Magus's novice 24.5%. The Barbarian's span rose to 7.0 (choosing who
+  stands within 2 when he's hit); the Outrider (4.0) is now alone at the
+  bottom.
+
+Not changed: the numbers are the owner's. Likeliest to help, in order:
+China's gap to the Steppe (25.8%, unchanged through
+three checks; the Alchemist the clearest single cause); the Magus beside
+the Steppe (Eclipse 7 measured at 58.3% overall, or more radius); the
+Ranger, 42.3% in Byzantium's damage seat and 44.5% kept. Whole runs not
+measured here.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

@@ -256,7 +256,7 @@ their revision.
 of Omen, a `patch`, both sides) beside Omen as built: the Magus in the
 support seat of the three other regions' mirrors, each other support in
 his seat of Persia's, and his skill as `skill-fights.mjs`.
-`full-check.mjs` (later 2026-10-31) a full check on the game as built, no patch: region against region, every role seat of `roles-twelve.mjs` (Byzantium's party ordered tank, damage, support since the swap) and every skill row of `skill-fights.mjs`. See balance.md, "Full balance check, the game as built".
+`full-check.mjs` (later 2026-10-31) a full check on the game as built, no patch: region against region, every role seat of `roles-twelve.mjs` (Byzantium's party ordered tank, damage, support since the swap) and every skill row of `skill-fights.mjs`. See balance.md, "Full balance check, the game as built"; rerun unchanged on `f639667` (2026-11-01, after Battle Cry, Eclipse and the bare Charge), "A second full check, the game as built".
 
 `eclipse.mjs` (2026-10-31) the Magus's Eclipse (a space within 3 and
 the spaces next to it, every unit there Delayed or every one Hastened) at
