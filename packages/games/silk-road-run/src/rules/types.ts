@@ -145,8 +145,6 @@ export type PassiveId =
   | 'empowering'
   | 'hastening'
   | 'sheltering'
-  // Healing
-  | 'invigorate'
   // Targeting
   | 'forked';
 

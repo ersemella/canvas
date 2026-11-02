@@ -575,7 +575,6 @@ export const UPGRADE = {
   empowering: {empower: 1},
   hastening: {haste: 2},
   sheltering: {shield: 1},
-  invigorate: {empower: 1},
 } as const;
 
 /**

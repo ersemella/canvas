@@ -15,7 +15,7 @@ const cards = [
   'steadyGait', 'secondWind', 'patient', 'momentum', 'rooted', 'unstoppable', 'lightStep',
   'lastStand', 'opportunist', 'glassCannon', 'plated', 'braced', 'flanker', 'loneWolf',
   'sureHand', 'forceful', 'concussive1', 'concussive2', 'concussive3', 'sundering',
-  'crippling', 'empowering', 'hastening', 'sheltering', 'invigorate', 'forked',
+  'crippling', 'empowering', 'hastening', 'sheltering', 'forked',
 ];
 export const experiments = {};
 for (const [region, party] of Object.entries(regions))

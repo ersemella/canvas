@@ -164,20 +164,19 @@ describe('generic upgrades: what its abilities reach (owner, 2026-11-02)', () =>
   });
 });
 
-describe('generic upgrades: healing', () => {
-  it('Invigorate on a Blessing: the ally Empowered 1', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 2), 'e-bokh': out(3, 3)});
-    give(s, 'p-bokh', 'invigorate');
-    act(s, 'p-bokh', 'blessing', {hex: out(0, 1)});
-    expect(unit(s, 'p-storm').empower).toBe(1);
-  });
-
-  it('an ally can’t be targeted by an attack: nothing heals one any more', () => {
+describe('targets (owner, 2026-11-02)', () => {
+  it('an attack aimed at a unit is offered allies too, and with Sure Hand spares them', () => {
     const s = setup({'p-mangudai': centre, 'p-storm': out(0, 3), 'e-bokh': out(3, 3)});
     const me = give(s, 'p-mangudai', 'sureHand', 'empowering');
     me.loadout = {abilities: ['snapShot', 'hold']};
     const offered = offeredTargets(s, STEPPE, me, ABILITIES.snapShot).map((t) => t.hex);
-    expect(offered).not.toContainEqual(out(0, 3));
+    expect(offered).toContainEqual(out(0, 3));
+    expect(offered).toContainEqual(out(3, 3));
+    const ally = unit(s, 'p-storm');
+    act(s, 'p-mangudai', 'snapShot', {hex: out(0, 3)});
+    // Unhurt, and Empowered by the shot.
+    expect(ally.hp).toBe(ally.maxHp);
+    expect(ally.empower).toBe(1);
   });
 });
 
@@ -237,11 +236,10 @@ describe('rarity (19.3b)', () => {
   });
 
   it('the rival drafts an upgrade only for a hero whose kit it works on', () => {
-    expect(fitsKit('priest', 'invigorate')).toBe(true);
-    expect(fitsKit('bokh', 'invigorate')).toBe(false);
+    expect(fitsKit('priest', 'empowering')).toBe(true);
     expect(fitsKit('bokh', 'empowering')).toBe(false);
     expect(fitsKit('mangudai', 'concussive2')).toBe(true);
-    expect(draftPick('bokh', ['invigorate', 'empowering', 'patient'])).toBe('patient');
-    expect(draftPick('priest', ['invigorate', 'patient'])).toBe('invigorate');
+    expect(draftPick('bokh', ['empowering', 'hastening', 'patient'])).toBe('patient');
+    expect(draftPick('priest', ['empowering', 'patient'])).toBe('empowering');
   });
 });

@@ -127,7 +127,8 @@ export function hit(
   empower = attacker.empower ?? 0,
   pierce = false
 ): void {
-  if (!target.alive || spares(ctx, attacker, target)) return;
+  if (!target.alive) return;
+  if (spares(ctx, attacker, target)) return reach(ctx, attacker, target);
   const bonus = passiveEmpower(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
   const full = attacker.power + empower + bonus;
   if (attacker.weaken && full > 0) log(ctx, `Weaken takes off ${Math.min(full, attacker.weaken)}.`);
@@ -151,7 +152,8 @@ export function hitFor(
   amount: number,
   pierce = false
 ): void {
-  if (!target.alive || amount <= 0 || spares(ctx, attacker, target)) return;
+  if (!target.alive || amount <= 0) return;
+  if (spares(ctx, attacker, target)) return reach(ctx, attacker, target);
   const pierces = pierce || (hasPassive(attacker, 'sundering') && hostile(attacker, target));
   land(ctx, attacker, target, what, amount, pierces);
   // An attack (19.9): an ability that damages an enemy, Armour or a Shield taking it or not.
@@ -159,7 +161,10 @@ export function hitFor(
   reach(ctx, attacker, target);
 }
 
-/** Sure Hand (19.8; owner, 2026-11-02): `attacker`'s abilities don't damage `target`, an ally. */
+/**
+ * Sure Hand (19.8; owner, 2026-11-02): `attacker`'s abilities don't damage
+ * `target`, an ally; what they give it (`reach`) it still gets.
+ */
 function spares(ctx: Ctx, attacker: Unit, target: Unit): boolean {
   if (!allyOf(attacker, target) || !hasPassive(attacker, 'sureHand')) return false;
   log(ctx, `${unitName(attacker)}’s sure hand spares ${unitName(target)}.`);
@@ -262,14 +267,6 @@ export function settle(ctx: Ctx): void {
     if (ctx.state.phase !== 'fight') return;
     go();
   }
-}
-
-/**
- * What `by`'s upgrades do to `u`, an ally its ability has just healed
- * (19.9): Invigorate's Empower, whatever the heal restored.
- */
-function healRiders(ctx: Ctx, by: Unit, u: Unit): void {
-  if (fires(ctx, by, 'invigorate', u)) empowerAtLeast(ctx, u, UPGRADE.invigorate.empower, by);
 }
 
 /**
@@ -453,8 +450,7 @@ function empowered(ctx: Ctx, u: Unit, by?: Unit): void {
 
 /**
  * Heals `u` by `amount`, up to its health (Elixir). A heal by `by`'s
- * ability on an ally sets off its healing upgrades (19.9), whatever it
- * restores, and on any unit what its abilities give (`reach`).
+ * ability sets off what its abilities give (`reach`), whatever it restores.
  */
 export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   const healed = Math.min(amount, u.maxHp - u.hp);
@@ -463,7 +459,6 @@ export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
     log(ctx, `${unitName(u)} heals ${healed}.`);
     record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
   }
-  if (allyOf(by, u)) healRiders(ctx, by, u);
   reach(ctx, by, u);
 }
 
@@ -499,7 +494,7 @@ export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
 
 /**
  * Empowers `u` by at least `amount` for `RULES.durations.turn` slots
- * (Invigorate and Empowering, 19.9): a stronger Empower it has stays, and
+ * (Empowering, 19.9): a stronger Empower it has stays, and
  * lasts as long.
  */
 export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {

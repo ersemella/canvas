@@ -23,11 +23,11 @@ export function allowedTargets(
 
 /**
  * The targets offered for `def` from where `unit` stands: its allowed
- * targets, for one aimed at a unit only enemies, and for a support ability
- * (Sunlight) only its own side and spaces without a unit, and for one that
- * helps allies and hinders enemies (Elixir) both. The rules allow
- * friendly fire and helping enemies; a player isn't offered either (hail
- * can still catch allies).
+ * targets, for one aimed at a unit any unit, ally or enemy (owner,
+ * 2026-11-02: every ability can target allies unless it says otherwise;
+ * enemies only until then), for a support ability (Sunlight) only its own
+ * side and spaces without a unit, and for one that helps allies and
+ * hinders enemies (Elixir) both.
  */
 export function offeredTargets(
   state: FightState,
@@ -45,7 +45,7 @@ export function offeredTargets(
   if (!def.targetsUnit) return targets;
   return targets.filter((t) => {
     const u = def.aimedAt ? def.aimedAt(state, unit, t) : t.hex && unitAt(state, t.hex);
-    return u && u.side !== unit.side;
+    return Boolean(u);
   });
 }
 

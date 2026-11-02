@@ -246,16 +246,16 @@ describe('the track', () => {
     expect(b.skipped).toBeUndefined();
   });
 
-  it('skips a unit whose only targets are allies', () => {
-    // Allies aren't offered as targets, so an Immobilized wolf with only an ally beside it holds.
+  it('doesn’t skip a unit whose only target is an ally: allies are offered (owner, 2026-11-02)', () => {
     const s = setup({'p-wolf': at(1, 1), 'p-bokh': at(2, 1), 'e-bokh': at(6, 6)}, ['wolf', 'bokh']);
     const w = unit(s, 'p-wolf');
     w.statuses.push({kind: 'immobilized'});
     expect(ABILITIES.bite.targets(s, mapOf(s), w, w.hex!).length).toBe(1);
-    expect(onlyHold(s, mapOf(s), w)).toBe(true);
-    // An enemy beside it gives it a bite.
-    unit(s, 'e-bokh').hex = hexNeighbors(w.hex!).find((h) => !unitAt(s, h) && onMap(STEPPE, h))!;
+    expect(offeredTargets(s, mapOf(s), w, ABILITIES.bite).length).toBe(1);
     expect(onlyHold(s, mapOf(s), w)).toBe(false);
+    // With no unit beside it, Hold is all it has.
+    unit(s, 'p-bokh').hex = at(7, 7);
+    expect(onlyHold(s, mapOf(s), w)).toBe(true);
   });
 
   it('shows where a melee attack could land with no foe beside it', () => {
@@ -5260,8 +5260,8 @@ describe('previews, the AI and the run', () => {
     expect(rivalPick(['mangudai'], ['patient', 'speed', 'concussive3'])).toBe('concussive3');
     expect(rivalPick(['mangudai'], ['patient', 'power'])).toBe('power');
     // An upgrade no rival's kit can use comes after one that does them good.
-    expect(rivalPick(['bokh'], ['invigorate', 'patient'])).toBe('patient');
-    expect(rivalPick(['priest'], ['invigorate', 'patient'])).toBe('invigorate');
+    expect(rivalPick(['bokh'], ['empowering', 'patient'])).toBe('patient');
+    expect(rivalPick(['priest'], ['empowering', 'patient'])).toBe('empowering');
   });
 
   it("the rival's provisions shared out over a stage's enemy: stats to the fewest held, passives where they fit, none to a creature", () => {

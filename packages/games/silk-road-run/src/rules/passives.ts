@@ -71,7 +71,7 @@ const upgrade = (
  * removed (Defy Fate, Vengeance, Ward, Shake Loose, Reel In, Rebound,
  * Piercing Eye, Mending Strike and Shot, Iron Will, Immovable Object,
  * Wearying, Fervour, Bulwark, Rally, Quickening, Inspire, Hardened,
- * Fortify, Lockdown, Lethargy and Hamstring), Concussive split in three
+ * Fortify, Lockdown, Lethargy and Hamstring; Invigorate the same day), Concussive split in three
  * with Staggering folded in, and Plated, Braced, Sure Hand, Empowering,
  * Hastening and Sheltering added, Unstoppable offered. The rarities of
  * the new and changed cards are the builder's estimate, not measured.
@@ -124,7 +124,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Light Step',
     'board',
     'Walks through allies, and may end its walk swapping places with an ally.',
-    'uncommon'
+    'common'
   ),
   lastStand: def(
     'lastStand',
@@ -175,13 +175,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Empower 1 while no ally is within 2 spaces.',
     'rare'
   ),
-  sureHand: def(
-    'sureHand',
-    'Sure Hand',
-    'allies',
-    'Its abilities don’t damage allies.',
-    'uncommon'
-  ),
+  sureHand: def('sureHand', 'Sure Hand', 'allies', 'Its abilities don’t damage allies.', 'common'),
   oneEye: def(
     'oneEye',
     'One Eye',
@@ -248,7 +242,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Concussive I',
     'attacks',
     `Its attacks Delay the target ${UPGRADE.concussive1.delay}.`,
-    'epic'
+    'rare'
   ),
   concussive2: upgrade(
     'concussive2',
@@ -277,27 +271,20 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Empowering',
     'allies',
     `Each unit its abilities hit or affect, enemy or ally, is Empowered ${UPGRADE.empowering.empower} for ${RULES.durations.turn} slots.`,
-    'uncommon'
+    'common'
   ),
   hastening: upgrade(
     'hastening',
     'Hastening',
     'allies',
     `Each unit its abilities hit or affect, enemy or ally, is Hastened ${UPGRADE.hastening.haste}.`,
-    'uncommon'
+    'common'
   ),
   sheltering: upgrade(
     'sheltering',
     'Sheltering',
     'allies',
     `Each unit its abilities hit or affect, enemy or ally, gains Shield ${UPGRADE.sheltering.shield} for ${RULES.durations.turn} slots.`,
-    'common'
-  ),
-  invigorate: upgrade(
-    'invigorate',
-    'Invigorate',
-    'healing',
-    `When its ability heals an ally, the ally is also Empowered ${UPGRADE.invigorate.empower}.`,
     'common'
   ),
   forked: upgrade(
@@ -461,7 +448,6 @@ const NEEDS: Partial<Record<PassiveId, Trait[]>> = {
   empowering: ['heals', 'empowers', 'hastens'],
   hastening: ['heals', 'empowers', 'hastens'],
   sheltering: ['heals', 'empowers', 'hastens'],
-  invigorate: ['heals'],
   forked: ['single'],
 };
 

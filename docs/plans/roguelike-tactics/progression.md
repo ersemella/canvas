@@ -177,16 +177,17 @@ random from one pool:
   | Rarity | Weight | Passives | Upgrades |
   |---|---|---|---|
   | **Legendary** | 1 | none | Concussive III (89.7%), Forked (83%) |
-  | **Epic** | 2 | Glass Cannon (72%), Plated* | Concussive I (68%, as Staggering), Concussive II* |
-  | **Rare** | 4 | Opportunist, Steady Gait, Lone Wolf, Last Stand, Rooted, Unstoppable* | none |
-  | **Uncommon** | 6 | Light Step, Momentum*, Braced*, Sure Hand* | Forceful, Crippling, Sundering, Empowering*, Hastening* |
-  | **Common** | 8 | Second Wind*, Flanker, Patient | Invigorate, Sheltering* |
+  | **Epic** | 2 | Glass Cannon (72%), Plated* | Concussive II* |
+  | **Rare** | 4 | Opportunist, Steady Gait, Lone Wolf, Last Stand, Rooted, Unstoppable* | Concussive I* (68% as Staggering) |
+  | **Uncommon** | 6 | Momentum*, Braced* | Forceful, Crippling, Sundering |
+  | **Common** | 8 | Second Wind*, Flanker, Patient, Light Step*, Sure Hand* | Empowering*, Hastening*, Sheltering* |
 
   \* Since 2026-11-02 (19.3d): new, changed or newly offered, its tier
-  the builder's estimate, **not measured**. Concussive II's Delay 4 is put
-  between I's 68% and III's 89.7%, under 80%; Plated's Armour 1 on every
-  hit beside Hardened's 52% once a fight; Momentum moved up for its Haste
-  2. Measure them with `experiments/provision-vs-card.mjs`, which holds
+  the builder's estimate, **not measured**, or set by the owner. Concussive
+  II's Delay 4 is put between I's 68% and III's 89.7%, under 80%; Plated's
+  Armour 1 on every hit beside Hardened's 52% once a fight; Momentum moved
+  up for its Haste 2. Concussive I Rare, and Light Step, Sure Hand,
+  Empowering and Hastening Common: the owner's (2026-11-02, later). Measure them with `experiments/provision-vs-card.mjs`, which holds
   the pool as it is now.
 
   **Stat upgrades are Epic** (owner, 2026-10-29; `STAT_RARITY`): each
@@ -245,7 +246,7 @@ random from one pool:
     **The stat cards are the exception since 2026-11-02 (owner):** each
     of +1 speed, defence and power can be drawn at every caravanserai,
     at Epic's weight still, though at most once in one draft (until then
-    each was offered at most once a run). With 26 passives and upgrades
+    each was offered at most once a run). With 25 passives and upgrades
     in the pool (19.3d) and up to 48 cards drawn in a run of three
     regions, late drafts run out of them and come down to the stats; with
     the stats too at 10 on every hero standing, fewer are drawn, and the
@@ -254,13 +255,14 @@ random from one pool:
   - Not measured: how much harder runs are with the enemy growing every
     stage, nor whether the rival's picks (rarest first) are its best.
 - **19.3d The pool pared down (Decided, owner 2026-11-02; built).** The
-  caravanserai's pool goes from 40 passives and upgrades to 26, beside
+  caravanserai's pool goes from 40 passives and upgrades to 25, beside
   the three stats:
   - **Removed (22):** Defy Fate, Vengeance, Ward, Shake Loose, Reel In,
     Rebound, Piercing Eye, Mending Strike, Mending Shot, Iron Will,
     Immovable Object, Wearying, Fervour, Bulwark, Rally, Quickening,
     Inspire, Hardened, Fortify, Lockdown, Lethargy and Hamstring, gone
-    from the rules too.
+    from the rules too; then Invigorate (owner, later the same day), which
+    Empowering covers.
   - **Concussive split into three:** Concussive I, II and III, its
     attacks Delaying the target 2, 4 and 6 (`UPGRADE.concussive1` to
     `3`); Staggering (Delay 2) folded in as I. A hero carrying more than
@@ -276,16 +278,21 @@ random from one pool:
     for 8 slots), **Hastening** (Haste 2) and **Sheltering** (Shield 1 for
     8 slots). "Hit or affect": a hit, landing or not, and a heal, Empower,
     Weaken, Haste, Delay or Immobilize by its ability (`reach` in
-    resolve.ts); each once a unit an ability, so they don't loop. The
-    rival gives them only to a hero whose kit reaches allies.
+    resolve.ts); each once a unit an ability, so they don't loop. With
+    Sure Hand, an ally an ability spares still gets them. The rival gives
+    them only to a hero whose kit reaches allies.
   - **Offered now:** **Unstoppable**, the Juggernaut's.
   - **Already there, kept:** the other asks of the day had a card:
     ability Weakens (Crippling), Delays (Concussive), Pierces (Sundering),
     and Inevitable (Steady Gait).
-  - **No attack is aimed at an ally any more:** Mending Strike and Shot
-    were what allowed it (`offeredTargets`).
-  - The rarities of the new and changed cards are estimated (19.3b).
-    Runs saved before end (`RUN_FORMAT` 20).
+  - **Every ability can target allies unless it says otherwise (owner,
+    later 2026-11-02):** an attack aimed at a unit is offered allies as
+    well as enemies (`offeredTargets`; enemies only until then, but with
+    Mending Strike or Shot), so a unit is no longer skipped when only an
+    ally is in its reach (`onlyHold`). A support ability (Sunlight) still
+    offers only its own side, as its rule says.
+  - The rarities of the new and changed cards are estimated or the
+    owner's (19.3b). Runs saved before end (`RUN_FORMAT` 21).
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in
@@ -500,7 +507,8 @@ choice:
 > Fervour, Reel In, Hamstring, Lockdown, Defy Fate, Immovable Object,
 > Quickening, Fortify, Ward, Mending Strike and Mending Shot removed;
 > Staggering and Concussive made Concussive I, II and III; Empowering,
-> Hastening and Sheltering added. The tables below are the pool as it is.
+> Hastening and Sheltering added; Invigorate removed later the same day.
+> The tables below are the pool as it is.
 
 Upgrades that change **how a hero's abilities work, whatever they are**:
 each keys off a keyword an ability already applies (17.1) or a kind of
@@ -541,12 +549,6 @@ hero is still question 63.
 | **Empowering** | Each unit this hero's abilities hit or affect, enemy or ally, is Empowered 1 for 8 slots. |
 | **Hastening** | Each unit this hero's abilities hit or affect, enemy or ally, is Hastened 2. |
 | **Sheltering** | Each unit this hero's abilities hit or affect, enemy or ally, gains Shield 1 for 8 slots. |
-
-**Healing**
-
-| Upgrade | Rule |
-|---|---|
-| **Invigorate** | When this hero's ability heals an ally, the ally is also Empowered 1 (TBD). |
 
 **Targeting**
 

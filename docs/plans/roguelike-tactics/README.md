@@ -32,7 +32,8 @@ in a stage draws one more card and gives the player one more pick; a
 passive or upgrade once drawn, picked or discarded, is never drawn again
 in the run, but the stat upgrades can be, at every caravanserai
 ([progression.md](progression.md), 19.3c). Since 2026-11-02 the pool
-holds 26 passives and upgrades (19.3d).
+holds 25 passives and upgrades (19.3d), and every ability can target
+allies unless it says otherwise.
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins
