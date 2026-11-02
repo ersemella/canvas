@@ -19,13 +19,13 @@ export const TILE_INFO: Record<Tile, HexInfo> = {
   sand: {name: 'Grass', short: 'Open ground', detail: 'No effect.'},
   obstacle: {
     name: 'Tent',
-    short: 'Blocks movement and arrows',
-    detail: 'Blocks movement and arrows.',
+    short: '',
+    detail: '',
   },
   mountain: {
     name: 'Mountains',
-    short: 'Blocks movement and arrows',
-    detail: 'Blocks movement and arrows.',
+    short: '',
+    detail: '',
   },
   // The Flaming Mountains' (map.ts, `scorched`; owner, 2026-10-28).
   scorched: {
@@ -50,42 +50,42 @@ const MAP_TILE_INFO: Record<string, Partial<Record<Tile, HexInfo>>> = {
     sand: {name: 'Sand', short: 'Open ground', detail: 'No effect.'},
     obstacle: {
       name: 'Oasis',
-      short: 'Blocks movement and arrows',
-      detail: 'Blocks movement and arrows.',
+      short: '',
+      detail: '',
     },
   },
   salt: {
     sand: {name: 'Salt flat', short: 'Open ground', detail: 'No effect.'},
     obstacle: {
       name: 'Ruins',
-      short: 'Blocks movement and arrows',
-      detail: 'Blocks movement and arrows.',
+      short: '',
+      detail: '',
     },
     mountain: {
       name: 'Salt dome',
-      short: 'Blocks movement and arrows',
-      detail: 'Blocks movement and arrows.',
+      short: '',
+      detail: '',
     },
   },
   tuff: {
     sand: {name: 'Tuff', short: 'Open ground', detail: 'No effect.'},
     obstacle: {
       name: 'Fairy chimney',
-      short: 'Blocks movement and arrows',
-      detail: 'Blocks movement and arrows.',
+      short: '',
+      detail: '',
     },
   },
   flaming: {
     sand: {name: 'Red earth', short: 'Open ground', detail: 'No effect.'},
     obstacle: {
       name: 'Beacon tower',
-      short: 'Blocks movement and arrows',
-      detail: 'Blocks movement and arrows.',
+      short: '',
+      detail: '',
     },
     mountain: {
       name: 'Burning mountains',
-      short: 'Blocks movement and arrows',
-      detail: 'Blocks movement and arrows.',
+      short: '',
+      detail: '',
     },
   },
 };
@@ -191,6 +191,8 @@ export type KeywordId =
   | 'empowered'
   | 'weakened'
   | 'haste'
+  | 'delay'
+  | 'charged'
   | 'shield'
   | 'unstoppable'
   | 'move'
@@ -234,6 +236,15 @@ export const KEYWORD_INFO: Record<KeywordId, {name: string; detail: string}> = {
     name: 'Haste',
     detail:
       'Its card moves that many slots earlier on the track, never earlier than the next slot.',
+  },
+  delay: {
+    name: 'Delay',
+    detail: 'Its card moves that many slots later on the track.',
+  },
+  charged: {
+    name: 'Charged',
+    detail:
+      'Nothing happens as it’s used: it takes effect when your card comes back, that many slots later.',
   },
   move: {name: 'Move', detail: 'Put on another space by others, not walking.'},
   push: {

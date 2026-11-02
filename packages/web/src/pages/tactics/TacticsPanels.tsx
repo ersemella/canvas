@@ -294,9 +294,11 @@ function GroundCard({
         <Text className={styles.display!} fw={700} fz={dense ? 'sm' : 'md'} c={color}>
           {info.name}
         </Text>
-        <Text fz="xs" c="dimmed">
-          <KeywordText text={info.detail} />
-        </Text>
+        {info.detail && (
+          <Text fz="xs" c="dimmed">
+            <KeywordText text={info.detail} />
+          </Text>
+        )}
       </Glossary>
     </Paper>
   );

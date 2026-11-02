@@ -176,7 +176,6 @@ describe('the test stage', () => {
     const s = createTestFight(1, raw);
     const a = s.units.find((u) => u.hero === 'alchemist')!;
     expect(s.units.every((u) => u.elixirLine === 3)).toBe(true);
-    expect(ABILITIES.elixir.summary(a)).toContain('within 3 in a straight line, over anything');
     // Past the Grappler beside it, the Outrider 3 along the line; not the Storm Caller 4 away, nor itself.
     const aimed = ABILITIES.elixir.targets(s, mapOf(s), a, a.hex!).map((t) => spaceOf(t.hex!));
     expect(aimed).toContainEqual(along(1));
@@ -204,7 +203,7 @@ describe('the test stage', () => {
     const a = s.units.find((u) => u.hero === 'alchemist')!;
     expect(s.units.every((u) => u.elixirOverdose === 6)).toBe(true);
     expect(ABILITIES.elixir.summary(a)).toContain(
-      'ally or enemy, your choice: an overdose, Empowered until its hits deal 6'
+      'an overdose hits it and Empowers it until its hits deal 6'
     );
     expect(() => parseTestStage({...raw, elixir: {overdose: -1}})).toThrow(
       'elixir.overdose must be a whole number from 0 to 20.'
@@ -225,7 +224,7 @@ describe('the test stage', () => {
       expect([u.lunge, u.moveCap, u.streakHaste]).toEqual([2, 2, [2, 3, 4]]);
       expect(movementCap(u)).toBe(2);
       expect(ABILITIES.swiftStrike.summary(u)).toBe(
-        'Lunge up to 2 straight and strike the first unit. When it hits, its card is Hastened 2, then 3, then 4 on turns striking running.'
+        'Lunge up to 2 straight and strike the first unit. When it hits, you are Hastened 2, then 3, then 4 on turns striking running.'
       );
     }
     expect(s.units.find((u) => u.hero === 'wolf')!.lunge).toBeUndefined();
@@ -275,7 +274,7 @@ describe('the test stage', () => {
       [1, 2, 3],
     ]);
     expect(ABILITIES.swiftStrike.summary(d)).toBe(
-      'Strike a unit up to 2 away in line, stepping in, or jump a unit next to you to the space past it, hitting it. When it hits, its card is Hastened 1, then 2, then 3 on turns striking running.'
+      'Strike a unit up to 2 away in line, stepping in, or jump a unit next to you to the space past it, hitting it. When it hits, you are Hastened 1, then 2, then 3 on turns striking running.'
     );
     // Left out, Swift Strike is as built.
     const built = createTestFight(1, {player: [{hero: 'youxia'}], enemy: [{hero: 'wolf'}]});

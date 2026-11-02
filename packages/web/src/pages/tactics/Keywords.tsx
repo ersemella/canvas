@@ -109,6 +109,7 @@ const TONE: Partial<Record<KeywordId, string>> = {
   unstoppable: 'var(--c-jade)',
   weakened: 'var(--c-madderLight)',
   haste: 'var(--c-jade)',
+  delay: 'var(--c-madderLight)',
 };
 
 /**
@@ -165,14 +166,16 @@ const WORDS: [RegExp, KeywordId][] = [
   [/Melee/, 'melee'],
   [/Immobilized/, 'immobilized'],
   [/Stunned/, 'stunned'],
-  [/\bEmpower(?:ed)?\b/, 'empowered'],
-  [/\bWeaken(?:ed)?\b/, 'weakened'],
-  [/\bHasten(?:ed)?\b/, 'haste'],
+  [/\bEmpower(?:s|ed)?\b/, 'empowered'],
+  [/\bWeaken(?:s|ed)?\b/, 'weakened'],
+  [/\bHasten(?:s|ed)?\b/, 'haste'],
+  [/\bDelay(?:s|ed)?\b/, 'delay'],
+  [/\bCharged\b/, 'charged'],
   [/\bShield\b/, 'shield'],
   [/\bUnstoppable\b/, 'unstoppable'],
-  [/\bMove(?:d)?\b/, 'move'],
-  [/\bPush(?:ed)?\b/, 'push'],
-  [/\bPull(?:ed)?\b/, 'pull'],
+  [/\bMove(?:s|d)?\b/, 'move'],
+  [/\bPush(?:es|ed)?\b/, 'push'],
+  [/\bPull(?:s|ed)?\b/, 'pull'],
 ];
 const ANY = new RegExp(WORDS.map(([re]) => `(${re.source})`).join('|'), 'g');
 

@@ -200,8 +200,8 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Battle Cry',
     'allies',
     BATTLE_CRY.self === BATTLE_CRY.allies
-      ? `Whenever it is hit, its card and each ally's within ${BATTLE_CRY.range} are Hastened ${BATTLE_CRY.self}.`
-      : `Whenever it is hit, its card is Hastened ${BATTLE_CRY.self} and each ally's within ${BATTLE_CRY.range} ${BATTLE_CRY.allies}.`
+      ? `Whenever it is hit, it and nearby allies are Hastened ${BATTLE_CRY.self}.`
+      : `Whenever it is hit, it is Hastened ${BATTLE_CRY.self} and nearby allies ${BATTLE_CRY.allies}.`
   ),
   bloodlust: def(
     'bloodlust',

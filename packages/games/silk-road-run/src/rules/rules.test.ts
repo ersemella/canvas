@@ -1422,7 +1422,7 @@ describe('abilities', () => {
     expect(target.slot).toBeNull();
     expect(target.heldBy).toBe(b.id);
     expect(ABILITIES.grapple.summary(b)).toContain(
-      'its card leaves the track until you take damage or are grappled, then comes back just before your next turn; it takes 1 more damage every 8 slots'
+      'it is Stunned while grappled, taking 1 every 8 slots'
     );
     // Shown where it would come back now: just before the Grappler's card.
     expect(returnSlot(s, target)).toBe(b.slot! - 1);
@@ -3900,7 +3900,7 @@ describe('the built Elixir, an overdose or a sedative (2026-10-31; one ability 2
     ).toEqual([at(1, 3), at(2, 3), at(4, 3)].map(hexKey).sort());
     expect(offered.every((t) => t.mode === 'overdose' || t.mode === 'sedative')).toBe(true);
     expect(ABILITIES.elixir.summary(alchemist)).toBe(
-      'A unit within 3, yourself too, ally or enemy, your choice: an overdose, Empowered until its hits deal 6 for 8 slots, and it takes 1; or a sedative, healed 1, and its hits deal nothing for 8 slots.'
+      'Ally or enemy, your choice: an overdose hits it and Empowers it until its hits deal 6; a sedative heals it 1 and Weakens it until its hits deal nothing.'
     );
     // A choice it must be told.
     expect(() =>
@@ -3971,7 +3971,7 @@ describe('Sedative (the Elixir’s since 2026-11-02; the ability in no kit)', ()
     const alchemist = unit(s, 'p-alchemist');
     alchemist.loadout = {abilities: ['elixir', 'sedative', 'hold']};
     expect(ABILITIES.sedative.summary(alchemist)).toBe(
-      'A unit within 3, yourself too, ally or enemy: healed 1, and its hits deal nothing for 8 slots.'
+      'Ally or enemy: heals it 1, and it is Weakened until its hits deal nothing.'
     );
     const e = unit(s, 'e-mangudai');
     e.hp -= 2;

@@ -369,7 +369,7 @@ const skirmish: AbilityDef = {
   steps: true,
   summary: (user) =>
     ABILITY.skirmish.charge > 0
-      ? `Step 1 space, then draw on a line: charge ${chargeOf(user, 'skirmish')}. When your card comes back, the arrow hits the first unit in that line instead of your turn.`
+      ? `Step 1 space, then draw on a line. Charged ${chargeOf(user, 'skirmish')}: the arrow hits the first unit in that line, in place of your turn.`
       : 'Step 1 space, then shoot straight: hits the first unit in line.',
   targetsUnit: true,
   targets(state, map, user, from) {
@@ -409,7 +409,7 @@ const hail: AbilityDef = {
   minRange: ABILITY.hail.range,
   radius: 0,
   summary: () =>
-    `A space exactly ${ABILITY.hail.range} away, for ${RULES.durations.hail} slots: hits a unit there; units there or entering are Immobilized, and entering hits them too. Up to ${ABILITY.hail.max} stand at once.`,
+    `Cast on a space, not a unit, for ${RULES.durations.hail} slots: a unit there${ABILITY.hail.entry ? ' or entering is hit and' : ' is hit; one there or entering is'} Immobilized.${ABILITY.hail.max > 1 ? ` Up to ${ABILITY.hail.max} at once.` : ''}`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -524,7 +524,7 @@ const grapple: AbilityDef = {
   name: 'Grapple',
   kind: 'attack',
   summary: () =>
-    `Melee: hits it, and its card leaves the track until you take damage or are grappled, then comes back just before your next turn; it takes ${ABILITY.grapple.squeeze} more damage every ${RULES.durations.turn} slots. While grappling: Move it to a free space next to you, or swap places.`,
+    `Melee: hits it, and it is Stunned while grappled, taking ${ABILITY.grapple.squeeze} every ${RULES.durations.turn} slots. While grappling: Move it to a space next to you, or swap places.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
   // and not the unit it already grapples: that one is thrown instead. Nor
@@ -721,8 +721,7 @@ const volley: AbilityDef = {
   kind: 'attack',
   range: ABILITY.volley.range,
   radius: 0,
-  summary: (user) =>
-    `A space within ${ABILITY.volley.range}: charge ${chargeOf(user, 'volley')}. When your card comes back, hits whoever is there.`,
+  summary: (user) => `Charged ${chargeOf(user, 'volley')}: hits whoever is there.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -766,7 +765,7 @@ const cleave: AbilityDef = {
   name: 'Cleave',
   kind: 'attack',
   summary: () =>
-    `A line of ${ABILITY.cleave.reach} spaces straight out from you, any way: hits every unit in it, allies included, and Delays ${ABILITY.cleave.delay} each one left standing.`,
+    `Hits every unit, allies too, and Delays ${ABILITY.cleave.delay} each left standing.`,
   area: cleaveArea,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
@@ -954,9 +953,9 @@ const elixir: AbilityDef = {
     if (ABILITY.elixir.mode === 'alternate')
       return `${where}: ${elixirHits(user) ? `this time an enemy, hit for ${user.power}` : `this time an ally, healed ${user.power}`}; heal and hit by turns.`;
     if (elixirChoice(user))
-      return `${where}, ally or enemy, your choice: an overdose, Empowered until its hits deal ${overdoseOf(user)} for ${RULES.durations.turn} slots, and it takes ${user.power}; or a sedative, healed ${user.power}, and its hits deal nothing for ${RULES.durations.turn} slots.`;
+      return `Ally or enemy, your choice: an overdose hits it and Empowers it until its hits deal ${overdoseOf(user)}; a sedative heals it ${user.power} and Weakens it until its hits deal nothing.`;
     if (overdoseOf(user) > 0)
-      return `${where}, ally or enemy: Empowered until its hits deal ${overdoseOf(user)}, for ${RULES.durations.turn} slots, and it takes ${user.power}.`;
+      return `Ally or enemy: hits it, and it is Empowered until its hits deal ${overdoseOf(user)}.`;
     if (ABILITY.elixir.mode === 'poison')
       return `${where}: healed ${user.power}, then it loses 1 every ${ABILITY.elixir.poisonEvery} slots until ${elixirPoison(user)} is lost.`;
     const who = `${hastes || delays ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
@@ -1108,7 +1107,7 @@ const sedative: AbilityDef = {
   },
   targetsUnit: true,
   summary(user) {
-    return `A unit within ${ABILITY.sedative.range}, yourself too, ally or enemy: healed ${user.power}, and its hits deal nothing for ${RULES.durations.turn} slots.`;
+    return `Ally or enemy: heals it ${user.power}, and it is Weakened until its hits deal nothing.`;
   },
   targets: (state, map, _user, from) => sedativeTargets(state, map, from),
   resolve(ctx, user, target) {
@@ -1142,7 +1141,7 @@ const invocation: AbilityDef = {
   range: ABILITY.invocation.range,
   radius: ABILITY.invocation.radius,
   summary: (user) =>
-    `A space within ${ABILITY.invocation.range} and the spaces next to it: charge ${chargeOf(user, 'invocation')}. When your card comes back, enemies there take ${user.power} and allies there, you too, heal ${user.power}; an Empower adds to both.`,
+    `Charged ${chargeOf(user, 'invocation')}: hits every enemy and heals every ally ${user.power}, you too.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.invocation.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
@@ -1701,9 +1700,7 @@ const swiftStrike: AbilityDef = {
     const streak = streakOf(user);
     const first =
       dashOf(user) > 0
-        ? (user.dashMin ?? ABILITY.swiftStrike.dashMin) > 0
-          ? `Dash ${user.dashMin ?? ABILITY.swiftStrike.dashMin} to ${dashOf(user)} straight, through units, hitting each passed.`
-          : `Dash exactly ${dashOf(user)} straight, through units, hitting each passed (${dashOf(user) - 1} if yurts or the edge are in the way).`
+        ? 'Dash through units, hitting each passed.'
         : jumps(user)
           ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it${(user.chain ?? ABILITY.swiftStrike.chain) ? ', and jump again from there' : ''}.`
           : lunge === 0
@@ -1713,9 +1710,9 @@ const swiftStrike: AbilityDef = {
               : `Lunge up to ${lunge} straight and strike the first unit.`;
     const then =
       streak.length > 0
-        ? ` When it hits, its card is Hastened ${streak.join(', then ')} on turns striking running.`
+        ? ` When it hits, you are Hastened ${streak.join(', then ')} on turns striking running.`
         : hasteOf(user) > 0
-          ? ` When it hits, its card is Hastened ${hasteOf(user)}.`
+          ? ` When it hits, you are Hastened ${hasteOf(user)}.`
           : '';
     return `${first}${then}`;
   },
@@ -2259,7 +2256,7 @@ const eclipse: AbilityDef = {
     return ABILITY.eclipse.radius;
   },
   summary: () =>
-    `A space within ${ABILITY.eclipse.range} and the spaces next to it: every unit there Hastened ${ABILITY.eclipse.slots}, or every one Delayed ${ABILITY.eclipse.slots}.`,
+    `Every unit Hastened ${ABILITY.eclipse.slots}, or every unit Delayed ${ABILITY.eclipse.slots}.`,
   targets(state, map, _user, from) {
     const out: ActionTarget[] = [];
     for (const hex of spacesWithin(map, from, ABILITY.eclipse.range)) {
@@ -2439,8 +2436,8 @@ const stomp: AbilityDef = {
   },
   summary: () =>
     ABILITY.stomp.mode === 'stomp'
-      ? `${ABILITY.stomp.step > 0 ? 'Step 1 space or stay, shoving an enemy there on ahead, then stomp: e' : 'E'}very unit next to you is hit and Pushed 1 away.`
-      : `Walk up to ${ABILITY.stomp.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
+      ? `${ABILITY.stomp.step > 0 ? 'Step or stay, an enemy in the way Pushed 1, then e' : 'E'}very unit around you is hit and Pushed 1.`
+      : 'Walk straight. Units in the way, a whole row together, are hit and Pushed ahead of you.',
   targets(state, map, user, from) {
     if (ABILITY.stomp.mode === 'stomp') {
       if (ABILITY.stomp.step <= 0 || isImmobilized(user)) return [{hex: from}];
@@ -2610,7 +2607,7 @@ const charge: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: (user) =>
-    `Ride any distance straight. Every unit in the way is hit and carried ahead, as far as there is room, the nearest to the space aimed at.${slamSays()}${
+    `Ride straight. Every unit in the way is hit and Pushed ahead of you.${slamSays()}${
       chargeArmourOf(user) > 0
         ? ` Then gain Armour ${chargeArmourOf(user)} for ${ABILITY.charge.armourSlots} slots.`
         : ''
