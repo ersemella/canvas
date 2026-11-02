@@ -1142,14 +1142,14 @@ export const ABILITY = {
 } as const;
 
 /**
- * The enemy yields (owner, 2026-11-02): its last unit standing, the player's
+ * The enemy yields (owner, 2026-11-02; against 2 heroes too, not only 3): its last unit standing, the player's
  * heroes outnumbering it by `outnumberedBy` or more, and its best turn only
  * a Hold (no walk, no ability), it gives up the fight, which the player wins.
  * Never while a boss stands (the exit sealed). It ends the stand-off where a
  * lone unit waits out every turn because any step or ability gets it killed.
  */
 export const CONCEDE = {
-  outnumberedBy: 2,
+  outnumberedBy: 1,
 };
 
 /** Enemy AI scoring (brief section 6), on the 2026-10-23 health scale (a hit is 1 or 2). */

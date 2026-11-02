@@ -154,8 +154,8 @@ the fight (2026-10-21)**, with its sprite and portrait. **Its health carries ove
 - **The enemy yields** (owner, 2026-11-02), for the stand-off the camel
   leaves: a lone enemy outnumbered three to one that only Holds, because
   any step or ability gets it killed, drags the fight out while the camel
-  walks. The enemy's last unit, outnumbered by the player's heroes by 2 or
-  more (`CONCEDE.outnumberedBy`), whose chosen turn is a bare Hold, gives
+  walks. The enemy's last unit, outnumbered by the player's heroes (2 or
+  more of them; `CONCEDE.outnumberedBy` 1, the owner's call, 3 at first), whose chosen turn is a bare Hold, gives
   the fight up instead, a win for the player (`concedes` and `concede` in
   `src/rules/fight.ts`, played on the run's AI turn). Never while a boss
   stands. The page says "The rival band yields." Search and the AI-vs-AI

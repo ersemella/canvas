@@ -41,8 +41,13 @@ describe('Concede', () => {
     expect(concedes(s, u, {action: {ability: kitOf(u)[0]!}})).toBe(false);
   });
 
-  it('not outnumbered by two, nor with an ally standing', () => {
-    let s = standing(party[0]!, party[1]!, last);
+  it('two to one too', () => {
+    const s = standing(party[0]!, party[1]!, last);
+    expect(concedes(s, unit(s, last), hold)).toBe(true);
+  });
+
+  it('not one to one, nor with an ally standing', () => {
+    let s = standing(party[0]!, last);
     expect(concedes(s, unit(s, last), hold)).toBe(false);
     s = standing(...party, last, `e-${PARTY[1]}`);
     expect(concedes(s, unit(s, last), hold)).toBe(false);
