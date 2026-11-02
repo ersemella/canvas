@@ -6960,7 +6960,20 @@ the units the overdose reaches that it would do anything to. His kit
 `['elixir', 'hold']`, with room for an upgrade. Every ability takes the
 turn's action, so the choice is the same as between the two abilities, and
 the AI scores each as before. Measured on `experiments/elixir-sedative.mjs`'s
-`built` rows against main's two-ability kit: pending.
+`built` rows (400 fights a row, the seats of "The overdose with a Sedative
+beside it"), the merge against the two abilities on `899b36e`:
+
+| Alchemist | Steppe | Persia | Byzantium | Kept in its own | Score | Novice | Expert | Span |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Overdose and Sedative (`899b36e`) | 35.3% | 38.8% | 73.8% | 41.0% | 45.1% | 31.8% | 54.3% | 22.5 |
+| **One Elixir** | 35.3% | 38.8% | 73.8% | 41.0% | **45.1%** | 31.8% | 54.3% | 22.5 |
+
+- **Identical, fight for fight**: every row the same to the decimal, as
+  expected with the same seeds and the same options; the merge changes the
+  page and his kit's room, not the fight.
+- 45.1% now against 47.4% on 2026-10-31: the game around him changed since
+  (Wait in runs, Eclipse, Battle Cry), not his kit; the 2026-11-01 check gave
+  44.8%. The upgrade slot is the room to lift him.
 
 ## Principles for re-tuning
 
