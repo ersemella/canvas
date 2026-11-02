@@ -13,7 +13,6 @@ import {
   CAMEL,
   DEVOTED,
   HEROES,
-  ONE_EYE,
   PASSIVE,
   RULES,
   SPEARHEAD,
@@ -25,7 +24,6 @@ import {
   fireOn,
   hailOn,
   hostile,
-  inFrontLane,
   isUnstoppable,
   shotLane,
   sortByHex,
@@ -115,7 +113,7 @@ export function unitName(u: Unit): string {
  * 2026-10-23), plus its Empower (or `empower`, one the hit carries from
  * when it was made) and its passives' (Glass Cannon, Lone Wolf, and
  * against this target Opportunist and Flanker), less its Weaken; then
- * the target's Armour (One Eye's, Armoured, Plated) unless it Pierces
+ * the target's Armour (Armoured, Plated) unless it Pierces
  * (17.6's damage order; 19.8). Power 0 deals none, and says nothing. With
  * Sure Hand (19.8) an ally takes none.
  */
@@ -287,8 +285,7 @@ export function immobilize(ctx: Ctx, u: Unit, status: Status, by?: Unit): boolea
 
 /**
  * The lasting Armour `target` has against a hit from a unit on `from`
- * (17.6), none if it Pierces: One Eye's (`eyeArmour`), an Armour status
- * (a Charge's), Armoured's (the Cataphract's) and Plated's, said in the log
+ * (17.6), none if it Pierces: an Armour status (a Charge's), Armoured's (the Cataphract's) and Plated's, said in the log
  * when there is a `ctx`.
  */
 export function armourOf(
@@ -297,7 +294,7 @@ export function armourOf(
   from: Hex | null,
   pierces = false
 ): number {
-  let armour = eyeArmour(ctx, target, from, pierces);
+  let armour = 0;
   // An Armour status, for its slots.
   if (target.armour) {
     if (pierces) {
@@ -325,30 +322,6 @@ export function armourOf(
     }
   }
   return armour;
-}
-
-/**
- * One Eye (owner, 2026-10-28): the Armour `target` has against a hit from a
- * unit on `from`, none if it stands in the target's front lane or the hit
- * Pierces, said in the log when there is a `ctx`.
- */
-export function eyeArmour(
-  ctx: Ctx | undefined,
-  target: Unit,
-  from: Hex | null,
-  pierces = false
-): number {
-  if (!hasPassive(target, 'oneEye')) return 0;
-  if (pierces) {
-    if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s hide.`);
-    return 0;
-  }
-  if (from && inFrontLane(target, from)) {
-    if (ctx) log(ctx, `It strikes ${unitName(target)} from the front, by its eye.`);
-    return 0;
-  }
-  if (ctx) log(ctx, `${unitName(target)}’s hide takes off ${ONE_EYE.armour}.`);
-  return ONE_EYE.armour;
 }
 
 /**
@@ -958,7 +931,7 @@ function squeeze(ctx: Ctx, champion: Unit, u: Unit): void {
       (ABILITY.grapple.empoweredSqueeze ? empowered : 0) -
       (champion.weaken ?? 0)
   );
-  // Armour (One Eye's, Armoured) holds against the squeeze as against a hit.
+  // Armour (Armoured, Plated) holds against the squeeze as against a hit.
   const amount = strength > 0 ? Math.max(0, strength - armourOf(ctx, u, champion.hex)) : 0;
   applyDamage(ctx, u, amount, `The grapple squeezes ${unitName(u)} for ${amount}`, champion);
 }

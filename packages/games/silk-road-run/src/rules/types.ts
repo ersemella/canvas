@@ -116,9 +116,8 @@ export type PassiveId =
   | 'flanker'
   | 'loneWolf'
   | 'sureHand'
-  // A boss's own, not in 19.8's pool: the Cyclops's (owner, 2026-10-28),
-  // and the Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28).
-  | 'oneEye'
+  // A boss's own, not in 19.8's pool: the Bull Demon King's and Princess
+  // Iron Fan's (owner, 2026-10-28).
   | 'devoted'
   // Zahhak's and his serpents' (2026-10-29).
   | 'serpentKing'
@@ -297,12 +296,6 @@ export interface Unit {
    * board.ts). Absent while it holds its axe.
    */
   axe?: Hex;
-  /**
-   * The hex direction (0 to 5) it faces, for One Eye: set as the fight
-   * starts, turned by its walks and its abilities (`faceAfterTurn` in
-   * fight.ts), kept when it is displaced. Absent for a unit without it.
-   */
-  facing?: number;
   /**
    * It carries Princess Iron Fan's fan, picked up where she fell (`FightState.fan`):
    * it may spend a turn putting out every flame (`quench`). Absent otherwise.

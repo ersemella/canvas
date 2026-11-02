@@ -16,7 +16,6 @@ import {
   DEVOTED,
   FURY,
   HEROES,
-  ONE_EYE,
   PASSIVE,
   RULES,
   SPEARHEAD,
@@ -176,12 +175,6 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'rare'
   ),
   sureHand: def('sureHand', 'Sure Hand', 'allies', 'Its abilities don’t damage allies.', 'common'),
-  oneEye: def(
-    'oneEye',
-    'One Eye',
-    'damage',
-    `Armour ${ONE_EYE.armour} against hits from anyone not standing in the lane its eye faces. It turns toward whatever it walks to or aims at.`
-  ),
   devoted: def(
     'devoted',
     'Devoted',
@@ -297,8 +290,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
 };
 
 /**
- * Passives a hero starts with that the caravanserai doesn't offer: One Eye,
- * the Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's
+ * Passives a hero starts with that the caravanserai doesn't offer: Devoted, the Bull Demon King's and Princess Iron Fan's
  * (owner, 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), the
  * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29),
  * Spearhead, the Vanguard's from 2026-10-30 to 2026-10-31 (owner), and the
@@ -306,7 +298,6 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
  * Unstoppable, the Juggernaut's, is offered since 2026-11-02 (owner).
  */
 export const NOT_OFFERED: readonly PassiveId[] = [
-  'oneEye',
   'devoted',
   'armoured',
   'serpentKing',

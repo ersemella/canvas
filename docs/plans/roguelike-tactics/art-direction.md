@@ -436,8 +436,9 @@ The Steppe's boss (enemies.md, 11.3a), a lettered disc (`giant` in
 the Juggernaut's frame, so it outsizes the heroes and rises above its hex,
 split into the 2-frame idle by `scripts/idle-sheet.py` (88 × 44 in all);
 and a **32 × 32** track portrait (`giant.png` and `giant-portrait.png` in
-`src/client/sprites/`). The board draws its facing as an eye on its hex's
-edge, so the sprite's own eye only needs to read as one big eye.
+`src/client/sprites/`). The board drew its facing as an eye on its hex's
+edge until the facing was removed (2026-11-02), so the sprite's own eye
+only needs to read as one big eye.
 
 - **Attach the references**, scaled up 8× with nearest-neighbour:
   `mahout.png` (the 44 × 44 frame) and `bokh.png` (a Steppe figure on

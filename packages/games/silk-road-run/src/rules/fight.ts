@@ -3,13 +3,11 @@
  * card, start-of-turn effects (hail lifting, grapples squeezing, Stunned turns skipped) and applying
  * one turn's move and action (timeline.md; brief sections 2 and 8).
  */
-import {hexDirectionTo, hexEquals, hexKey} from '@canvas/engine/server';
-import type {Hex} from '@canvas/engine/server';
+import {hexEquals, hexKey} from '@canvas/engine/server';
 import {ABILITY, CAMEL, CONCEDE, HEROES, PARTY, PASSIVE, RULES, healthOf} from './config';
 import {
   canMove,
   exitSealed,
-  faceStart,
   invalidPath,
   isImmobilized,
   isStunned,
@@ -257,7 +255,6 @@ export function createFight(
         : !canMove(state, mapOf(state), u)
     )
   );
-  faceStart(state, mapOf(state));
   placeStartingCards(state);
   log({state, map: mapOf(state), slot: 0}, 'The fight begins.');
   return state;
@@ -479,10 +476,8 @@ export function applyTurn(
     const bad = invalidPath(state, map, unit, path);
     if (bad) throw new RuleError(bad);
     // A grapple ends only if the walk ends apart (owner, 2026-10-23).
-    const before = path.length > 1 ? path[path.length - 2]! : unit.hex!;
     walk(ctx, unit, path);
     log(ctx, `${unitName(unit)} moves.`);
-    face(unit, before, path[path.length - 1]);
   } else {
     const {also, ...target} = input.action.target ?? {};
     if (!trustTarget && !allowedTargets(state, map, unit, def).some((t) => sameTarget(t, target)))
@@ -512,7 +507,6 @@ export function applyTurn(
         ...(target.hex ? {target: target.hex} : {}),
         ...(target.mode ? {mode: target.mode} : {}),
       });
-    const from = unit.hex!;
     def.resolve(ctx, unit, target);
     // The second, if still a target once the first has resolved (it may have fallen or moved).
     if (
@@ -531,7 +525,6 @@ export function applyTurn(
       });
       def.resolve(ctx, unit, second);
     }
-    face(unit, from, target.hex);
   }
   settle(ctx);
   checkEnd(state);
@@ -568,17 +561,6 @@ export function concede(state: FightState, unit: Unit): void {
   state.phase = 'won';
   record(state, {kind: 'skip', unitId: unit.id});
   log({state, map: mapOf(state), slot: state.currentSlot}, `${unitName(unit)} yields.`);
-}
-
-/**
- * One Eye (owner, 2026-10-28): a unit that faces a way turns to the way it
- * last stepped on a walk, or toward what it aimed at from `from`, if that
- * is in a straight line; otherwise it keeps facing as it was.
- */
-function face(unit: Unit, from: Hex, to: Hex | undefined): void {
-  if (unit.facing === undefined || !unit.alive || !to) return;
-  const dir = hexDirectionTo(from, to);
-  if (dir !== null) unit.facing = dir;
 }
 
 /** A deep copy for previews and the AI; drops the log unless asked, and the events always. */

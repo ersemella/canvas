@@ -403,9 +403,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
   /**
    * The Steppe's boss, the Cyclops (owner, 2026-10-28; enemies.md, "The
    * Cyclops"), Tepegöz of the *Book of Dede Korkut*, whose hide turned
-   * Basat's arrows until he struck the eye: One Eye (Armour
-   * `ONE_EYE.armour` against hits from outside the lane it faces), Smash
-   * (melee) and Boulder (Snap Shot's lanes, the units next to where it lands
+   * Basat's arrows until he struck the eye: Smash (melee) and Boulder (Snap Shot's lanes, the units next to where it lands
    * Pushed). Not in the ROSTER: the test stage brings it. Speed 1, defence
    * 5 (health 12) and power 3 are the builder's first numbers, untested.
    */
@@ -416,7 +414,6 @@ export const HEROES: Record<HeroId, HeroStats> = {
     defence: 5,
     power: 3,
     abilities: ['smash', 'boulder', 'hold'],
-    passives: ['oneEye'],
     boss: true,
   },
   /**
@@ -499,14 +496,6 @@ export const HEROES: Record<HeroId, HeroStats> = {
  * other's card is Hastened `haste`, Swift Strike's number.
  */
 export const DEVOTED = {haste: 3 as number};
-
-/**
- * One Eye (owner, 2026-10-28), the Cyclops's passive: a hit on it
- * from a unit not standing in its front lane, straight out the way it
- * faces at any distance, loses `armour` (17.6's Armour, so a Piercing hit
- * ignores it). The builder's first number.
- */
-export const ONE_EYE = {armour: 3 as number};
 
 /**
  * Armoured (owner, 2026-10-29), the Cataphract's: Armour `armour` against

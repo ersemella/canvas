@@ -40,24 +40,21 @@ Tepegöz of the *Book of Dede Korkut* (setting.md, 15.6a), the one-eyed
 giant whose hide turned Basat's arrows until Basat struck the eye. In the
 game's text **the Cyclops** (owner, 2026-10-28: the bosses are named
 directly; the One-Eyed Giant before, under roster.md's no real names). Its bent rule
-is **vulnerable only from the front** (11.3's "vulnerable only when
-flanked", turned around), and its kit is the Steppe's own: a hit like the
+was **vulnerable only from the front** (11.3's "vulnerable only when
+flanked", turned around: One Eye, removed 2026-11-02), and its kit is the Steppe's own: a hit like the
 wolves', and Snap Shot's lanes.
 
 - **Stats (the builder's first numbers, untested):** speed 1, defence 5
   (health 12), power 3. `giant` in config.ts; not in the ROSTER, so the
   start menu doesn't offer it. The Steppe's fourth stage brings it with
   two wolves (`REGIONS.steppe.boss`; progression.md, 19.1). Its sprite and portrait
-  are the owner's AI-assisted art (2026-10-28; art-direction.md), its
-  facing still drawn as an eye on its hex's edge.
-- **One Eye** (a passive, `oneEye`, not offered at the caravanserai):
-  Armour 3 (`ONE_EYE.armour`) against a hit, or a grapple's squeeze, from
-  a unit not standing in its front lane, the line straight out the way it
-  faces at any distance, whatever stands between. A Piercing hit
-  (Longshot) ignores it, as it does any Armour (17.6). It starts the fight
-  facing across the board, toward the party; it turns the way it last
-  stepped on a walk, or toward what it aims at if that is in a straight
-  line; a Push or Pull doesn't turn it (`Unit.facing`).
+  are the owner's AI-assisted art (2026-10-28; art-direction.md).
+- **One Eye, removed** (owner, 2026-11-02): it had Armour 3 against a
+  hit, or a grapple's squeeze, from any unit not standing in its front
+  lane, the line straight out the way it faced; it started the fight
+  facing the party and turned the way it walked or aimed (`Unit.facing`).
+  The facing went with it, and the eye drawn on its hex's edge; it has no
+  passive now.
 - **Smash:** melee, its power.
 - **Boulder:** down any of Snap Shot's six lanes, the first unit in it hit
   for its power; then every other unit next to where it lands, ally or
@@ -267,8 +264,8 @@ bouncing chevrons, and its card reads "Road out, sealed".
 
   Runs won fell from 0.89% to 0.01% (1 of 6,600). The Cyclops is now about
   as hard as the stage before it; parties of the Outrider and the Storm
-  Caller with no tank won none of their attempts (One Eye's Armour turns
-  their hits). China's pair is still the region's easiest stage. Zahhak,
+  Caller with no tank won none of their attempts (One Eye's Armour turned
+  their hits; One Eye is removed since, 2026-11-02). China's pair is still the region's easiest stage. Zahhak,
   who fell in none of his first 24 fights, almost never falls: his
   serpents grow back, Humphrey waits at the sealed exit, and the enemy
   wears him down. Merged as it is, to be tuned later (owner, 2026-10-29).
