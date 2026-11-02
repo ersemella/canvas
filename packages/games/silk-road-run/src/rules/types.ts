@@ -106,22 +106,16 @@ export type PassiveId =
   | 'rooted'
   | 'unstoppable'
   | 'lightStep'
-  | 'rebound'
   // Damage and survival
-  | 'hardened'
   | 'lastStand'
-  | 'piercingEye'
   | 'opportunist'
-  | 'bulwark'
   | 'glassCannon'
-  // Control
-  | 'ironWill'
-  | 'shakeLoose'
+  | 'plated'
+  | 'braced'
   // Position and allies
   | 'flanker'
   | 'loneWolf'
-  | 'rally'
-  | 'vengeance'
+  | 'sureHand'
   // A boss's own, not in 19.8's pool: the Cyclops's (owner, 2026-10-28),
   // and the Bull Demon King's and Princess Iron Fan's (owner, 2026-10-28).
   | 'oneEye'
@@ -139,31 +133,20 @@ export type PassiveId =
   // The test stage's Barbarian's in their place (owner, later 2026-10-31).
   | 'battleCry'
   // The generic ability upgrades (progression.md, 19.9; owner, 2026-10-29),
-  // drafted with the passives. Track
-  | 'wearying'
-  | 'lethargy'
-  | 'inspire'
-  | 'fervour'
-  // Board
+  // drafted with the passives. Board
   | 'forceful'
-  | 'reelIn'
-  // Attacks
-  | 'staggering'
-  | 'hamstring'
-  | 'concussive'
+  // Attacks: Concussive I, II and III Delay the target 2, 4 and 6 (owner, 2026-11-02).
+  | 'concussive1'
+  | 'concussive2'
+  | 'concussive3'
   | 'sundering'
   | 'crippling'
-  // Control
-  | 'lockdown'
-  | 'defyFate'
-  | 'immovableObject'
+  // What its abilities reach, enemy or ally (owner, 2026-11-02)
+  | 'empowering'
+  | 'hastening'
+  | 'sheltering'
   // Healing
   | 'invigorate'
-  | 'quickening'
-  | 'fortify'
-  | 'ward'
-  | 'mendingStrike'
-  | 'mendingShot'
   // Targeting
   | 'forked';
 
@@ -222,7 +205,7 @@ export interface Status {
    */
   squeezeAt?: number;
   /**
-   * From a pinning Longshot (`ABILITY.longshot.pin`) or Hamstring (19.9):
+   * From a pinning Longshot (`ABILITY.longshot.pin`):
    * Immobilized through `until`.
    */
   pinned?: boolean;
@@ -328,24 +311,24 @@ export interface Unit {
    */
   fan?: boolean;
   /**
-   * Its passives that work once a fight (Second Wind, Hardened, Last Stand,
-   * Iron Will) and have been used this fight. Absent while none has.
+   * Its passives that work once a fight (Second Wind, Last Stand) and have
+   * been used this fight. Absent while none has.
    */
   spent?: PassiveId[];
   /**
    * Shield (keywords.md, 17.6): a pool reduced before health, through
-   * `shieldUntil` (Rally, Ward), or until spent (`lastingShield`, the
+   * `shieldUntil` (Sheltering's), or until spent (`lastingShield`, the
    * Priest's Blessing). Absent when it has none.
    */
   shield?: number;
   /** The last slot its Shield, but a lasting one, lasts through. */
   shieldUntil?: number;
   /**
-   * Armour (keywords.md, 17.6) through `armourUntil`, from an ally's
-   * Fortify (19.9). Absent when it has none.
+   * Armour (keywords.md, 17.6) through `armourUntil`, from a Charge.
+   * Absent when it has none.
    */
   armour?: number;
-  /** The last slot its Fortify Armour lasts through. */
+  /** The last slot that Armour lasts through. */
   armourUntil?: number;
   /**
    * The Grappler holding its card off the track (a grapple, owner,
@@ -425,12 +408,6 @@ export interface Unit {
    * fight earns an extra provision (camel.md, 18.4). Absent while it hasn't.
    */
   damaged?: boolean;
-  /**
-   * The slot each ally next to it last had a hit taken for it (Bulwark,
-   * 19.8, once every `RULES.durations.turn` slots), by unit id. Absent while
-   * none has.
-   */
-  coveredAt?: Record<string, number>;
   /**
    * Its last turn was skipped (it could only Hold): its card shows it until
    * it next acts.

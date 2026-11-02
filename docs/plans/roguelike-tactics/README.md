@@ -29,8 +29,10 @@ after a regular stage, the player and the rival 1 each, 5 after a boss, 2
 each, the rest discarded; a pick can heal Humphrey instead, and the
 rival's provisions go to every later stage's enemy; Humphrey unhurt
 in a stage draws one more card and gives the player one more pick; a
-card once drawn, picked or discarded, is never drawn again in the run
-([progression.md](progression.md), 19.3c).
+passive or upgrade once drawn, picked or discarded, is never drawn again
+in the run, but the stat upgrades can be, at every caravanserai
+([progression.md](progression.md), 19.3c). Since 2026-11-02 the pool
+holds 26 passives and upgrades (19.3d).
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins

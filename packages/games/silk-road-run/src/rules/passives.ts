@@ -17,6 +17,7 @@ import {
   FURY,
   HEROES,
   ONE_EYE,
+  PASSIVE,
   RULES,
   SPEARHEAD,
   UPGRADE,
@@ -65,7 +66,16 @@ const upgrade = (
   rarity: Rarity
 ): PassiveDef => ({id, name, group, rule, kind: 'upgrade', rarity});
 
-/** The pool, in 19.8's order. */
+/**
+ * The pool, in 19.8's order. Pared down by the owner on 2026-11-02: 22 cards
+ * removed (Defy Fate, Vengeance, Ward, Shake Loose, Reel In, Rebound,
+ * Piercing Eye, Mending Strike and Shot, Iron Will, Immovable Object,
+ * Wearying, Fervour, Bulwark, Rally, Quickening, Inspire, Hardened,
+ * Fortify, Lockdown, Lethargy and Hamstring), Concussive split in three
+ * with Staggering folded in, and Plated, Braced, Sure Hand, Empowering,
+ * Hastening and Sheltering added, Unstoppable offered. The rarities of
+ * the new and changed cards are the builder's estimate, not measured.
+ */
 export const PASSIVES: Record<PassiveId, PassiveDef> = {
   steadyGait: def(
     'steadyGait',
@@ -78,7 +88,7 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'secondWind',
     'Second Wind',
     'track',
-    'The first time each fight it is at half its health or less, its card is Hastened 2.',
+    `The first time each fight it is at half its health or less, its card is Hastened ${PASSIVE.secondWind.haste}.`,
     'common'
   ),
   patient: def(
@@ -92,8 +102,8 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'momentum',
     'Momentum',
     'track',
-    'After a turn in which it takes a unit off the board, its card is Hastened 1.',
-    'common'
+    `After a turn in which it takes a unit off the board, its card is Hastened ${PASSIVE.momentum.haste}.`,
+    'uncommon'
   ),
   rooted: def(
     'rooted',
@@ -106,27 +116,14 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'unstoppable',
     'Unstoppable',
     'board',
-    'Can’t be Pushed, Pulled, Immobilized or Stunned, so it can’t be grappled and hail doesn’t stop its walk.'
+    'Can’t be Pushed, Pulled, Immobilized or Stunned, so it can’t be grappled and hail doesn’t stop its walk.',
+    'rare'
   ),
   lightStep: def(
     'lightStep',
     'Light Step',
     'board',
     'Walks through allies, and may end its walk swapping places with an ally.',
-    'uncommon'
-  ),
-  rebound: def(
-    'rebound',
-    'Rebound',
-    'board',
-    'When it is Pushed, Pulled or Moved, each unit next to where it ends, allies included, is Pushed 1 away from it.',
-    'common'
-  ),
-  hardened: def(
-    'hardened',
-    'Hardened',
-    'damage',
-    'Armour 1 against the first hit it takes each fight.',
     'uncommon'
   ),
   lastStand: def(
@@ -136,26 +133,12 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     `The first time each fight it would fall, it is left at 1 health instead, Delayed ${RULES.durations.stun}.`,
     'rare'
   ),
-  piercingEye: def(
-    'piercingEye',
-    'Piercing Eye',
-    'damage',
-    'Its attacks Pierce against a unit that is Immobilized or Stunned.',
-    'common'
-  ),
   opportunist: def(
     'opportunist',
     'Opportunist',
     'damage',
     'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.',
     'rare'
-  ),
-  bulwark: def(
-    'bulwark',
-    'Bulwark',
-    'damage',
-    `When an ally next to it takes its first hit in ${RULES.durations.turn} slots, the ally takes 1 less and this unit takes that 1.`,
-    'common'
   ),
   glassCannon: def(
     'glassCannon',
@@ -164,19 +147,19 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Empower 1 always, but starts each fight at half its health.',
     'epic'
   ),
-  ironWill: def(
-    'ironWill',
-    'Iron Will',
-    'control',
-    'The first time each fight it would be Stunned, it isn’t.',
-    'common'
+  plated: def(
+    'plated',
+    'Plated',
+    'damage',
+    `Armour ${PASSIVE.plated.armour} against every hit, unless it Pierces.`,
+    'epic'
   ),
-  shakeLoose: def(
-    'shakeLoose',
-    'Shake Loose',
-    'control',
-    'When it takes damage while Stunned, the Stun ends.',
-    'common'
+  braced: def(
+    'braced',
+    'Braced',
+    'damage',
+    `Starts each fight with Shield ${PASSIVE.braced.shield}, lasting until spent.`,
+    'uncommon'
   ),
   flanker: def(
     'flanker',
@@ -192,19 +175,12 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Empower 1 while no ally is within 2 spaces.',
     'rare'
   ),
-  rally: def(
-    'rally',
-    'Rally',
+  sureHand: def(
+    'sureHand',
+    'Sure Hand',
     'allies',
-    `At the start of its turn, each ally next to it gains Shield 1 for ${RULES.durations.turn} slots.`,
+    'Its abilities don’t damage allies.',
     'uncommon'
-  ),
-  vengeance: def(
-    'vengeance',
-    'Vengeance',
-    'allies',
-    `When an ally falls, its card is Hastened 3 and it is Empowered 1 for ${RULES.durations.turn} slots.`,
-    'common'
   ),
   oneEye: def(
     'oneEye',
@@ -260,34 +236,6 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Cut down, it can be grown back by Zahhak on his turn, next to him at full health.'
   ),
   // The generic ability upgrades (19.9; owner, 2026-10-29), rarer the stronger.
-  wearying: upgrade(
-    'wearying',
-    'Wearying',
-    'track',
-    `When its ability Delays an enemy, the enemy is also Weakened ${UPGRADE.wearying.weaken}.`,
-    'common'
-  ),
-  lethargy: upgrade(
-    'lethargy',
-    'Lethargy',
-    'track',
-    `When its ability Weakens an enemy, the enemy is also Delayed ${UPGRADE.lethargy.delay}.`,
-    'rare'
-  ),
-  inspire: upgrade(
-    'inspire',
-    'Inspire',
-    'track',
-    `When its ability Empowers an ally, the ally is also Hastened ${UPGRADE.inspire.haste}.`,
-    'uncommon'
-  ),
-  fervour: upgrade(
-    'fervour',
-    'Fervour',
-    'track',
-    `When its ability Hastens an ally, the ally is also Empowered ${UPGRADE.fervour.empower}.`,
-    'common'
-  ),
   forceful: upgrade(
     'forceful',
     'Forceful',
@@ -295,32 +243,25 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     `Its attacks Push the target ${UPGRADE.forceful.push}; not one that already Pushes.`,
     'uncommon'
   ),
-  reelIn: upgrade(
-    'reelIn',
-    'Reel In',
-    'board',
-    `Its ranged attacks Pull the target ${UPGRADE.reelIn.pull}. With Forceful, the target stays put.`,
-    'common'
-  ),
-  staggering: upgrade(
-    'staggering',
-    'Staggering',
+  concussive1: upgrade(
+    'concussive1',
+    'Concussive I',
     'attacks',
-    `Its attacks Delay the target ${UPGRADE.staggering.delay}.`,
+    `Its attacks Delay the target ${UPGRADE.concussive1.delay}.`,
     'epic'
   ),
-  hamstring: upgrade(
-    'hamstring',
-    'Hamstring',
+  concussive2: upgrade(
+    'concussive2',
+    'Concussive II',
     'attacks',
-    `Its attacks Immobilize the target for ${RULES.durations.turn} slots.`,
+    `Its attacks Delay the target ${UPGRADE.concussive2.delay}.`,
     'epic'
   ),
-  concussive: upgrade(
-    'concussive',
-    'Concussive',
+  concussive3: upgrade(
+    'concussive3',
+    'Concussive III',
     'attacks',
-    `Its attacks Delay the target ${RULES.durations.stun}.`,
+    `Its attacks Delay the target ${UPGRADE.concussive3.delay}.`,
     'legendary'
   ),
   sundering: upgrade('sundering', 'Sundering', 'attacks', 'Its attacks Pierce.', 'uncommon'),
@@ -331,25 +272,25 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     `Its attacks Weaken the target ${UPGRADE.crippling.weaken}.`,
     'uncommon'
   ),
-  lockdown: upgrade(
-    'lockdown',
-    'Lockdown',
-    'control',
-    `When its ability Immobilizes a unit, the unit is also Delayed ${RULES.durations.stun}.`,
-    'rare'
+  empowering: upgrade(
+    'empowering',
+    'Empowering',
+    'allies',
+    `Each unit its abilities hit or affect, enemy or ally, is Empowered ${UPGRADE.empowering.empower} for ${RULES.durations.turn} slots.`,
+    'uncommon'
   ),
-  defyFate: upgrade(
-    'defyFate',
-    'Defy Fate',
-    'control',
-    `Its attacks Delay an Inevitable target ${RULES.durations.stun}, though Inevitable.`,
-    'common'
+  hastening: upgrade(
+    'hastening',
+    'Hastening',
+    'allies',
+    `Each unit its abilities hit or affect, enemy or ally, is Hastened ${UPGRADE.hastening.haste}.`,
+    'uncommon'
   ),
-  immovableObject: upgrade(
-    'immovableObject',
-    'Immovable Object',
-    'control',
-    `Its attacks Delay an Unstoppable target ${UPGRADE.immovableObject.delay}.`,
+  sheltering: upgrade(
+    'sheltering',
+    'Sheltering',
+    'allies',
+    `Each unit its abilities hit or affect, enemy or ally, gains Shield ${UPGRADE.sheltering.shield} for ${RULES.durations.turn} slots.`,
     'common'
   ),
   invigorate: upgrade(
@@ -357,41 +298,6 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'Invigorate',
     'healing',
     `When its ability heals an ally, the ally is also Empowered ${UPGRADE.invigorate.empower}.`,
-    'common'
-  ),
-  quickening: upgrade(
-    'quickening',
-    'Quickening',
-    'healing',
-    `When its ability heals an ally, the ally is also Hastened ${UPGRADE.quickening.haste}.`,
-    'uncommon'
-  ),
-  fortify: upgrade(
-    'fortify',
-    'Fortify',
-    'healing',
-    `When its ability heals an ally, the ally also gains Armour ${UPGRADE.fortify.armour} for ${RULES.durations.turn} slots.`,
-    'uncommon'
-  ),
-  ward: upgrade(
-    'ward',
-    'Ward',
-    'healing',
-    `When its ability heals an ally, the ally also gains Shield ${UPGRADE.ward.shield} for ${RULES.durations.turn} slots.`,
-    'common'
-  ),
-  mendingStrike: upgrade(
-    'mendingStrike',
-    'Mending Strike',
-    'healing',
-    'Its melee attacks heal an ally they hit its power, Empower and Weaken counted, instead of hurting it.',
-    'common'
-  ),
-  mendingShot: upgrade(
-    'mendingShot',
-    'Mending Shot',
-    'healing',
-    'Its ranged attacks heal an ally they hit its power, Empower and Weaken counted, instead of hurting it.',
     'common'
   ),
   forked: upgrade(
@@ -404,16 +310,15 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
 };
 
 /**
- * Passives a hero starts with that the caravanserai doesn't offer:
- * Unstoppable, the Juggernaut's (owner, 2026-10-27), One Eye, the
- * Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's (owner,
- * 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), the
- * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29), and
- * Spearhead, the Vanguard's from 2026-10-30 to 2026-10-31 (owner), aren't
- * in 19.8's pool.
+ * Passives a hero starts with that the caravanserai doesn't offer: One Eye,
+ * the Cyclops's, Devoted, the Bull Demon King's and Princess Iron Fan's
+ * (owner, 2026-10-28), Armoured, the Cataphract's (owner, 2026-10-29), the
+ * Serpent King and Regrow, Zahhak's and his serpents' (2026-10-29),
+ * Spearhead, the Vanguard's from 2026-10-30 to 2026-10-31 (owner), and the
+ * Barbarian's Fury, Bloodlust and Battle Cry aren't in 19.8's pool.
+ * Unstoppable, the Juggernaut's, is offered since 2026-11-02 (owner).
  */
 export const NOT_OFFERED: readonly PassiveId[] = [
-  'unstoppable',
   'oneEye',
   'devoted',
   'armoured',
@@ -454,48 +359,48 @@ export function passivesOf(unit: Unit): PassiveDef[] {
  * picks (`fitRank`): the passives that supplement it most, best first (`likes`), and those that do it
  * little or no good (`useless`, last). The rest come between, in the
  * pool's order. Builder's first reading of each kit, unmeasured: a slow
- * tank wants to hold the line (Bulwark, Rally), a fast striker to keep
+ * tank wants to hold the line (Plated, Braced), a fast striker to keep
  * its tempo (Momentum, Opportunist), a frail support to survive (Last
- * Stand, Hardened); nothing that undoes its kit (Steady Gait on the
+ * Stand, Braced); nothing that undoes its kit (Steady Gait on the
  * Duelist, whose Swift Strike Hastens it) or that it already has the
- * effect of (Rooted or Iron Will on the Unstoppable Juggernaut).
+ * effect of (Rooted on the Unstoppable Juggernaut).
  */
 export const DRAFT_FIT: Partial<Record<HeroId, {likes: PassiveId[]; useless: PassiveId[]}>> = {
   youxia: {
-    likes: ['momentum', 'opportunist', 'flanker', 'lastStand', 'secondWind', 'hardened'],
+    likes: ['momentum', 'opportunist', 'flanker', 'lastStand', 'secondWind', 'braced'],
     useless: ['steadyGait', 'loneWolf', 'patient'],
   },
   modao: {
-    likes: ['bulwark', 'rally', 'hardened', 'ironWill', 'rooted', 'secondWind'],
+    likes: ['plated', 'braced', 'rooted', 'unstoppable', 'secondWind', 'lastStand'],
     useless: ['glassCannon', 'loneWolf', 'lightStep'],
   },
   alchemist: {
-    likes: ['lastStand', 'hardened', 'lightStep', 'secondWind', 'ironWill', 'rally'],
-    useless: ['glassCannon', 'loneWolf', 'piercingEye', 'flanker'],
+    likes: ['lastStand', 'braced', 'lightStep', 'secondWind', 'plated', 'unstoppable'],
+    useless: ['glassCannon', 'loneWolf', 'flanker'],
   },
   archer: {
-    likes: ['loneWolf', 'opportunist', 'glassCannon', 'lastStand', 'hardened', 'momentum'],
-    useless: ['piercingEye', 'bulwark', 'rally', 'flanker'],
+    likes: ['loneWolf', 'opportunist', 'glassCannon', 'lastStand', 'braced', 'momentum'],
+    useless: ['flanker', 'sureHand'],
   },
   mahout: {
-    likes: ['rally', 'bulwark', 'hardened', 'momentum', 'secondWind', 'opportunist'],
-    useless: ['rooted', 'ironWill', 'shakeLoose', 'loneWolf', 'lightStep'],
+    likes: ['plated', 'braced', 'momentum', 'secondWind', 'opportunist'],
+    useless: ['rooted', 'loneWolf', 'lightStep'],
   },
   magus: {
-    likes: ['lastStand', 'hardened', 'lightStep', 'ironWill', 'rebound', 'secondWind'],
-    useless: ['glassCannon', 'opportunist', 'flanker', 'piercingEye', 'momentum', 'loneWolf'],
+    likes: ['lastStand', 'braced', 'lightStep', 'plated', 'unstoppable', 'secondWind'],
+    useless: ['glassCannon', 'opportunist', 'flanker', 'momentum', 'loneWolf'],
   },
   varangian: {
-    likes: ['opportunist', 'momentum', 'flanker', 'secondWind', 'hardened', 'lastStand'],
+    likes: ['opportunist', 'momentum', 'flanker', 'secondWind', 'braced', 'lastStand'],
     useless: ['loneWolf', 'patient'],
   },
   cataphract: {
-    likes: ['bulwark', 'hardened', 'momentum', 'rally', 'ironWill', 'rebound'],
+    likes: ['plated', 'braced', 'momentum', 'unstoppable', 'secondWind'],
     useless: ['lightStep', 'loneWolf', 'glassCannon', 'patient'],
   },
   priest: {
-    likes: ['lastStand', 'hardened', 'ironWill', 'lightStep', 'secondWind', 'rally'],
-    useless: ['glassCannon', 'opportunist', 'flanker', 'piercingEye', 'momentum', 'loneWolf'],
+    likes: ['lastStand', 'braced', 'plated', 'lightStep', 'secondWind', 'unstoppable'],
+    useless: ['glassCannon', 'opportunist', 'flanker', 'momentum', 'loneWolf'],
   },
 };
 
@@ -546,26 +451,17 @@ const TRAITS: Partial<Record<AbilityId, Trait[]>> = {
 
 /** The traits a generic upgrade needs one of to do anything (19.9). */
 const NEEDS: Partial<Record<PassiveId, Trait[]>> = {
-  wearying: ['delays'],
-  lethargy: ['weakens'],
-  inspire: ['empowers'],
-  fervour: ['hastens'],
   forceful: ['melee', 'ranged'],
-  reelIn: ['ranged'],
-  staggering: ['melee', 'ranged'],
-  hamstring: ['melee', 'ranged'],
-  concussive: ['melee', 'ranged'],
+  concussive1: ['melee', 'ranged'],
+  concussive2: ['melee', 'ranged'],
+  concussive3: ['melee', 'ranged'],
   sundering: ['melee', 'ranged'],
   crippling: ['melee', 'ranged'],
-  lockdown: ['immobilizes'],
-  defyFate: ['melee', 'ranged'],
-  immovableObject: ['melee', 'ranged'],
+  // Of use on a kit that reaches allies: on an enemy each is a gift.
+  empowering: ['heals', 'empowers', 'hastens'],
+  hastening: ['heals', 'empowers', 'hastens'],
+  sheltering: ['heals', 'empowers', 'hastens'],
   invigorate: ['heals'],
-  quickening: ['heals'],
-  fortify: ['heals'],
-  ward: ['heals'],
-  mendingStrike: ['melee'],
-  mendingShot: ['ranged'],
   forked: ['single'],
 };
 

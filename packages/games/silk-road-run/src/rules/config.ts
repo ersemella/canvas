@@ -62,12 +62,11 @@ export const RULES = {
    * Durations in slots (owner, 2026-10-29; balance.md, "Durations in a
    * fixed number of slots"), in place of turns: every effect that lasted
    * until a unit's next turn (Empower, Weaken, a Shield but a lasting one,
-   * Fortify's Armour, the Immobilized of Hamstring or a pin, Princess Iron
-   * Fan's fire) lasts `turn` slots from the slot it is given, hail `hail`,
+   * a Charge's Armour, the Immobilized of a pin, Princess Iron Fan's fire) lasts `turn` slots from the slot it is given, hail `hail`,
    * whatever turns come in between, ending as the track passes its last
    * slot (`expireDurations` in resolve.ts); a Stun for a unit's next turn
    * is a Delay of `stun` (`stunForATurn`). A grapple squeezes every `turn`
-   * slots, Bulwark covers each ally once every `turn` slots. 8 is the
+   * slots. 8 is the
    * fastest hero's turn, so an Empower seldom lasts two of a unit's turns.
    */
   durations: {turn: 8 as number, hail: 16 as number, stun: 6 as number},
@@ -566,19 +565,30 @@ export const BLOODLUST = {
  * 17.6), Push and Pull 1 (17.4).
  */
 export const UPGRADE = {
-  wearying: {weaken: 1},
-  lethargy: {delay: 2},
-  inspire: {haste: 2},
-  fervour: {empower: 1},
   forceful: {push: 1},
-  reelIn: {pull: 1},
-  staggering: {delay: 2},
+  /** Concussive I, II and III (owner, 2026-11-02): one family, Staggering's Delay 2 folded in as I. */
+  concussive1: {delay: 2},
+  concussive2: {delay: 4},
+  concussive3: {delay: 6},
   crippling: {weaken: 1},
-  immovableObject: {delay: 2},
+  /** What reaches each unit its abilities hit or affect, enemy or ally (owner, 2026-11-02). */
+  empowering: {empower: 1},
+  hastening: {haste: 2},
+  sheltering: {shield: 1},
   invigorate: {empower: 1},
-  quickening: {haste: 2},
-  fortify: {armour: 1},
-  ward: {shield: 1},
+} as const;
+
+/**
+ * Passive values (19.8): Second Wind's Haste (2 until 2026-11-02, owner:
+ * raised) and Momentum's (1 until then); Plated's Armour against every
+ * hit and Braced's Shield at the start of each fight, lasting until spent
+ * (owner, 2026-11-02).
+ */
+export const PASSIVE = {
+  secondWind: {haste: 4},
+  momentum: {haste: 2},
+  plated: {armour: 1},
+  braced: {shield: 2},
 } as const;
 
 /** Each ability's shape. Damage is never listed: it is the user's power. */
@@ -1257,7 +1267,7 @@ export const AI = {
   } as Record<HeroId, number>,
   friendlyDamageFactor: 1.5,
   /**
-   * A Shield (Blessing, Rally) is worth this share of the damage it could
+   * A Shield (Blessing, Sheltering) is worth this share of the damage it could
    * absorb before the unit's next turn: the hits the enemies acting before
    * then could deal it, at most its Shield. PLACEHOLDER.
    */

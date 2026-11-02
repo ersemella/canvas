@@ -119,6 +119,7 @@ import {
   runStatus,
   runView,
   cardRarity,
+  isStatCard,
   draftOffer,
   draftRivals,
   rivalPick,
@@ -1073,7 +1074,7 @@ describe('stats and damage', () => {
     expect(hitAt(1)).toBe(2);
   });
 
-  it('what was a Stun for a turn is a Delay of `RULES.durations.stun`, which Iron Will still stops, and a Grappler lets go', () => {
+  it('what was a Stun for a turn is a Delay of `RULES.durations.stun`, which Unstoppable still stops, and a Grappler lets go', () => {
     const s = setup({'p-bokh': at(1, 1), 'e-storm': at(2, 1)});
     const storm = unit(s, 'e-storm');
     const slot = storm.slot!;
@@ -1081,7 +1082,7 @@ describe('stats and damage', () => {
     stunForATurn(ctx, storm);
     expect(isStunned(storm)).toBe(false);
     expect(storm.slot).toBe(slot + RULES.durations.stun);
-    storm.passives = ['ironWill'];
+    storm.passives = ['unstoppable'];
     stunForATurn(ctx, storm);
     expect(storm.slot).toBe(slot + RULES.durations.stun);
     // As a Stun did, it makes a Grappler let go.
@@ -2229,16 +2230,6 @@ describe('the Barbarian', () => {
     expect(unusableReason(b, ABILITIES.axeThrow)).toBeNull();
   });
 
-  it('Axe Throw at an ally next to it, the Barbarian falling to its own Bulwark, Pushes no one', () => {
-    const {s, b} = throwing({'p-modao': along(c, 3, 1), 'e-modao': along(c, 3, 3)});
-    b.passives = ['bulwark'];
-    b.hp = 1;
-    applyTurn(s, b, {action: {ability: 'axeThrow', target: {hex: along(c, 3, 1)}}});
-    expect(b.alive).toBe(false);
-    expect(hp(s, 'p-modao')).toBe(b.power - 1);
-    expect(unit(s, 'p-modao').hex).toEqual(along(c, 3, 1));
-  });
-
   it('the AI throws its axe at an enemy in line, and counts it a threat down its lines', () => {
     const {s, b} = throwing({'p-modao': along(c, 3, 3), 'p-mangudai': at(0, 8)}, 'e-varangian');
     b.controller = 'ai';
@@ -3140,12 +3131,12 @@ describe('the Ranger', () => {
   it('Longshot hits the first unit in line, Armour standing against it, and stays put', () => {
     const {s, a} = ready({'e-bokh': along(c, 0, 2), 'e-storm': along(c, 0, 4)});
     const bokh = unit(s, 'e-bokh');
-    bokh.passives = ['hardened'];
+    bokh.passives = ['plated'];
     bokh.slot = 5;
     expect(isTarget(s, a, bokh.hex!)).toBe(true);
     expect(isTarget(s, a, unit(s, 'e-storm').hex!)).toBe(false);
     applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
-    // Armour 1 (Hardened), no Pierce: 3 less 1.
+    // Armour 1 (Plated), no Pierce: 3 less 1.
     expect(bokh.hp).toBe(bokh.maxHp - 2);
     expect(bokh.hex).toEqual(along(c, 0, 2));
     expect(bokh.slot).toBe(5);
@@ -3157,7 +3148,7 @@ describe('the Ranger', () => {
     try {
       const {s, a} = ready({'e-bokh': along(c, 0, 2)});
       const bokh = unit(s, 'e-bokh');
-      bokh.passives = ['hardened'];
+      bokh.passives = ['plated'];
       applyTurn(s, a, {action: {ability: 'longshot', target: {hex: bokh.hex!}}});
       expect(bokh.hp).toBe(bokh.maxHp - 3);
     } finally {
@@ -5039,7 +5030,7 @@ describe('previews, the AI and the run', () => {
       'epic',
       'epic',
     ]);
-    expect(cardRarity('concussive')).toBe('legendary');
+    expect(cardRarity('concussive3')).toBe('legendary');
     const seen = new Set<CardId>();
     const maxed = new Set<CardId>();
     for (let seed = 0; seed < 60; seed++) {
@@ -5120,14 +5111,14 @@ describe('previews, the AI and the run', () => {
     expect(next.rivalCards).toEqual(draft.rival);
   });
 
-  it('a provision once drawn, picked or discarded, is never drawn again in the run', () => {
+  it('a passive or upgrade once drawn, picked or discarded, is never drawn again in the run', () => {
     for (const seed of [3, 7, 11]) {
       let run = createRun(seed);
       const drawn: CardId[] = [];
       for (let stage = 0; stage < STAGES.length - 1; stage++) {
         const won = winStage(run, stage % 2 === 0);
         const {offer} = runView(won).draft!;
-        expect(offer.filter((c) => drawn.includes(c))).toEqual([]);
+        expect(offer.filter((c) => !isStatCard(c) && drawn.includes(c))).toEqual([]);
         drawn.push(...offer);
         run = handleRunAction(pickAll(won), {type: 'next'});
         expect(run.offered).toEqual(drawn);
@@ -5135,10 +5126,38 @@ describe('previews, the AI and the run', () => {
     }
   });
 
+  it('the stat upgrades can be drawn again, at every caravanserai (owner, 2026-11-02)', () => {
+    const won = winStage({...createRun(9), stage: 3});
+    const passives = Object.keys(PASSIVES) as CardId[];
+    // Every stat drawn before, and every passive and upgrade: the stats alone are left.
+    const offer = runView({...won, offered: ['speed', 'defence', 'power', ...passives]}).draft!
+      .offer;
+    expect([...offer].sort()).toEqual(['defence', 'power', 'speed']);
+    // Over a run, some stat comes up at more than one caravanserai.
+    let repeats = 0;
+    for (const seed of [3, 7, 11, 13, 17]) {
+      let run = createRun(seed);
+      const seen = new Set<CardId>();
+      for (let stage = 0; stage < STAGES.length - 1; stage++) {
+        const won = winStage(run, stage % 2 === 0);
+        for (const c of runView(won).draft!.offer.filter(isStatCard)) {
+          if (seen.has(c)) repeats++;
+          seen.add(c);
+        }
+        run = handleRunAction(pickAll(won), {type: 'next'});
+      }
+    }
+    expect(repeats).toBeGreaterThan(0);
+  });
+
   it('with the pool run short, fewer are drawn, and the party picks only while a card is left', () => {
     const won = winStage({...createRun(9), stage: 3});
+    // The stats can't be raised (provisions to the most): none is drawn.
+    const max = RULES.statMax;
+    for (const u of won.fight.units) u.provisions = {speed: max, defence: max, power: max};
     const all = runView(won).draft!.offer;
-    const pool = ['speed', 'defence', 'power', ...Object.keys(PASSIVES)] as CardId[];
+    expect(all.filter(isStatCard)).toEqual([]);
+    const pool = Object.keys(PASSIVES) as CardId[];
     const short = (left: number) => ({
       ...won,
       offered: pool.filter((c) => !all.slice(0, left).includes(c)),
@@ -5237,26 +5256,26 @@ describe('previews, the AI and the run', () => {
   });
 
   it('the rival takes the rarest provision its next enemy can use', () => {
-    // Concussive (Legendary) before a stat (Epic) before Patient (Common).
-    expect(rivalPick(['mangudai'], ['patient', 'speed', 'concussive'])).toBe('concussive');
+    // Concussive III (Legendary) before a stat (Epic) before Patient (Common).
+    expect(rivalPick(['mangudai'], ['patient', 'speed', 'concussive3'])).toBe('concussive3');
     expect(rivalPick(['mangudai'], ['patient', 'power'])).toBe('power');
     // An upgrade no rival's kit can use comes after one that does them good.
-    expect(rivalPick(['bokh'], ['ward', 'patient'])).toBe('patient');
-    expect(rivalPick(['priest'], ['ward', 'patient'])).toBe('ward');
+    expect(rivalPick(['bokh'], ['invigorate', 'patient'])).toBe('patient');
+    expect(rivalPick(['priest'], ['invigorate', 'patient'])).toBe('invigorate');
   });
 
   it("the rival's provisions shared out over a stage's enemy: stats to the fewest held, passives where they fit, none to a creature", () => {
     const shares = rivalShares(
       ['youxia', 'modao', 'wolf'],
-      ['speed', 'power', 'hardened', 'defence', 'concussive']
+      ['speed', 'power', 'plated', 'defence', 'concussive3']
     );
     // The wolf carries nothing.
     expect(shares[2]).toEqual({passives: []});
-    // The stats go round, the fewest held first; Hardened to the Vanguard,
-    // which likes it more (DRAFT_FIT); Concussive, which suits both, to the
-    // first with the fewest so far.
-    expect(shares[0]).toEqual({provisions: {speed: 1, defence: 1}, passives: ['concussive']});
-    expect(shares[1]).toEqual({provisions: {power: 1}, passives: ['hardened']});
+    // The stats go round, the fewest held first; Plated to the Vanguard,
+    // which likes it more (DRAFT_FIT); Concussive III, which suits both, to
+    // the first with the fewest so far.
+    expect(shares[0]).toEqual({provisions: {speed: 1, defence: 1}, passives: ['concussive3']});
+    expect(shares[1]).toEqual({provisions: {power: 1}, passives: ['plated']});
     // A stat at its most goes to the next; none can take it, it's left out.
     const max = RULES.statMax;
     const many = Array<CardId>(2 * max).fill('speed');
@@ -5276,14 +5295,14 @@ describe('previews, the AI and the run', () => {
   it('the rival drafts the passive that supplements its hero most', () => {
     // The Duelist keeps its tempo; it never takes Steady Gait, which would undo Swift Strike's Haste.
     expect(draftPick('youxia', ['rooted', 'momentum', 'steadyGait'])).toBe('momentum');
-    expect(draftPick('youxia', ['steadyGait', 'rebound'])).toBe('rebound');
+    expect(draftPick('youxia', ['steadyGait', 'flanker'])).toBe('flanker');
     // A slow tank holds the line.
-    expect(draftPick('modao', ['glassCannon', 'loneWolf', 'bulwark'])).toBe('bulwark');
+    expect(draftPick('modao', ['glassCannon', 'loneWolf', 'plated'])).toBe('plated');
     // Nothing the Juggernaut's Unstoppable already gives it, nor the Magus's own Steady Gait.
-    expect(draftPick('mahout', ['rooted', 'ironWill', 'patient'])).toBe('patient');
+    expect(draftPick('mahout', ['rooted', 'unstoppable', 'patient'])).toBe('patient');
     expect(draftPick('magus', ['steadyGait', 'glassCannon'])).toBe('glassCannon');
     // With one left, that one.
-    expect(draftPick('archer', ['bulwark'])).toBe('bulwark');
+    expect(draftPick('archer', ['plated'])).toBe('plated');
   });
 
   it('a party must be one to three different heroes of the roster', () => {

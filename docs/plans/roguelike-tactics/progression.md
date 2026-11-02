@@ -176,18 +176,25 @@ random from one pool:
 
   | Rarity | Weight | Passives | Upgrades |
   |---|---|---|---|
-  | **Legendary** | 1 | none | Concussive (89.7%), Forked (83%) |
-  | **Epic** | 2 | Glass Cannon (72%) | Hamstring (69.4%), Staggering (68%) |
-  | **Rare** | 4 | Opportunist, Steady Gait, Lone Wolf, Last Stand, Rooted | Lethargy, Lockdown |
-  | **Uncommon** | 6 | Hardened, Light Step, Rally | Forceful, Quickening, Inspire, Crippling, Fortify, Sundering |
-  | **Common** | 8 | Vengeance, Iron Will, Second Wind, Flanker, Bulwark, Momentum, Rebound, Patient, Piercing Eye, Shake Loose | Invigorate, Mending Shot, Mending Strike, Ward, Wearying, Defy Fate, Immovable Object, Reel In, Fervour |
+  | **Legendary** | 1 | none | Concussive III (89.7%), Forked (83%) |
+  | **Epic** | 2 | Glass Cannon (72%), Plated* | Concussive I (68%, as Staggering), Concussive II* |
+  | **Rare** | 4 | Opportunist, Steady Gait, Lone Wolf, Last Stand, Rooted, Unstoppable* | none |
+  | **Uncommon** | 6 | Light Step, Momentum*, Braced*, Sure Hand* | Forceful, Crippling, Sundering, Empowering*, Hastening* |
+  | **Common** | 8 | Second Wind*, Flanker, Patient | Invigorate, Sheltering* |
+
+  \* Since 2026-11-02 (19.3d): new, changed or newly offered, its tier
+  the builder's estimate, **not measured**. Concussive II's Delay 4 is put
+  between I's 68% and III's 89.7%, under 80%; Plated's Armour 1 on every
+  hit beside Hardened's 52% once a fight; Momentum moved up for its Haste
+  2. Measure them with `experiments/provision-vs-card.mjs`, which holds
+  the pool as it is now.
 
   **Stat upgrades are Epic** (owner, 2026-10-29; `STAT_RARITY`): each
   of +1 speed, defence and power is a card of the draft (19.3c), at
   Epic's weight; on its hero's best stat a provision wins 50.8–76%, the
   best in each region's party 60–76%.
 
-  With all 40 open (before the stats joined them), some legendary card
+  With all 40 open (before the stats joined them, and before 19.3d), some legendary card
   was in about 1 offer in 29, any one common card in about 1 in 7.5, and
   about 62% of the cards offered were common. Measured in the regions' mirrors only: a card for a
   situation those fights lack (Defy Fate against Inevitable
@@ -235,14 +242,50 @@ random from one pool:
   - **A provision is drawn once a run (owner, 2026-10-29):** once a
     card has been offered at a caravanserai, picked by either side or
     discarded, it is never drawn again in the run (`RunState.offered`).
-    This covers the three stat cards too: each of +1 speed, defence and
-    power is offered at most once a run. With 43 cards in the pool (the
-    three stats and 40 passives and upgrades) and up to 48 drawn in a run
-    of three regions, late drafts can run short: fewer are drawn, and the
+    **The stat cards are the exception since 2026-11-02 (owner):** each
+    of +1 speed, defence and power can be drawn at every caravanserai,
+    at Epic's weight still, though at most once in one draft (until then
+    each was offered at most once a run). With 26 passives and upgrades
+    in the pool (19.3d) and up to 48 cards drawn in a run of three
+    regions, late drafts run out of them and come down to the stats; with
+    the stats too at 10 on every hero standing, fewer are drawn, and the
     party picks only while a card is left after the picks and answers
     before (`picksOwed`); with none left, there is no draft.
   - Not measured: how much harder runs are with the enemy growing every
     stage, nor whether the rival's picks (rarest first) are its best.
+- **19.3d The pool pared down (Decided, owner 2026-11-02; built).** The
+  caravanserai's pool goes from 40 passives and upgrades to 26, beside
+  the three stats:
+  - **Removed (22):** Defy Fate, Vengeance, Ward, Shake Loose, Reel In,
+    Rebound, Piercing Eye, Mending Strike, Mending Shot, Iron Will,
+    Immovable Object, Wearying, Fervour, Bulwark, Rally, Quickening,
+    Inspire, Hardened, Fortify, Lockdown, Lethargy and Hamstring, gone
+    from the rules too.
+  - **Concussive split into three:** Concussive I, II and III, its
+    attacks Delaying the target 2, 4 and 6 (`UPGRADE.concussive1` to
+    `3`); Staggering (Delay 2) folded in as I. A hero carrying more than
+    one Delays by the highest only. Each is a plain Delay now: III no
+    longer breaks a grapple or a drawn arrow as its Stun-turned-Delay did.
+  - **Raised:** Second Wind's Haste 2 to 4, Momentum's 1 to 2
+    (`PASSIVE` in config.ts).
+  - **Added, where none did it yet:** **Plated** (Armour 1 against every
+    hit, unless it Pierces), **Braced** (Shield 2 at the start of each
+    fight, lasting until spent), **Sure Hand** (its abilities don't damage
+    allies), and three upgrades that give **each unit its abilities hit or
+    affect, enemy or ally, but never itself**: **Empowering** (Empower 1
+    for 8 slots), **Hastening** (Haste 2) and **Sheltering** (Shield 1 for
+    8 slots). "Hit or affect": a hit, landing or not, and a heal, Empower,
+    Weaken, Haste, Delay or Immobilize by its ability (`reach` in
+    resolve.ts); each once a unit an ability, so they don't loop. The
+    rival gives them only to a hero whose kit reaches allies.
+  - **Offered now:** **Unstoppable**, the Juggernaut's.
+  - **Already there, kept:** the other asks of the day had a card:
+    ability Weakens (Crippling), Delays (Concussive), Pierces (Sundering),
+    and Inevitable (Steady Gait).
+  - **No attack is aimed at an ally any more:** Mending Strike and Shot
+    were what allowed it (`offeredTargets`).
+  - The rarities of the new and changed cards are estimated (19.3b).
+    Runs saved before end (`RUN_FORMAT` 20).
 - **At most two abilities** besides moving and Hold (owner, 2026-10-25;
   three from 2026-10-24; [roster.md](roster.md)): the hero slot offers a
   new ability only to a hero with fewer than two (`hasRoomForAbility` in
@@ -350,6 +393,12 @@ Counts assume every wildcard is taken as an upgrade, and the region
 rhythm of 19.1 (question 66).
 
 ### 19.8 Passives (Proposed, owner 2026-10-24; built 2026-10-25, offered between regions 2026-10-26)
+> **Pared down 2026-11-02 (owner, 19.3d):** Rebound, Hardened, Piercing
+> Eye, Bulwark, Iron Will, Shake Loose, Rally and Vengeance removed;
+> Plated, Braced and Sure Hand added; Second Wind and Momentum raised;
+> Unstoppable offered. The tables below are the pool as it is; the
+> builder's readings name the removed ones where they were decided.
+
 The pool for the offer's passive slot (19.3). Each is a rule that works
 on whichever hero carries it ("this hero"), in the keywords' terms
 ([keywords.md](keywords.md)); every one is public and previewable (D11).
@@ -409,35 +458,27 @@ choice:
 | Passive | Rule |
 |---|---|
 | **Steady Gait** | Inevitable: this hero's card can't be Delayed or Hastened. |
-| **Second Wind** | The first time each fight this hero is at half its health or less, its card is Hastened 2. |
+| **Second Wind** | The first time each fight this hero is at half its health or less, its card is Hastened 4 (2 until 2026-11-02). |
 | **Patient** | When this hero ends a turn without moving or using an ability, its card goes 2 fewer slots on. |
-| **Momentum** | After a turn in which this hero takes a unit off the board, its card is Hastened 1. |
+| **Momentum** | After a turn in which this hero takes a unit off the board, its card is Hastened 2 (1 until 2026-11-02). |
 
 **Board**
 
 | Passive | Rule |
 |---|---|
 | **Rooted** | This hero can't be Pushed or Pulled; unlike Unstoppable, it can still be Immobilized and Moved. |
+| **Unstoppable** | This hero can't be Pushed, Pulled, Immobilized or Stunned (17.4). The Juggernaut's; offered since 2026-11-02. |
 | **Light Step** | This hero walks through allies, and may swap places with an ally at the end of its move. |
-| **Rebound** | When this hero is Pushed, Pulled or Moved, by an ally or an enemy, each unit next to its final position, allies included, is Pushed 1 space away from it, one at a time as for any area (17.4). |
 
 **Damage and survival**
 
 | Passive | Rule |
 |---|---|
-| **Hardened** | Armour 1 against the first hit this hero takes each fight. |
 | **Last Stand** | The first time each fight this hero would die, it is left at 1 health instead and is Delayed 6 (Stunned for its next turn until 2026-10-29). |
-| **Piercing Eye** | This hero's attacks Pierce against a unit that is Immobilized or Stunned. |
 | **Opportunist** | This hero's attacks deal 1 more damage (as Empower 1) to a unit whose card is behind this hero's next card, or off the track (2026-10-29; a unit that hadn't had a turn since this hero's last before). |
-| **Bulwark** | When an ally next to this hero takes its first hit in 8 slots (between this hero's turns until 2026-10-29), the ally takes 1 less damage and this hero takes that 1. |
 | **Glass Cannon** | Empower 1 always, but this hero starts each fight at half its health. |
-
-**Control**
-
-| Passive | Rule |
-|---|---|
-| **Iron Will** | The first time each fight this hero would be Stunned, it isn't. |
-| **Shake Loose** | When this hero takes damage while Stunned, the Stun ends. |
+| **Plated** | Armour 1 against every hit, unless it Pierces (2026-11-02). Adds to any other Armour. |
+| **Braced** | This hero starts each fight with Shield 2, lasting until spent (2026-11-02). |
 
 **Position and allies**
 
@@ -445,20 +486,22 @@ choice:
 |---|---|
 | **Flanker** | This hero's attacks deal 1 more damage when an ally stands on the far side of the target, opposite this hero. |
 | **Lone Wolf** | Empower 1 while no ally is within 2 spaces. |
-| **Rally** | At the start of this hero's turn, each ally next to it gains Shield 1 for 8 slots. |
-| **Vengeance** | When an ally dies, this hero's card is Hastened 3 and it gains Empower 1 for 8 slots. |
+| **Sure Hand** | This hero's abilities don't damage allies (2026-11-02); enemies they hit as before. |
 
-- Rationale: each bends one rule rather than adding a system (17.7), and
-  several answer a measured problem: Iron Will and Shake Loose counter
-  Grapple, which decides fights ([owner-decisions.md](owner-decisions.md));
-  Piercing Eye rewards pairing Hail or Grapple with damage.
-- **To watch:** passives that act on the other side's turns (Bulwark,
-  Rebound, Iron Will, Shake Loose, Vengeance) can't be ablated by a
-  one-sided ban, as with Hold the Line ([balance.md](balance.md));
-  Vengeance softens the death spiral (10.6); Glass Cannon and Lone Wolf
-  are deliberate risk picks.
+- Rationale: each bends one rule rather than adding a system (17.7).
+  Until 2026-11-02 Iron Will and Shake Loose answered Grapple, which
+  decides fights ([owner-decisions.md](owner-decisions.md)); with both
+  gone, Unstoppable is the card that does.
+- **To watch:** Glass Cannon and Lone Wolf are deliberate risk picks;
+  Plated beside the Cataphract's Armoured makes Armour 2.
 
 ### 19.9 Generic Ability Upgrades (Decided, owner 2026-10-29; built 2026-10-29)
+> **Pared down 2026-11-02 (owner, 19.3d):** Wearying, Lethargy, Inspire,
+> Fervour, Reel In, Hamstring, Lockdown, Defy Fate, Immovable Object,
+> Quickening, Fortify, Ward, Mending Strike and Mending Shot removed;
+> Staggering and Concussive made Concussive I, II and III; Empowering,
+> Hastening and Sheltering added. The tables below are the pool as it is.
+
 Upgrades that change **how a hero's abilities work, whatever they are**:
 each keys off a keyword an ability already applies (17.1) or a kind of
 ability (an attack, a heal, a ranged attack, a single target), not off a named
@@ -475,50 +518,35 @@ region's heroes. An upgrade, like a passive, is carried by the hero it
 goes to for the rest of the run. Whether either can later move to another
 hero is still question 63.
 
-**Track**
-
-| Upgrade | Rule |
-|---|---|
-| **Wearying** | When this hero's ability Delays an enemy, the enemy is also Weakened 1 (TBD). |
-| **Lethargy** | When this hero's ability Weakens an enemy, the enemy is also Delayed 2 (TBD). |
-| **Inspire** | When this hero's ability Empowers an ally, the ally is also Hastened 2 (TBD). |
-| **Fervour** | When this hero's ability Hastens an ally, the ally is also Empowered 1 (TBD). |
-
 **Board**
 
 | Upgrade | Rule |
 |---|---|
 | **Forceful** | This hero's attacks Push the target 1. An attack that already Pushes doesn't Push further. |
-| **Reel In** | This hero's ranged attacks (a target not next to it) Pull the target 1. |
 
-**Attacks** (owner, 2026-10-29, later)
+**Attacks** (owner, 2026-10-29, later; Concussive's tiers 2026-11-02)
 
 | Upgrade | Rule |
 |---|---|
-| **Staggering** | This hero's attacks Delay the target 2 (TBD). |
-| **Hamstring** | This hero's attacks Immobilize the target for 8 slots. |
-| **Concussive** | This hero's attacks Delay the target 6 (a Stun for its next turn until 2026-10-29). |
+| **Concussive I** | This hero's attacks Delay the target 2 (Staggering until 2026-11-02). |
+| **Concussive II** | This hero's attacks Delay the target 4. |
+| **Concussive III** | This hero's attacks Delay the target 6 (Concussive until 2026-11-02, a Stun for its next turn until 2026-10-29). |
 | **Sundering** | This hero's attacks Pierce. |
 | **Crippling** | This hero's attacks Weaken the target 1 (TBD). |
 
-**Control**
+**What its abilities reach** (owner, 2026-11-02)
 
 | Upgrade | Rule |
 |---|---|
-| **Lockdown** | When this hero's ability Immobilizes a unit, the unit is also Delayed 6. |
-| **Defy Fate** | This hero's attacks Delay an Inevitable target 6, though Inevitable. |
-| **Immovable Object** | This hero's attacks Delay an Unstoppable target 2 (TBD). |
+| **Empowering** | Each unit this hero's abilities hit or affect, enemy or ally, is Empowered 1 for 8 slots. |
+| **Hastening** | Each unit this hero's abilities hit or affect, enemy or ally, is Hastened 2. |
+| **Sheltering** | Each unit this hero's abilities hit or affect, enemy or ally, gains Shield 1 for 8 slots. |
 
-**Healing** (Invigorate to Ward: owner, 2026-10-29, later)
+**Healing**
 
 | Upgrade | Rule |
 |---|---|
 | **Invigorate** | When this hero's ability heals an ally, the ally is also Empowered 1 (TBD). |
-| **Quickening** | When this hero's ability heals an ally, the ally is also Hastened 2 (TBD). |
-| **Fortify** | When this hero's ability heals an ally, the ally also gains Armour 1 for 8 slots. |
-| **Ward** | When this hero's ability heals an ally, the ally also gains Shield 1 for 8 slots. |
-| **Mending Strike** | This hero's melee attacks can be used on an ally, healing it this hero's power instead of damaging it. |
-| **Mending Shot** | This hero's ranged attacks can be used on an ally, healing it this hero's power instead of damaging it. |
 
 **Targeting**
 
@@ -526,7 +554,7 @@ hero is still question 63.
 |---|---|
 | **Forked** | This hero's single-target abilities take one extra target, each target meeting the ability's own range and conditions. |
 
-- **Built (2026-10-29):** each upgrade is a `PassiveId` with `kind:
+- **Built (2026-10-29; the readings below name cards removed on 2026-11-02, 19.3d, and stand for those kept):** each upgrade is a `PassiveId` with `kind:
   'upgrade'` (`PASSIVES` in passives.ts; its amounts `UPGRADE` in
   config.ts), carried, shown and given on the test stage as a passive is,
   and drawn by rarity (19.3b). The effects are in resolve.ts: the attack

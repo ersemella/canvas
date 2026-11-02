@@ -68,7 +68,7 @@ describe('the passives: the track', () => {
     expect(other.slot).toBe(247);
   });
 
-  it('Second Wind: Hastened 2 the first time at half health or less', () => {
+  it('Second Wind: Hastened 4 the first time at half health or less', () => {
     const s = setup({'p-bokh': centre, 'e-mangudai': out(0, 3)});
     const u = give(s, 'p-bokh', 'secondWind');
     const archer = unit(s, 'e-mangudai');
@@ -79,9 +79,9 @@ describe('the passives: the track', () => {
     archer.power = 1;
     hit(ctxOf(s), archer, u, 'The arrow');
     expect(u.hp * 2).toBeLessThanOrEqual(u.maxHp);
-    expect(u.slot).toBe(98);
+    expect(u.slot).toBe(96);
     hit(ctxOf(s), archer, u, 'The arrow');
-    expect(u.slot).toBe(98);
+    expect(u.slot).toBe(96);
   });
 
   it('Patient: a turn without moving or an ability goes 2 fewer slots on, after Wait', () => {
@@ -93,13 +93,13 @@ describe('the passives: the track', () => {
     expect(unit(s, 'p-storm').slot).toBe(waitCost(unit(s, 'p-storm')));
   });
 
-  it('Momentum: Hastened 1 after a turn that takes a unit off the board', () => {
+  it('Momentum: Hastened 2 after a turn that takes a unit off the board', () => {
     const s = setup({'p-mangudai': centre, 'e-storm': out(0, 2), 'e-bokh': out(3, 2)});
     give(s, 'p-mangudai', 'momentum');
     unit(s, 'e-storm').hp = 1;
     act(s, 'p-mangudai', 'snapShot', {hex: out(0, 2)});
     expect(unit(s, 'e-storm').alive).toBe(false);
-    expect(unit(s, 'p-mangudai').slot).toBe(actionCost(unit(s, 'p-mangudai')) - 1);
+    expect(unit(s, 'p-mangudai').slot).toBe(actionCost(unit(s, 'p-mangudai')) - 2);
     act(s, 'p-mangudai', 'snapShot', {hex: out(3, 2)});
     expect(unit(s, 'p-mangudai').slot).toBe(actionCost(unit(s, 'p-mangudai')));
   });
@@ -137,46 +137,18 @@ describe('the passives: the board', () => {
     expect(u.hex).toEqual(out(0, 1));
     expect(unit(s, 'p-storm').hex).toEqual(centre);
   });
-
-  it('Rebound: Pushed, it Pushes each unit next to where it ends 1 away', () => {
-    const end = out(0, 1);
-    const s = setup({
-      'p-bokh': out(3, 2),
-      'e-bokh': out(3, 1),
-      'e-storm': out(1, 1, end),
-      'p-storm': out(5, 1, end),
-    });
-    give(s, 'e-bokh', 'rebound');
-    act(s, 'p-bokh', 'shove', {hex: out(3, 1)});
-    expect(unit(s, 'e-bokh').hex).toEqual(end);
-    // Both its new neighbours, its own ally among them, moved 1 straight away from it.
-    expect(unit(s, 'e-storm').hex).toEqual(out(1, 2, end));
-    expect(unit(s, 'p-storm').hex).toEqual(out(5, 2, end));
-  });
 });
 
 describe('the passives: damage and survival', () => {
-  it('Hardened: Armour 1 against the first hit each fight', () => {
-    const s = setup({'p-bokh': centre, 'e-mangudai': out(0, 3)});
-    const u = give(s, 'p-bokh', 'hardened');
-    const archer = unit(s, 'e-mangudai');
-    hit(ctxOf(s), archer, u, 'The arrow');
-    expect(u.hp).toBe(u.maxHp - 1);
-    hit(ctxOf(s), archer, u, 'The arrow');
-    expect(u.hp).toBe(u.maxHp - 3);
-  });
-
   it('a copy of the fight (a preview, the AI’s search) spends its own once-a-fight passives', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
-    give(s, 'p-bokh', 'hardened', 'bulwark');
+    const s = setup({'p-bokh': centre, 'e-mangudai': out(0, 4)});
+    give(s, 'p-bokh', 'lastStand');
     unit(s, 'p-bokh').spent = [];
-    unit(s, 'p-bokh').coveredAt = {};
     const copy = cloneFight(s);
+    unit(copy, 'e-mangudai').power = 99;
     hit(ctxOf(copy), unit(copy, 'e-mangudai'), unit(copy, 'p-bokh'), 'The arrow');
-    hit(ctxOf(copy), unit(copy, 'e-mangudai'), unit(copy, 'p-storm'), 'The arrow');
-    expect(unit(copy, 'p-bokh').spent).toEqual(['hardened']);
+    expect(unit(copy, 'p-bokh').spent).toEqual(['lastStand']);
     expect(unit(s, 'p-bokh').spent).toEqual([]);
-    expect(unit(s, 'p-bokh').coveredAt).toEqual({});
   });
 
   it('Last Stand: left at 1 health the first time it would fall, Delayed `RULES.durations.stun`', () => {
@@ -192,28 +164,6 @@ describe('the passives: damage and survival', () => {
     expect(u.slot).toBe(before + RULES.durations.stun);
     hit(ctxOf(s), foe, u, 'The blow');
     expect(u.alive).toBe(false);
-  });
-
-  it('Piercing Eye: its attacks Pierce against an Immobilized or Stunned unit', () => {
-    const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
-    const archer = give(s, 'p-mangudai', 'piercingEye');
-    const target = give(s, 'e-bokh', 'hardened');
-    stun(ctxOf(s), target, {kind: 'stunned'});
-    hit(ctxOf(s), archer, target, 'The arrow');
-    expect(target.hp).toBe(target.maxHp - archer.power);
-  });
-
-  it('Bulwark: an ally next to it takes 1 less of its first hit, the Bulwark 1', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
-    const guard = give(s, 'p-bokh', 'bulwark');
-    const ally = unit(s, 'p-storm');
-    const archer = unit(s, 'e-mangudai');
-    hit(ctxOf(s), archer, ally, 'The arrow');
-    expect(ally.hp).toBe(ally.maxHp - archer.power + 1);
-    expect(guard.hp).toBe(guard.maxHp - 1);
-    hit(ctxOf(s), archer, ally, 'The arrow');
-    expect(ally.hp).toBe(ally.maxHp - 2 * archer.power + 1);
-    expect(guard.hp).toBe(guard.maxHp - 1);
   });
 
   it('Opportunist: 1 more to a unit whose card is behind its own next card', () => {
@@ -238,32 +188,10 @@ describe('the passives: damage and survival', () => {
     expect(target.hp).toBe(hp2 - archer.power - 1);
   });
 
-  it('Opportunist and Bulwark say so', () => {
+  it('Opportunist says so', () => {
     expect(PASSIVES.opportunist.rule).toBe(
       'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.'
     );
-    expect(PASSIVES.bulwark.rule).toBe(
-      'When an ally next to it takes its first hit in 8 slots, the ally takes 1 less and this unit takes that 1.'
-    );
-  });
-
-  it('Bulwark: once every `RULES.durations.turn` slots for each ally', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
-    const guard = give(s, 'p-bokh', 'bulwark');
-    const ally = unit(s, 'p-storm');
-    ally.hp = ally.maxHp = 20;
-    const archer = unit(s, 'e-mangudai');
-    s.currentSlot = 10;
-    hit(ctxOf(s), archer, ally, 'The arrow');
-    expect(guard.hp).toBe(guard.maxHp - 1);
-    // 7 slots on: not yet.
-    s.currentSlot = 17;
-    hit(ctxOf(s), archer, ally, 'The arrow');
-    expect(guard.hp).toBe(guard.maxHp - 1);
-    // 8 on: again, whatever its turns.
-    s.currentSlot = 18;
-    hit(ctxOf(s), archer, ally, 'The arrow');
-    expect(guard.hp).toBe(guard.maxHp - 2);
   });
 
   it('Glass Cannon: Empower 1, starting each fight at half its health', () => {
@@ -275,26 +203,31 @@ describe('the passives: damage and survival', () => {
     hit(ctxOf(s), archer, target, 'The arrow');
     expect(target.hp).toBe(target.maxHp - archer.power - 1);
   });
-});
 
-describe('the passives: control', () => {
-  it('Iron Will: the first Stun each fight doesn’t take', () => {
-    const s = setup({'p-bokh': centre, 'e-storm': out(0, 1)});
-    const u = give(s, 'e-storm', 'ironWill');
-    act(s, 'p-bokh', 'grapple', {hex: out(0, 1)});
-    expect(isStunned(u)).toBe(false);
-    act(s, 'p-bokh', 'grapple', {hex: out(0, 1)});
-    expect(isStunned(u)).toBe(true);
+  it('Plated: Armour 1 against every hit, unless it Pierces', () => {
+    const s = setup({'p-bokh': centre, 'e-mangudai': out(0, 3)});
+    const u = give(s, 'p-bokh', 'plated');
+    const archer = unit(s, 'e-mangudai');
+    archer.power = 3;
+    hit(ctxOf(s), archer, u, 'The arrow');
+    hit(ctxOf(s), archer, u, 'The arrow');
+    expect(u.hp).toBe(u.maxHp - 4);
+    archer.passives = ['sundering'];
+    hit(ctxOf(s), archer, u, 'The arrow');
+    expect(u.hp).toBe(u.maxHp - 7);
   });
 
-  it('Shake Loose: damage while Stunned ends the Stun, a grapple’s included', () => {
-    const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1), 'e-mangudai': out(3, 3)});
-    const u = give(s, 'e-bokh', 'shakeLoose');
-    act(s, 'p-bokh', 'grapple', {hex: out(0, 1)});
-    expect(isStunned(u)).toBe(true);
-    hit(ctxOf(s), unit(s, 'e-mangudai'), u, 'A stray arrow');
-    expect(isStunned(u)).toBe(false);
-    expect(u.statuses).toEqual([]);
+  it('Braced: starts each fight with Shield 2, lasting until spent', () => {
+    const u = makeUnit('player', 0, 'bokh', 0, {passives: ['braced']});
+    expect([u.shield, u.lastingShield, u.shieldUntil]).toEqual([2, 2, undefined]);
+    const s = setup({'p-bokh': centre, 'e-mangudai': out(0, 3)});
+    const v = give(s, 'p-bokh', 'braced');
+    Object.assign(v, {shield: 2, lastingShield: 2});
+    const archer = unit(s, 'e-mangudai');
+    archer.power = 3;
+    hit(ctxOf(s), archer, v, 'The arrow');
+    expect(v.shield).toBeUndefined();
+    expect(v.hp).toBe(v.maxHp - 1);
   });
 });
 
@@ -321,25 +254,6 @@ describe('the passives: position and allies', () => {
     const hp = target.hp;
     hit(ctxOf(s), u, target, 'The arrow');
     expect(target.hp).toBe(hp - u.power);
-  });
-
-  it('Rally: allies next to it gain Shield 1 at its turn’s start, until their next turn', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
-    const rally = give(s, 'p-bokh', 'rally');
-    const ally = unit(s, 'p-storm');
-    rally.slot = 1;
-    ally.slot = 20;
-    expect(advanceToDecision(s)?.id).toBe('p-bokh');
-    expect(ally.shield).toBe(1);
-    hit(ctxOf(s), unit(s, 'e-mangudai'), ally, 'The arrow');
-    expect(ally.hp).toBe(ally.maxHp - unit(s, 'e-mangudai').power + 1);
-    expect(ally.shield).toBeUndefined();
-    // A Shield left over goes as the ally's turn starts.
-    ally.shield = 1;
-    applyTurn(s, rally, {action: {ability: 'hold'}});
-    rally.slot = 50;
-    expect(advanceToDecision(s)?.id).toBe('p-storm');
-    expect(ally.shield).toBeUndefined();
   });
 
   it('Spearhead (the Vanguard’s): hit, its allies within 2 are Hastened 3, no one else', () => {
@@ -390,27 +304,36 @@ describe('the passives: position and allies', () => {
     }
   });
 
-  it('Vengeance: when an ally falls, Hastened 3 and Empowered 1', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-mangudai': out(0, 4)});
-    const u = give(s, 'p-bokh', 'vengeance');
-    const ally = unit(s, 'p-storm');
-    ally.hp = 1;
-    hit(ctxOf(s), unit(s, 'e-mangudai'), ally, 'The arrow');
-    expect(ally.alive).toBe(false);
-    expect(u.slot).toBe(97);
-    expect(u.empower).toBe(1);
+  it('Sure Hand: its abilities don’t damage allies, but still hit enemies', () => {
+    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-bokh': out(3, 1)});
+    give(s, 'p-bokh', 'sureHand');
+    const [ally, foe] = [unit(s, 'p-storm'), unit(s, 'e-bokh')];
+    act(s, 'p-bokh', 'cleave', {hex: out(0, 1)});
+    expect(ally.hp).toBe(ally.maxHp);
+    s.currentSlot += 1;
+    act(s, 'p-bokh', 'cleave', {hex: out(3, 1)});
+    expect(foe.hp).toBeLessThan(foe.maxHp);
+    // Without it, the ally is hit.
+    const t = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-bokh': out(3, 1)});
+    act(t, 'p-bokh', 'cleave', {hex: out(0, 1)});
+    expect(unit(t, 'p-storm').hp).toBeLessThan(unit(t, 'p-storm').maxHp);
+  });
+
+  it('Unstoppable is offered at the caravanserai since 2026-11-02', () => {
+    expect(NOT_OFFERED).not.toContain('unstoppable');
+    expect(PASSIVES.unstoppable.rarity).toBe('rare');
   });
 });
 
 describe('the passives on the test stage', () => {
   it('reads a unit’s passives, and names a wrong one', () => {
     const base = {
-      player: [{hero: 'bokh', passives: ['rally', 'hardened']}],
+      player: [{hero: 'bokh', passives: ['plated', 'braced']}],
       enemy: [{hero: 'wolf'}],
     };
-    expect(parseTestStage(base).player[0]!.loadout?.passives).toEqual(['rally', 'hardened']);
-    expect(() => parseTestStage({...base, player: [{hero: 'bokh', passives: ['rallly']}]})).toThrow(
-      /passives must be a list/
-    );
+    expect(parseTestStage(base).player[0]!.loadout?.passives).toEqual(['plated', 'braced']);
+    expect(() =>
+      parseTestStage({...base, player: [{hero: 'bokh', passives: ['platted']}]})
+    ).toThrow(/passives must be a list/);
   });
 });

@@ -138,10 +138,10 @@ describe('the test stage', () => {
     );
     // Passives given a unit stay beside its hero's own.
     const juggernaut = createTestFight(1, {
-      player: [{hero: 'mahout', passives: ['rally']}],
+      player: [{hero: 'mahout', passives: ['plated']}],
       enemy: [{hero: 'wolf'}],
     });
-    expect(juggernaut.units[0]!.passives).toEqual(['unstoppable', 'rally']);
+    expect(juggernaut.units[0]!.passives).toEqual(['unstoppable', 'plated']);
     expect(() => parseTestStage({...raw, heroes: {varangian: {at: space(1, 1)}}})).toThrow(
       'heroes.varangian has an unknown field "at"'
     );

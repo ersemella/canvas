@@ -7,6 +7,8 @@
 // on the tank (one side); and track-time.mjs's rows again with the aware AI:
 // the Elixir's and hail's worth, a point of speed on each Steppe and China
 // hero, and the regions' parties against each other.
+// Rally left the pool on 2026-11-02 (owner): its rows run only on a commit
+// before then.
 const regions = {
   steppe: ['bokh', 'mangudai', 'storm'],
   china: ['modao', 'youxia', 'alchemist'],

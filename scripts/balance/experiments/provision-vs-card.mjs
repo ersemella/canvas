@@ -8,14 +8,14 @@ const regions = {
   persia: ['mahout', 'archer', 'magus'],
   byzantium: ['cataphract', 'varangian', 'priest'],
 };
+// The pool since 2026-11-02 (owner): 22 cards out, Concussive in three tiers
+// (Staggering folded in as I), six cards added, Unstoppable offered. The
+// measurement of 2026-10-29 (balance.md) ran on the 40 of the time.
 const cards = [
-  'steadyGait', 'secondWind', 'patient', 'momentum', 'rooted', 'lightStep', 'rebound',
-  'hardened', 'lastStand', 'piercingEye', 'opportunist', 'bulwark', 'glassCannon',
-  'ironWill', 'shakeLoose', 'flanker', 'loneWolf', 'rally', 'vengeance',
-  'wearying', 'lethargy', 'inspire', 'fervour', 'forceful', 'reelIn', 'staggering',
-  'hamstring', 'concussive', 'sundering', 'crippling', 'lockdown', 'defyFate',
-  'immovableObject', 'invigorate', 'quickening', 'fortify', 'ward', 'mendingStrike',
-  'mendingShot', 'forked',
+  'steadyGait', 'secondWind', 'patient', 'momentum', 'rooted', 'unstoppable', 'lightStep',
+  'lastStand', 'opportunist', 'glassCannon', 'plated', 'braced', 'flanker', 'loneWolf',
+  'sureHand', 'forceful', 'concussive1', 'concussive2', 'concussive3', 'sundering',
+  'crippling', 'empowering', 'hastening', 'sheltering', 'invigorate', 'forked',
 ];
 export const experiments = {};
 for (const [region, party] of Object.entries(regions))

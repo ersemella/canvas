@@ -165,10 +165,11 @@ card greyed where it would come back. Measured even with the Stun
 ([balance.md](balance.md), "Grapple off the track").
 
 **What was a Stun for a unit's next turn is a Delay of 6 (owner,
-2026-10-29):** Last Stand's, Concussive's, Lockdown's and Defy Fate's
-(Defy Fate's reaching an Inevitable unit, as its Stun did), and a
-Charge's slam in its `stun` mode (`RULES.durations.stun`). Unstoppable and
-Iron Will still stop it, and it still breaks a grapple the unit holds and
+2026-10-29):** Last Stand's and a Charge's slam in its `stun` mode
+(`RULES.durations.stun`); Concussive's, Lockdown's and Defy Fate's until
+2026-11-02, when Lockdown and Defy Fate left the pool and Concussive III
+became a plain Delay 6 (progression.md, 19.3d). Unstoppable (and Iron
+Will, until 2026-11-02) still stop it, and it still breaks a grapple the unit holds and
 an arrow it has drawn. Until 2026-10-29 such a Stun skipped the unit's
 next turn, which still counted as a turn.
 

@@ -2,13 +2,7 @@
  * Effects every ability is built from: damage, entering a space, hail and
  * grapples ending, death and the end of the fight.
  */
-import {
-  hexDirectionTo,
-  hexDistance,
-  hexEquals,
-  hexNeighbor,
-  hexNeighbors,
-} from '@canvas/engine/server';
+import {hexDirectionTo, hexDistance, hexEquals, hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {
   ABILITY,
@@ -20,6 +14,7 @@ import {
   DEVOTED,
   HEROES,
   ONE_EYE,
+  PASSIVE,
   RULES,
   SPEARHEAD,
   UPGRADE,
@@ -31,8 +26,6 @@ import {
   hailOn,
   hostile,
   inFrontLane,
-  isImmobilized,
-  isStunned,
   isUnstoppable,
   shotLane,
   sortByHex,
@@ -41,7 +34,7 @@ import {
 } from './board';
 import {scorched} from './map';
 import {hasPassive, spendPassive} from './passives';
-import {aimSlot, placeCard, simultaneousOrder} from './track';
+import {aimSlot, placeCard} from './track';
 import type {MapData} from './map';
 import type {
   BoardSnapshot,
@@ -66,11 +59,11 @@ export interface Ctx {
   pushes?: boolean;
   /**
    * The generic upgrades (19.9) that have fired during this ability, each
-   * with the unit it fired on: each fires at most once a unit, so no pair
-   * loops (Wearying with Lethargy).
+   * with the unit it fired on: each fires at most once a unit, so none
+   * loops (Empowering with Hastening).
    */
   fired?: Set<string>;
-  /** Pushes and Pulls from Forceful and Reel In, made once the ability has resolved (`settle`). */
+  /** Pushes from Forceful, made once the ability has resolved (`settle`). */
   pending?: (() => void)[];
 }
 
@@ -122,9 +115,9 @@ export function unitName(u: Unit): string {
  * 2026-10-23), plus its Empower (or `empower`, one the hit carries from
  * when it was made) and its passives' (Glass Cannon, Lone Wolf, and
  * against this target Opportunist and Flanker), less its Weaken; then
- * the target's Armour (Hardened, One Eye's, Armoured) unless it Pierces (Piercing
- * Eye), and an ally's Bulwark (17.6's damage order; 19.8). Power 0 deals
- * none, and says nothing.
+ * the target's Armour (One Eye's, Armoured, Plated) unless it Pierces
+ * (17.6's damage order; 19.8). Power 0 deals none, and says nothing. With
+ * Sure Hand (19.8) an ally takes none.
  */
 export function hit(
   ctx: Ctx,
@@ -134,14 +127,7 @@ export function hit(
   empower = attacker.empower ?? 0,
   pierce = false
 ): void {
-  if (!target.alive) return;
-  // Mending Strike and Shot (19.9): an ally is healed instead.
-  if (mends(attacker, target)) {
-    const amount = damageOf(attacker, empower, ctx.state);
-    log(ctx, `${what} mends ${unitName(target)}.`);
-    heal(ctx, target, amount, attacker);
-    return;
-  }
+  if (!target.alive || spares(ctx, attacker, target)) return;
   const bonus = passiveEmpower(attacker, ctx.state) + bonusAgainst(ctx.state, attacker, target);
   const full = attacker.power + empower + bonus;
   if (attacker.weaken && full > 0) log(ctx, `Weaken takes off ${Math.min(full, attacker.weaken)}.`);
@@ -154,7 +140,8 @@ export function hit(
 
 /**
  * A hit of `amount` already reckoned (a track Blessing's share of the
- * Priest's power): Armour and Bulwark as `hit`'s, and an attack's riders.
+ * Priest's power): Armour as `hit`'s, an attack's riders, and what the
+ * attacker's abilities give each unit they reach (`reach`).
  */
 export function hitFor(
   ctx: Ctx,
@@ -164,17 +151,22 @@ export function hitFor(
   amount: number,
   pierce = false
 ): void {
-  if (!target.alive || amount <= 0) return;
-  const pierces =
-    pierce ||
-    (hasPassive(attacker, 'piercingEye') && isImmobilized(target)) ||
-    (hasPassive(attacker, 'sundering') && hostile(attacker, target));
+  if (!target.alive || amount <= 0 || spares(ctx, attacker, target)) return;
+  const pierces = pierce || (hasPassive(attacker, 'sundering') && hostile(attacker, target));
   land(ctx, attacker, target, what, amount, pierces);
   // An attack (19.9): an ability that damages an enemy, Armour or a Shield taking it or not.
   if (hostile(attacker, target)) attackRiders(ctx, attacker, target);
+  reach(ctx, attacker, target);
 }
 
-/** A hit's `amount` after Armour and Bulwark (`hit`), taken by `target`. */
+/** Sure Hand (19.8; owner, 2026-11-02): `attacker`'s abilities don't damage `target`, an ally. */
+function spares(ctx: Ctx, attacker: Unit, target: Unit): boolean {
+  if (!allyOf(attacker, target) || !hasPassive(attacker, 'sureHand')) return false;
+  log(ctx, `${unitName(attacker)}’s sure hand spares ${unitName(target)}.`);
+  return true;
+}
+
+/** A hit's `amount` after Armour (`hit`), taken by `target`. */
 function land(
   ctx: Ctx,
   attacker: Unit,
@@ -183,17 +175,7 @@ function land(
   amount: number,
   pierces: boolean
 ): void {
-  // Hardened: Armour 1 against the first hit each fight, spent even when Pierced.
-  if (spendPassive(target, 'hardened')) {
-    if (pierces) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
-    else {
-      amount -= 1;
-      log(ctx, `Armour takes off 1.`);
-    }
-  }
   amount -= armourOf(ctx, target, attacker.hex, pierces);
-  if (amount <= 0) return;
-  amount = bulwark(ctx, attacker, target, amount);
   if (amount <= 0) return;
   applyDamage(ctx, target, amount, `${what} hits ${unitName(target)} for ${amount}`, attacker);
 }
@@ -219,63 +201,41 @@ const allyOf = (by: Unit | undefined, u: Unit): by is Unit =>
   by !== undefined && by !== u && !hostile(by, u);
 
 /**
- * Whether `attacker`'s hit on `target`, an ally, heals it instead (Mending
- * Strike next to it, Mending Shot further off; 19.9).
- */
-export function mends(attacker: Unit, target: Unit): boolean {
-  if (!allyOf(attacker, target) || !attacker.hex || !target.hex) return false;
-  const melee = hexDistance(attacker.hex, target.hex) === 1;
-  return hasPassive(attacker, melee ? 'mendingStrike' : 'mendingShot');
-}
-
-/**
  * What `attacker`'s upgrades do to `target`, an enemy its attack has just
- * hit (19.9): Staggering, Crippling, Hamstring, Concussive, Defy Fate and
- * Immovable Object at once; Forceful's Push and Reel In's Pull once the
- * ability has resolved (`settle`), so the ability's own effects land
- * where it aimed them. Each only if its keyword takes (`delay`, `stun`).
+ * hit (19.9): Concussive's Delay (the highest of I, II and III it carries)
+ * and Crippling's Weaken at once; Forceful's Push once the ability has
+ * resolved (`settle`), so the ability's own effects land where it aimed
+ * them. Each only if its keyword takes (`delay`).
  */
 function attackRiders(ctx: Ctx, attacker: Unit, target: Unit): void {
   if (!target.alive || !target.hex || !attacker.hex) return;
-  const ranged = hexDistance(attacker.hex, target.hex) > 1;
-  if (fires(ctx, attacker, 'staggering', target))
-    delay(ctx, target, UPGRADE.staggering.delay, attacker);
+  const tiers = (['concussive3', 'concussive2', 'concussive1'] as const).filter((id) =>
+    hasPassive(attacker, id)
+  );
+  if (tiers.length > 0 && fires(ctx, attacker, tiers[0]!, target))
+    delay(ctx, target, UPGRADE[tiers[0]!].delay, attacker);
   if (fires(ctx, attacker, 'crippling', target))
     weaken(ctx, target, Math.max(target.weaken ?? 0, UPGRADE.crippling.weaken), attacker);
-  if (fires(ctx, attacker, 'hamstring', target))
-    immobilize(ctx, target, {kind: 'immobilized', pinned: true}, attacker);
-  if (fires(ctx, attacker, 'concussive', target)) stunForATurn(ctx, target);
-  if (hasPassive(target, 'steadyGait') && fires(ctx, attacker, 'defyFate', target)) {
-    log(ctx, `${unitName(attacker)} defies fate.`);
-    stunForATurn(ctx, target, true);
-  }
-  if (isUnstoppable(target) && fires(ctx, attacker, 'immovableObject', target))
-    delay(ctx, target, UPGRADE.immovableObject.delay, attacker);
-  // Forceful and Reel In on one ranged attack cancel: the target stays put.
-  const push =
-    hasPassive(attacker, 'forceful') &&
-    !(ctx.pushes && ctx.user === attacker) &&
-    !(ranged && hasPassive(attacker, 'reelIn'));
-  const pull = ranged && hasPassive(attacker, 'reelIn') && !hasPassive(attacker, 'forceful');
-  if (
-    (push && fires(ctx, attacker, 'forceful', target)) ||
-    (pull && fires(ctx, attacker, 'reelIn', target))
-  )
+  const push = hasPassive(attacker, 'forceful') && !(ctx.pushes && ctx.user === attacker);
+  if (push && fires(ctx, attacker, 'forceful', target))
     (ctx.pending ??= []).push(() => {
       if (!target.alive || !target.hex || !attacker.alive || !attacker.hex) return;
       if (hexEquals(target.hex, attacker.hex)) return;
-      const dir = push
-        ? awayFrom(attacker.hex, target.hex)
-        : awayFrom(target.hex, attacker.hex, true);
-      log(ctx, `${unitName(target)} is ${push ? 'Pushed' : 'Pulled'} by the blow.`);
-      displace(
-        ctx,
-        target,
-        dir,
-        push ? UPGRADE.forceful.push : UPGRADE.reelIn.pull,
-        push ? 'push' : 'pull'
-      );
+      log(ctx, `${unitName(target)} is Pushed by the blow.`);
+      displace(ctx, target, awayFrom(attacker.hex, target.hex), UPGRADE.forceful.push, 'push');
     });
+}
+
+/**
+ * What `by`'s abilities give each unit they hit or affect but itself,
+ * enemy or ally (owner, 2026-11-02): Empowering's Empower, Hastening's
+ * Haste and Sheltering's Shield, each once a unit an ability.
+ */
+function reach(ctx: Ctx, by: Unit | undefined, u: Unit): void {
+  if (!by || by === u || !u.alive) return;
+  if (fires(ctx, by, 'empowering', u)) empowerAtLeast(ctx, u, UPGRADE.empowering.empower);
+  if (fires(ctx, by, 'hastening', u)) haste(ctx, u, UPGRADE.hastening.haste);
+  if (fires(ctx, by, 'sheltering', u)) shield(ctx, u, UPGRADE.sheltering.shield);
 }
 
 /**
@@ -306,23 +266,15 @@ export function settle(ctx: Ctx): void {
 
 /**
  * What `by`'s upgrades do to `u`, an ally its ability has just healed
- * (19.9): Invigorate's Empower, Quickening's Haste, Fortify's Armour and
- * Ward's Shield, whatever the heal restored.
+ * (19.9): Invigorate's Empower, whatever the heal restored.
  */
 function healRiders(ctx: Ctx, by: Unit, u: Unit): void {
   if (fires(ctx, by, 'invigorate', u)) empowerAtLeast(ctx, u, UPGRADE.invigorate.empower, by);
-  if (fires(ctx, by, 'quickening', u)) haste(ctx, u, UPGRADE.quickening.haste, by);
-  if (fires(ctx, by, 'fortify', u)) {
-    u.armour = Math.max(u.armour ?? 0, UPGRADE.fortify.armour);
-    u.armourUntil = Math.max(u.armourUntil ?? 0, lastsThrough(ctx.state));
-    log(ctx, `${unitName(u)} is fortified: Armour ${u.armour}.`);
-  }
-  if (fires(ctx, by, 'ward', u)) shield(ctx, u, UPGRADE.ward.shield);
 }
 
 /**
  * Immobilizes `u` with `status` (keywords.md, 17.4), unless it is
- * Unstoppable; by `by`'s ability, its Lockdown Stuns it too (19.9).
+ * Unstoppable.
  */
 export function immobilize(ctx: Ctx, u: Unit, status: Status, by?: Unit): boolean {
   if (!u.alive) return false;
@@ -332,18 +284,15 @@ export function immobilize(ctx: Ctx, u: Unit, status: Status, by?: Unit): boolea
   }
   addStatus(u, status.pinned ? {...status, until: lastsThrough(ctx.state)} : status);
   if (status.pinned) log(ctx, `${unitName(u)} is Immobilized.`);
-  if (fires(ctx, by, 'lockdown', u)) {
-    log(ctx, `${unitName(u)} is locked down.`);
-    stunForATurn(ctx, u);
-  }
+  reach(ctx, by, u);
   return true;
 }
 
 /**
  * The lasting Armour `target` has against a hit from a unit on `from`
- * (17.6), none if it Pierces: One Eye's (`eyeArmour`) and Armoured's (the
- * Cataphract's), said in the log when there is a `ctx`. Hardened's, once a
- * fight, is spent in `hit`.
+ * (17.6), none if it Pierces: One Eye's (`eyeArmour`), an Armour status
+ * (a Charge's), Armoured's (the Cataphract's) and Plated's, said in the log
+ * when there is a `ctx`.
  */
 export function armourOf(
   ctx: Ctx | undefined,
@@ -352,7 +301,7 @@ export function armourOf(
   pierces = false
 ): number {
   let armour = eyeArmour(ctx, target, from, pierces);
-  // Fortify's (19.9), until the unit's next turn.
+  // An Armour status, for its slots.
   if (target.armour) {
     if (pierces) {
       if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s Armour.`);
@@ -367,6 +316,15 @@ export function armourOf(
     } else {
       armour += ARMOURED.armour;
       if (ctx) log(ctx, `${unitName(target)}’s Armour takes off ${ARMOURED.armour}.`);
+    }
+  }
+  // Plated (19.8; owner, 2026-11-02).
+  if (hasPassive(target, 'plated')) {
+    if (pierces) {
+      if (ctx) log(ctx, `The hit Pierces ${unitName(target)}’s plate.`);
+    } else {
+      armour += PASSIVE.plated.armour;
+      if (ctx) log(ctx, `${unitName(target)}’s plate takes off ${PASSIVE.plated.armour}.`);
     }
   }
   return armour;
@@ -456,28 +414,6 @@ export function bonusAgainst(state: FightState, attacker: Unit, target: Unit): n
 }
 
 /**
- * Bulwark (19.8): a hit on `target` is its first in `RULES.durations.turn`
- * slots for each Bulwark ally, or not (owner, 2026-10-29; since the
- * Bulwark ally's last turn until then); the first Bulwark ally next to it
- * whose first it is takes 1 of the damage. Returns what is left for the target.
- */
-function bulwark(ctx: Ctx, attacker: Unit, target: Unit, amount: number): number {
-  let guard: Unit | undefined;
-  for (const g of ctx.state.units) {
-    if (g === target || !g.alive || g.side !== target.side || !hasPassive(g, 'bulwark')) continue;
-    const last = g.coveredAt?.[target.id];
-    if (last !== undefined && ctx.state.currentSlot - last < RULES.durations.turn) continue;
-    // A new record: copies of a fight share a unit's objects.
-    g.coveredAt = {...g.coveredAt, [target.id]: ctx.state.currentSlot};
-    if (!guard && g.hex && target.hex && hexDistance(g.hex, target.hex) === 1) guard = g;
-  }
-  if (!guard) return amount;
-  log(ctx, `${unitName(guard)} takes 1 for ${unitName(target)}.`);
-  applyDamage(ctx, guard, 1, `${unitName(guard)} takes 1`, attacker);
-  return amount - 1;
-}
-
-/**
  * The Empower a drawn arrow of `user`'s carries when it flies: the one it
  * drew with, or one it has been given since, whichever is more.
  */
@@ -501,8 +437,7 @@ function bloodlust(ctx: Ctx, u: Unit): void {
 
 /**
  * Empowers `u` by `amount` for `RULES.durations.turn` slots, replacing any
- * Empower it had. An ally Empowered by `by`'s ability is Hastened too with
- * its Inspire (19.9).
+ * Empower it had; by `by`'s ability, what its abilities give (`reach`).
  */
 export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.empower = amount;
@@ -511,15 +446,15 @@ export function empower(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   empowered(ctx, u, by);
 }
 
-/** Inspire (19.9): an ally `by`'s ability Empowers is Hastened too. */
+/** What `by`'s abilities give a unit they Empower (`reach`). */
 function empowered(ctx: Ctx, u: Unit, by?: Unit): void {
-  if (allyOf(by, u) && fires(ctx, by, 'inspire', u)) haste(ctx, u, UPGRADE.inspire.haste, by);
+  reach(ctx, by, u);
 }
 
 /**
  * Heals `u` by `amount`, up to its health (Elixir). A heal by `by`'s
  * ability on an ally sets off its healing upgrades (19.9), whatever it
- * restores.
+ * restores, and on any unit what its abilities give (`reach`).
  */
 export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   const healed = Math.min(amount, u.maxHp - u.hp);
@@ -529,6 +464,7 @@ export function heal(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
     record(ctx.state, {kind: 'heal', unitId: u.id, amount: healed});
   }
   if (allyOf(by, u)) healRiders(ctx, by, u);
+  reach(ctx, by, u);
 }
 
 /**
@@ -552,21 +488,19 @@ export function shield(
 
 /**
  * Weakens `u` by `amount` for `RULES.durations.turn` slots, replacing any
- * Weaken it had. An enemy Weakened by `by`'s ability is Delayed too with its
- * Lethargy (19.9).
+ * Weaken it had; by `by`'s ability, what its abilities give (`reach`).
  */
 export function weaken(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   u.weaken = amount;
   u.weakenUntil = lastsThrough(ctx.state);
   log(ctx, `${unitName(u)} is Weakened ${amount}.`);
-  if (by && hostile(by, u) && fires(ctx, by, 'lethargy', u))
-    delay(ctx, u, UPGRADE.lethargy.delay, by);
+  reach(ctx, by, u);
 }
 
 /**
  * Empowers `u` by at least `amount` for `RULES.durations.turn` slots
- * (Vengeance, 19.8; Fervour and Invigorate, 19.9): a stronger Empower it has
- * stays, and lasts as long.
+ * (Invigorate and Empowering, 19.9): a stronger Empower it has stays, and
+ * lasts as long.
  */
 export function empowerAtLeast(ctx: Ctx, u: Unit, amount: number, by?: Unit): void {
   if ((u.empower ?? 0) <= amount) u.empowerUntil = lastsThrough(ctx.state);
@@ -591,9 +525,7 @@ export function delay(ctx: Ctx, u: Unit, n: number, by?: Unit): void {
   if (!u.alive || u.slot === null || n <= 0 || inevitable(ctx, u)) return;
   placeCard(ctx.state, u, u.slot + n);
   log(ctx, `${unitName(u)} is Delayed ${n}.`);
-  // Wearying (19.9): an enemy `by`'s ability Delays is Weakened too.
-  if (by && hostile(by, u) && fires(ctx, by, 'wearying', u))
-    weaken(ctx, u, Math.max(u.weaken ?? 0, UPGRADE.wearying.weaken), by);
+  reach(ctx, by, u);
 }
 
 /**
@@ -608,9 +540,7 @@ export function haste(ctx: Ctx, u: Unit, n: number, by?: Unit): void {
   log(ctx, `${unitName(u)} is Hastened ${n}.`);
   if (u.slot <= ctx.state.currentSlot) u.hasteDue = (u.hasteDue ?? 0) + n;
   else placeCard(ctx.state, u, Math.max(ctx.state.currentSlot + 1, u.slot - n));
-  // Fervour (19.9): an ally `by`'s ability Hastens is Empowered too.
-  if (allyOf(by, u) && fires(ctx, by, 'fervour', u))
-    empowerAtLeast(ctx, u, UPGRADE.fervour.empower, by);
+  reach(ctx, by, u);
 }
 
 /**
@@ -645,28 +575,18 @@ export function takeHasteDue(state: FightState, unit: Unit): void {
 
 /**
  * At the start of `unit`'s turn, its passives' bookkeeping (19.8): a fresh
- * count of what it takes off the board (Momentum); then Rally Shields each
- * ally next to it.
+ * count of what it takes off the board (Momentum).
  */
-export function startTurnPassives(ctx: Ctx, unit: Unit): void {
+export function startTurnPassives(_ctx: Ctx, unit: Unit): void {
   delete unit.tookOff;
   delete unit.bracketed;
-  if (!hasPassive(unit, 'rally') || !unit.hex) return;
-  for (const h of hexNeighbors(unit.hex)) {
-    const a = unitAt(ctx.state, h);
-    if (!a || a.side !== unit.side) continue;
-    a.shield = Math.max(a.shield ?? 0, 1);
-    a.shieldUntil = Math.max(a.shieldUntil ?? 0, lastsThrough(ctx.state));
-    log(ctx, `${unitName(unit)} rallies ${unitName(a)}: Shield ${a.shield}.`);
-  }
 }
 
 /**
  * Damage taken (17.6, steps 3 and 4): its Shield takes it first, health
  * the rest. A Grappler that takes damage lets go of the unit it
  * grapples (owner, 2026-10-23); damage a Shield absorbs whole isn't taken.
- * Then the passives that answer damage (19.8): Shake Loose, Last Stand,
- * Second Wind. `source`, the unit dealing it, if any, is credited with a
+ * Then the passives that answer damage (19.8): Last Stand, Second Wind. `source`, the unit dealing it, if any, is credited with a
  * kill (Momentum). Any damage coming at a Devoted unit, whatever takes it,
  * Hastens its partner first (`devotion`), and at a Spearhead its allies
  * within its range (`spearhead`).
@@ -705,7 +625,6 @@ export function applyDamage(
     log(ctx, `${unitName(target)}’s serpents guard him: no damage.`);
     return;
   }
-  const stunned = isStunned(target);
   const standing = target.hp - amount <= 0 && spendPassive(target, 'lastStand');
   target.hp = standing ? 1 : Math.max(0, target.hp - amount);
   target.damaged = true;
@@ -716,18 +635,13 @@ export function applyDamage(
     return;
   }
   endGrapples(ctx, (g) => g.champion === target.id);
-  if (stunned && hasPassive(target, 'shakeLoose') && isStunned(target)) {
-    endGrapples(ctx, (g) => g.target === target.id, true);
-    target.statuses = target.statuses.filter((s) => s.kind !== 'stunned');
-    log(ctx, `${unitName(target)} shakes loose.`);
-  }
   if (standing) {
     log(ctx, `${unitName(target)} makes a last stand.`);
     stunForATurn(ctx, target);
   }
   if (target.hp * 2 <= target.maxHp && spendPassive(target, 'secondWind')) {
     log(ctx, `${unitName(target)} finds a second wind.`);
-    haste(ctx, target, 2);
+    haste(ctx, target, PASSIVE.secondWind.haste);
   }
 }
 
@@ -787,8 +701,7 @@ function battleCry(ctx: Ctx, target: Unit): void {
 
 /**
  * `unit` falls, `killer` (if any) having taken it off the board
- * (Momentum); each ally of its with Vengeance is Hastened 3 and Empowered
- * 1 for its next turn (19.8). Princess Iron Fan drops her fan where she fell
+ * (Momentum). Princess Iron Fan drops her fan where she fell
  * (`FightState.fan`), and the fires she set burn on: her next turn, when
  * they would go out, won't come.
  */
@@ -809,13 +722,6 @@ export function kill(ctx: Ctx, unit: Unit, killer?: Unit): void {
   if (ctx.state.shots) ctx.state.shots = ctx.state.shots.filter((v) => v.source !== unit.id);
   if (killer) killer.tookOff = true;
   checkEnd(ctx.state);
-  if (ctx.state.phase !== 'fight') return;
-  for (const a of ctx.state.units) {
-    if (!a.alive || a.side !== unit.side || !hasPassive(a, 'vengeance')) continue;
-    log(ctx, `${unitName(a)} swears vengeance.`);
-    haste(ctx, a, 3);
-    empowerAtLeast(ctx, a, 1);
-  }
 }
 
 export function checkEnd(state: FightState): void {
@@ -933,7 +839,7 @@ export function hailHolds(ctx: Ctx, unit: Unit): void {
   if (unit.statuses.some((s) => s.hail === hail.source && (!s.at || hexEquals(s.at, hail.hex))))
     return;
   log(ctx, `Hail holds ${unitName(unit)} fast.`);
-  // The caster's Lockdown (19.9) Stuns whoever its hail holds.
+  // What the caster's abilities give (`reach`) reaches whoever its hail holds.
   const caster = ctx.state.units.find((u) => u.id === hail.source);
   immobilize(
     ctx,
@@ -961,7 +867,7 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 }
 
 /**
- * Stuns `u`, unless it is Unstoppable (17.4) or Iron Will turns it (19.8). A Stunned Grappler lets go of the unit it grapples
+ * Stuns `u`, unless it is Unstoppable (17.4). A Stunned Grappler lets go of the unit it grapples
  * (owner, 2026-10-23), and a Stunned Outrider loses the arrow it has drawn
  * (owner, 2026-10-24): its card comes back as an ordinary turn, skipped
  * while it is Stunned.
@@ -969,11 +875,6 @@ export function endGrapples(ctx: Ctx, ends: (g: Grapple) => boolean, quiet = fal
 export function stun(ctx: Ctx, u: Unit, status: Status): void {
   if (isUnstoppable(u)) {
     log(ctx, `${unitName(u)} is Unstoppable: not Stunned.`);
-    return;
-  }
-  // Iron Will (19.8): the first Stun each fight doesn't take.
-  if (spendPassive(u, 'ironWill')) {
-    log(ctx, `${unitName(u)}’s iron will holds: not Stunned.`);
     return;
   }
   addStatus(u, status);
@@ -995,20 +896,14 @@ function interrupt(ctx: Ctx, u: Unit): void {
 
 /**
  * What was a Stun for the unit's next turn (a Charge's slam in `stun` mode,
- * Last Stand's, and Concussive's, Lockdown's and Defy Fate's, 19.9): a
- * Delay of `RULES.durations.stun` slots (owner, 2026-10-29), which
- * Unstoppable and Iron Will still stop, breaking what a Stun breaks
- * (`interrupt`); Defy Fate's (`defies`) Delays an Inevitable unit too, as
- * its Stun reached one.
+ * Last Stand's): a Delay of `RULES.durations.stun` slots (owner,
+ * 2026-10-29), which Unstoppable still stops, breaking what a Stun breaks
+ * (`interrupt`); with `defies`, it Delays an Inevitable unit too.
  */
 export function stunForATurn(ctx: Ctx, u: Unit, defies = false): void {
   const n = RULES.durations.stun;
   if (isUnstoppable(u)) {
     log(ctx, `${unitName(u)} is Unstoppable: not Delayed.`);
-    return;
-  }
-  if (spendPassive(u, 'ironWill')) {
-    log(ctx, `${unitName(u)}’s iron will holds: not Delayed.`);
     return;
   }
   interrupt(ctx, u);
@@ -1178,8 +1073,7 @@ export function scorch(ctx: Ctx, unit: Unit): void {
  * Pull, keywords.md, 17.4): it stops early at a yurt, another unit or the
  * map's edge, with no collision damage (open question 55). Each space
  * entered triggers as a walk's does. A Rooted (19.8) or Unstoppable unit
- * isn't moved; one that is, with Rebound, Pushes its new neighbours
- * (`displaced`).
+ * isn't moved.
  */
 export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Motion): void {
   if (hasPassive(unit, 'rooted')) {
@@ -1190,7 +1084,6 @@ export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Moti
     log(ctx, `${unitName(unit)} is Unstoppable.`);
     return;
   }
-  const from = unit.hex;
   for (let i = 0; i < n && unit.alive && unit.hex; i++) {
     const next = hexNeighbor(unit.hex, dir);
     if (!walkable(ctx.map, next) || unitAt(ctx.state, next)) break;
@@ -1198,35 +1091,6 @@ export function displace(ctx: Ctx, unit: Unit, dir: number, n: number, how: Moti
   }
   if (!unit.alive) return;
   endGrapplesApart(ctx, unit);
-  if (from && unit.hex && !hexEquals(from, unit.hex)) displaced(ctx, unit);
-}
-
-/** How deep Rebounds set off by Rebounds go: a safety bound, as each must move a unit. */
-const MAX_REBOUNDS = 12;
-let rebounds = 0;
-
-/**
- * `unit` has been Pushed, Pulled or Moved onto a new space, by an ally or
- * an enemy: with Rebound (19.8), each unit next to it there, allies
- * included, is Pushed 1 away from it, one at a time in the order for cards
- * placed at the same moment (17.4, 3.3).
- */
-export function displaced(ctx: Ctx, unit: Unit): void {
-  if (!hasPassive(unit, 'rebound') || !unit.alive || !unit.hex || rebounds >= MAX_REBOUNDS) return;
-  const around = hexNeighbors(unit.hex)
-    .map((h) => unitAt(ctx.state, h))
-    .filter((u): u is Unit => u !== undefined && u !== unit);
-  if (around.length === 0) return;
-  log(ctx, `${unitName(unit)} rebounds.`);
-  rebounds++;
-  try {
-    for (const u of simultaneousOrder(around)) {
-      if (!u.alive || !u.hex || !unit.hex || hexDistance(u.hex, unit.hex) !== 1) continue;
-      displace(ctx, u, hexDirectionTo(unit.hex, u.hex)!, 1, 'push');
-    }
-  } finally {
-    rebounds--;
-  }
 }
 
 /**
@@ -1244,7 +1108,6 @@ export function walk(ctx: Ctx, unit: Unit, path: Hex[]): void {
   log(ctx, `${unitName(unit)} swaps places with ${unitName(ally)}.`);
   enterHex(ctx, ally, back, 'swap');
   endGrapplesApart(ctx, unit);
-  displaced(ctx, ally);
 }
 
 // ─── A grapple off the track ─────────────────────────────────────────────────

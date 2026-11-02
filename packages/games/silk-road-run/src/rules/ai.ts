@@ -142,7 +142,7 @@ function lastingWorth(
 }
 
 /**
- * What `amount` of Shield on `u` is worth (Blessing, Rally): `AI.shieldShare`
+ * What `amount` of Shield on `u` is worth (Blessing, Sheltering): `AI.shieldShare`
  * of the damage it could absorb, the hits of the enemies that act before
  * `u`'s next turn and could strike it where it stands (`strikable`), at
  * most `amount`.

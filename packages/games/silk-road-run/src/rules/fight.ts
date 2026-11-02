@@ -5,7 +5,7 @@
  */
 import {hexDirectionTo, hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES, PARTY, RULES, healthOf} from './config';
+import {ABILITY, CAMEL, HEROES, PARTY, PASSIVE, RULES, healthOf} from './config';
 import {
   canMove,
   faceStart,
@@ -155,6 +155,10 @@ export function makeUnit(
     ...(loadout ? {loadout} : {}),
     ...(passives.length ? {passives} : {}),
     ...(provisions ? {provisions} : {}),
+    // Braced (19.8; owner, 2026-11-02): a Shield from the start, until spent.
+    ...(passives.includes('braced')
+      ? {shield: PASSIVE.braced.shield, lastingShield: PASSIVE.braced.shield}
+      : {}),
     alive: true,
   };
 }
@@ -376,7 +380,7 @@ function endTurn(ctx: Ctx, unit: Unit, idle: boolean, ability?: AbilityId, stunn
   const {state} = ctx;
   if (unit.tookOff && hasPassive(unit, 'momentum')) {
     log(ctx, `${unitName(unit)} rides its momentum.`);
-    haste(ctx, unit, 1);
+    haste(ctx, unit, PASSIVE.momentum.haste);
   }
   delete unit.tookOff;
   // Swift Strike's streak: a turn without a strike starts it again.

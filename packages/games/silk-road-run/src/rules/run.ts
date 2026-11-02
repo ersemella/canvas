@@ -71,7 +71,7 @@ import type {
  * removed or reinterpreted): older runs are then ended rather than
  * patched (`runOutdated`), so the rules never handle an old shape.
  */
-export const RUN_FORMAT = 19;
+export const RUN_FORMAT = 20;
 
 export interface RunState {
   /** `RUN_FORMAT` when the run was created; missing in runs from before it existed. */
@@ -94,7 +94,8 @@ export interface RunState {
   rivalCards?: CardId[];
   /**
    * Every provision the caravanserais have drawn so far, picked or
-   * discarded, in the order drawn: none is drawn again (owner, 2026-10-29).
+   * discarded, in the order drawn: none is drawn again (owner, 2026-10-29)
+   * but the stat upgrades, drawn at any caravanserai (owner, 2026-11-02).
    */
   offered?: CardId[];
   /**
@@ -319,10 +320,12 @@ const rivalOwed = (run: RunState) => draftSize(run)?.rival ?? 0;
  * progression.md, 19.3): from the stats and the passives and upgrades of the
  * pool, one at a time from the run's seed and the stage, so a reload offers
  * the same, each as often as its rarity's weight (`RARITY_WEIGHT`; 19.3b).
- * A provision drawn at an earlier caravanserai, picked or not, isn't drawn
- * again in the run (`offered`; owner, 2026-10-29); nor is a stat every hero
- * standing has at RULES.statMax, or a passive every hero standing already
- * carries. Late in a run the pool can run short, and fewer are drawn.
+ * A passive or upgrade drawn at an earlier caravanserai, picked or not,
+ * isn't drawn again in the run (`offered`; owner, 2026-10-29); the stat
+ * upgrades can be, at every caravanserai, Epic as they are (owner,
+ * 2026-11-02), each at most once a draft. Nor is a stat every hero
+ * standing has at RULES.statMax drawn, or a passive every hero standing
+ * already carries. Late in a run the passives and upgrades can run short.
  */
 export function draftOffer(run: RunState): CardId[] {
   const size = draftSize(run);
@@ -336,7 +339,7 @@ export function draftOffer(run: RunState): CardId[] {
     ...(Object.keys(PASSIVES) as PassiveId[]).filter(
       (id) => !NOT_OFFERED.includes(id) && standing.some((u) => !hasPassive(u, id))
     ),
-  ].filter((card) => !offered.includes(card));
+  ].filter((card) => isStatCard(card) || !offered.includes(card));
   return weightedDraw(
     open,
     (card) => RARITY_WEIGHT[cardRarity(card)],

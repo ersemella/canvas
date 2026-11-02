@@ -40,7 +40,6 @@ import {
   weaken,
   delay,
   displace,
-  displaced,
   endGrapples,
   endGrapplesApart,
   empower,
@@ -557,8 +556,6 @@ const grapple: AbilityDef = {
         log(ctx, `${unitName(user)} throws ${unitName(u)}.`);
         enterHex(ctx, u, target.hex!, 'throw');
       }
-      // The held unit is Moved: with Rebound it Pushes its new neighbours (19.8).
-      displaced(ctx, u);
       return;
     }
     const u = unitAt(ctx.state, target.hex!)!;
@@ -2265,7 +2262,7 @@ function rowGives(state: FightState, map: MapData, row: Unit[], dir: number): bo
  * What a Stomp from `from` aimed at `target` would do, without doing it:
  * the units it would hit, and where the Juggernaut would end, if no
  * one falls and nothing it enters on the way changes the board (hail's
- * hits, Rebound). For the AI's guess.
+ * hits). For the AI's guess.
  */
 export function stompPlan(
   state: FightState,
@@ -2341,7 +2338,7 @@ function stompCaught(state: FightState, from: Hex): Unit[] {
  * Each unit next to where it lands, ally or enemy, the shoved one too,
  * takes its power, and those still standing
  * are Pushed 1 away from it, one at a time in the order for cards placed
- * at the same moment, as Rebound's.
+ * at the same moment.
  */
 function resolveStomp(ctx: Ctx, user: Unit, to: Hex): void {
   const from = user.hex!;
@@ -2489,8 +2486,8 @@ function chargeLane(state: FightState, map: MapData, from: Hex, dir: number): He
 /**
  * What a Charge by `user` from `from` aimed at `target` would do, without
  * doing it: the units it would hit, and where the Cataphract would end, if
- * no one falls and nothing on the way changes the board (hail's hits,
- * Rebound). For the AI's guess.
+ * no one falls and nothing on the way changes the board (hail's hits).
+ * For the AI's guess.
  */
 export function ridePlan(
   state: FightState,
@@ -2867,7 +2864,7 @@ const axeThrow: AbilityDef = {
     const u = unitAt(ctx.state, target.hex!)!;
     log(ctx, `${unitName(user)} throws its axe.`);
     hit(ctx, user, u, 'The axe');
-    // The thrower can fall to its own throw (Bulwark on an ally next to it).
+    // The thrower can fall during its own throw.
     if (u.alive && u.hex && user.hex)
       displace(ctx, u, directionTo(user.hex!, u.hex), ABILITY.axeThrow.push, 'push');
   },
@@ -3126,7 +3123,7 @@ const boulder: AbilityDef = {
   resolve(ctx, user, target) {
     const at = target.hex!;
     const u = unitAt(ctx.state, at)!;
-    // Where it threw from: the hit's answers (a Bulwark, Last Stand) may fell the thrower.
+    // Where it threw from: the hit's answers may fell the thrower.
     const from = user.hex!;
     log(ctx, `${unitName(user)} hurls a boulder.`);
     hit(ctx, user, u, 'The boulder');

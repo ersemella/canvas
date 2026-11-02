@@ -5,9 +5,9 @@ import {afterEach, beforeEach, describe, expect, it} from 'vitest';
 import {hexNeighbor} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
 import {ABILITIES} from './abilities';
-import {isImmobilized, isStunned} from './board';
+import {isStunned} from './board';
 import {offeredTargets} from './choices';
-import {ABILITY, HEROES, PARTY, RARITY_WEIGHT, RULES} from './config';
+import {ABILITY, HEROES, PARTY, RARITY_WEIGHT} from './config';
 
 // These tests use Swift Strike as first built, a plain melee strike next to
 // the Duelist, and his free walk (the dash and straight walk since 2026-10-31).
@@ -20,9 +20,9 @@ afterEach(() => {
   Object.assign(ABILITY.swiftStrike, {dash: builtSwift.dash});
   Object.assign(HEROES.youxia, {movesStraight: builtSwift.straight});
 });
-import {RuleError, advanceToDecision, applyTurn, createFight} from './fight';
+import {RuleError, applyTurn, createFight} from './fight';
 import {STEPPE} from './map';
-import {PASSIVES, draftPick, fitsKit} from './passives';
+import {NOT_OFFERED, PASSIVES, draftPick, fitsKit} from './passives';
 import {weightedDraw} from './run';
 import type {AbilityId, ActionTarget, FightState, PassiveId, Unit} from './types';
 
@@ -68,76 +68,50 @@ function act(s: FightState, id: string, ability: AbilityId, target: ActionTarget
 }
 
 describe('generic upgrades: attacks', () => {
-  it('Concussive Delays the target `RULES.durations.stun` (a Stun for its next turn until 2026-10-29)', () => {
+  it('Concussive I, II and III Delay the target 2, 4 and 6', () => {
+    for (const [id, n] of [
+      ['concussive1', 2],
+      ['concussive2', 4],
+      ['concussive3', 6],
+    ] as const) {
+      const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
+      give(s, 'p-bokh', id);
+      const foe = unit(s, 'e-bokh');
+      const before = foe.slot!;
+      act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
+      expect(isStunned(foe)).toBe(false);
+      expect(foe.slot, id).toBe(before + n);
+    }
+  });
+
+  it('with more than one Concussive, only the highest Delays', () => {
     const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
-    give(s, 'p-bokh', 'concussive');
+    give(s, 'p-bokh', 'concussive1', 'concussive3');
     const foe = unit(s, 'e-bokh');
     const before = foe.slot!;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(isStunned(foe)).toBe(false);
-    expect(foe.slot).toBe(before + RULES.durations.stun);
+    expect(foe.slot).toBe(before + 6);
   });
 
-  it('Staggering Delays 2, Crippling Weakens 1, Sundering Pierces Armour', () => {
+  it('Crippling Weakens 1, Sundering Pierces Armour', () => {
     const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
-    give(s, 'p-bokh', 'staggering', 'crippling', 'sundering');
+    give(s, 'p-bokh', 'crippling', 'sundering');
     const foe = give(s, 'e-bokh', 'armoured');
     const me = unit(s, 'p-bokh');
     me.power = 2;
-    const before = foe.slot!;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(foe.slot).toBe(before + 2);
     expect(foe.weaken).toBe(1);
     // Armoured's 1 is Pierced: the full 2.
     expect(foe.hp).toBe(foe.maxHp - 2);
   });
 
-  it('Hamstring Immobilizes for `RULES.durations.turn` slots, and sets off Lockdown', () => {
-    const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
-    give(s, 'p-bokh', 'hamstring');
-    const now = s.currentSlot;
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    const foe = unit(s, 'e-bokh');
-    expect(isImmobilized(foe)).toBe(true);
-    expect(foe.statuses[0]!.until).toBe(now + RULES.durations.turn);
-    expect(isStunned(foe)).toBe(false);
-    // Past its last slot it ends, whatever turns come in between.
-    unit(s, 'p-bokh').slot = 400;
-    foe.slot = now + RULES.durations.turn + 1;
-    advanceToDecision(s);
-    expect(isImmobilized(foe)).toBe(false);
-
-    const t = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
-    give(t, 'p-bokh', 'hamstring', 'lockdown');
-    const before = unit(t, 'e-bokh').slot!;
-    act(t, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(isImmobilized(unit(t, 'e-bokh'))).toBe(true);
-    expect(unit(t, 'e-bokh').slot).toBe(before + RULES.durations.stun);
-  });
-
   it('only an enemy is an attack’s target: an ally hit takes none of it', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-bokh': out(3, 3)});
-    give(s, 'p-bokh', 'concussive', 'staggering');
+    give(s, 'p-bokh', 'concussive3');
     const ally = unit(s, 'p-storm');
     const before = ally.slot!;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(isStunned(ally)).toBe(false);
     expect(ally.slot).toBe(before);
-  });
-
-  it('Defy Fate Delays an Inevitable target, though Inevitable; Immovable Object Delays an Unstoppable one 2', () => {
-    const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1), 'e-storm': out(3, 1)});
-    give(s, 'p-bokh', 'defyFate', 'immovableObject');
-    give(s, 'e-bokh', 'steadyGait');
-    const big = give(s, 'e-storm', 'unstoppable');
-    const fated = unit(s, 'e-bokh').slot!;
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(unit(s, 'e-bokh').slot).toBe(fated + RULES.durations.stun);
-    const before = big.slot!;
-    s.currentSlot += 1;
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(3, 1)});
-    expect(big.slot).toBe(before + 2);
-    expect(isStunned(big)).toBe(false);
   });
 });
 
@@ -155,110 +129,55 @@ describe('generic upgrades: the board', () => {
     // Axe Throw's own Push only.
     expect(unit(s2, 'e-bokh').hex).toEqual(out(0, 2 + ABILITY.axeThrow.push));
   });
-
-  it('Reel In Pulls a ranged attack’s target 1; with Forceful it stays put', () => {
-    const s = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
-    give(s, 'p-mangudai', 'reelIn');
-    act(s, 'p-mangudai', 'snapShot', {hex: out(0, 3)});
-    expect(unit(s, 'e-bokh').hex).toEqual(out(0, 2));
-
-    const t = setup({'p-mangudai': centre, 'e-bokh': out(0, 3)});
-    give(t, 'p-mangudai', 'reelIn', 'forceful');
-    act(t, 'p-mangudai', 'snapShot', {hex: out(0, 3)});
-    expect(unit(t, 'e-bokh').hex).toEqual(out(0, 3));
-  });
 });
 
-describe('generic upgrades: keywords', () => {
-  it('Wearying Weakens what its Delay reaches; with Lethargy each fires once, no loop', () => {
-    const t = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
-    give(t, 'p-bokh', 'staggering', 'wearying', 'lethargy');
-    const foe = unit(t, 'e-bokh');
-    const before = foe.slot!;
-    act(t, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    // Staggering's Delay 2, Wearying's Weaken 1, Lethargy's Delay 2; then nothing more.
-    expect(foe.weaken).toBe(1);
-    expect(foe.slot).toBe(before + 4);
-  });
-
-  it('Wearying does nothing where the Delay doesn’t take (Inevitable)', () => {
+describe('generic upgrades: what its abilities reach (owner, 2026-11-02)', () => {
+  it('Empowering, Hastening and Sheltering reach an enemy its attack hits', () => {
     const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
-    give(s, 'p-bokh', 'staggering', 'wearying');
-    give(s, 'e-bokh', 'steadyGait');
+    give(s, 'p-bokh', 'empowering', 'hastening', 'sheltering');
+    const foe = unit(s, 'e-bokh');
+    const before = foe.slot!;
     act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(unit(s, 'e-bokh').weaken).toBeUndefined();
+    expect(foe.empower).toBe(1);
+    expect(foe.slot).toBe(before - 2);
+    expect(foe.shield).toBe(1);
   });
 
-  it('Inspire Hastens an ally its ability Empowers', () => {
+  it('and an ally its ability Empowers, each once: no loop', () => {
     const s = setup({'p-storm': centre, 'p-bokh': out(0, 2), 'e-bokh': out(3, 3)});
-    give(s, 'p-storm', 'inspire');
+    give(s, 'p-storm', 'empowering', 'hastening', 'sheltering');
     const ally = unit(s, 'p-bokh');
     const before = ally.slot!;
     act(s, 'p-storm', 'sunlight', {hex: out(0, 2)});
+    // Sunlight's own Empower stands; Empowering's 1 is weaker.
     expect(ally.empower).toBe(ABILITY.sunlight.empower);
     expect(ally.slot).toBe(before - 2);
+    expect(ally.shield).toBe(1);
+  });
+
+  it('never the carrier itself', () => {
+    const s = setup({'p-bokh': centre, 'e-bokh': out(0, 1)});
+    const me = give(s, 'p-bokh', 'empowering', 'sheltering');
+    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
+    expect(me.empower).toBeUndefined();
+    expect(me.shield).toBeUndefined();
   });
 });
 
 describe('generic upgrades: healing', () => {
-  it('Mending Strike heals an ally next to it its power, Empower counted', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-bokh': out(3, 3)});
-    give(s, 'p-bokh', 'mendingStrike');
-    const me = unit(s, 'p-bokh');
-    me.power = 1;
-    me.empower = 1;
-    const ally = unit(s, 'p-storm');
-    ally.hp = 1;
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(ally.hp).toBe(3);
-    // Never above full health.
-    ally.hp = ally.maxHp - 1;
-    s.currentSlot += 1;
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(ally.hp).toBe(ally.maxHp);
-  });
-
-  it('Mending Shot heals an ally at range, and the page offers it as a target', () => {
-    const s = setup({'p-mangudai': centre, 'p-storm': out(0, 3), 'e-bokh': out(3, 3)});
-    const me = give(s, 'p-mangudai');
-    me.loadout = {abilities: ['snapShot', 'hold']};
-    const shoot = ABILITIES.snapShot;
-    const offered = () => offeredTargets(s, STEPPE, me, shoot).map((t) => t.hex);
-    expect(offered()).not.toContainEqual(out(0, 3));
-    me.passives = ['mendingShot'];
-    expect(offered()).toContainEqual(out(0, 3));
-    const ally = unit(s, 'p-storm');
-    ally.hp = 1;
-    act(s, 'p-mangudai', 'snapShot', {hex: out(0, 3)});
-    expect(ally.hp).toBe(1 + me.power);
-  });
-
-  it('a mending hit sets off the healing upgrades: Fortify’s Armour and Ward’s Shield', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 1), 'e-bokh': out(3, 3)});
-    give(s, 'p-bokh', 'mendingStrike', 'fortify', 'ward');
-    const ally = unit(s, 'p-storm');
-    act(s, 'p-bokh', 'swiftStrike', {hex: out(0, 1)});
-    expect(ally.armour).toBe(1);
-    expect(ally.shield).toBe(1);
-  });
-
-  it('Invigorate and Quickening on a Blessing: the ally Empowered 1 and Hastened 2', () => {
+  it('Invigorate on a Blessing: the ally Empowered 1', () => {
     const s = setup({'p-bokh': centre, 'p-storm': out(0, 2), 'e-bokh': out(3, 3)});
-    give(s, 'p-bokh', 'invigorate', 'quickening');
-    const ally = unit(s, 'p-storm');
-    const before = ally.slot!;
-    act(s, 'p-bokh', 'blessing', {hex: out(0, 1)});
-    expect(ally.empower).toBe(1);
-    expect(ally.slot).toBe(before - 2);
-  });
-});
-
-describe('generic upgrades: chains', () => {
-  it('Quickening’s Haste sets off Fervour: the ally healed is Empowered 1', () => {
-    const s = setup({'p-bokh': centre, 'p-storm': out(0, 2), 'e-bokh': out(3, 3)});
-    give(s, 'p-bokh', 'quickening', 'fervour');
+    give(s, 'p-bokh', 'invigorate');
     act(s, 'p-bokh', 'blessing', {hex: out(0, 1)});
     expect(unit(s, 'p-storm').empower).toBe(1);
+  });
+
+  it('an ally can’t be targeted by an attack: nothing heals one any more', () => {
+    const s = setup({'p-mangudai': centre, 'p-storm': out(0, 3), 'e-bokh': out(3, 3)});
+    const me = give(s, 'p-mangudai', 'sureHand', 'empowering');
+    me.loadout = {abilities: ['snapShot', 'hold']};
+    const offered = offeredTargets(s, STEPPE, me, ABILITIES.snapShot).map((t) => t.hex);
+    expect(offered).not.toContainEqual(out(0, 3));
   });
 });
 
@@ -295,24 +214,11 @@ describe('generic upgrades: Forked', () => {
 describe('rarity (19.3b)', () => {
   it('gives every offered passive and upgrade a rarity, the strongest the rarest', () => {
     for (const def of Object.values(PASSIVES))
-      if (
-        ![
-          'unstoppable',
-          'oneEye',
-          'devoted',
-          'armoured',
-          'serpentKing',
-          'regrow',
-          'spearhead',
-          'fury',
-          'bloodlust',
-          'battleCry',
-        ].includes(def.id)
-      )
-        expect(def.rarity, def.id).toBeDefined();
-    expect(PASSIVES.concussive.rarity).toBe('legendary');
+      if (!NOT_OFFERED.includes(def.id)) expect(def.rarity, def.id).toBeDefined();
+    expect(PASSIVES.concussive3.rarity).toBe('legendary');
     expect(PASSIVES.forked.rarity).toBe('legendary');
     expect(PASSIVES.patient.rarity).toBe('common');
+    expect(PASSIVES.unstoppable.rarity).toBeDefined();
     expect(RARITY_WEIGHT.common / RARITY_WEIGHT.legendary).toBe(8);
   });
 
@@ -331,10 +237,11 @@ describe('rarity (19.3b)', () => {
   });
 
   it('the rival drafts an upgrade only for a hero whose kit it works on', () => {
-    expect(fitsKit('priest', 'ward')).toBe(true);
-    expect(fitsKit('bokh', 'ward')).toBe(false);
-    expect(fitsKit('mangudai', 'mendingShot')).toBe(true);
-    expect(draftPick('bokh', ['ward', 'mendingShot', 'patient'])).toBe('patient');
-    expect(draftPick('priest', ['ward', 'patient'])).toBe('ward');
+    expect(fitsKit('priest', 'invigorate')).toBe(true);
+    expect(fitsKit('bokh', 'invigorate')).toBe(false);
+    expect(fitsKit('bokh', 'empowering')).toBe(false);
+    expect(fitsKit('mangudai', 'concussive2')).toBe(true);
+    expect(draftPick('bokh', ['invigorate', 'empowering', 'patient'])).toBe('patient');
+    expect(draftPick('priest', ['invigorate', 'patient'])).toBe('invigorate');
   });
 });
