@@ -40,6 +40,8 @@ import {
   advanceToDecision,
   applyTurn,
   cloneFight,
+  concede,
+  concedes,
   createFight,
   refreshStats,
   seededRandom,
@@ -639,7 +641,10 @@ export function handleRunAction(run: RunState, raw: unknown, context?: RunContex
   const unit = actingUnit(fight);
   if (action.type === 'continue') {
     if (unit?.controller !== 'ai') throw new RuleError('No AI turn is due.');
-    applyTurn(fight, unit, aiTurn(fight, unit, context?.now));
+    const input = aiTurn(fight, unit, context?.now);
+    // A lone, outnumbered enemy with nothing better than a Hold yields (`CONCEDE`).
+    if (concedes(fight, unit, input)) concede(fight, unit);
+    else applyTurn(fight, unit, input);
   } else {
     if (unit?.controller !== 'human') throw new RuleError('It is not your turn.');
     const {type: _type, ...input} = action;

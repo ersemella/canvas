@@ -5,9 +5,10 @@
  */
 import {hexDirectionTo, hexEquals, hexKey} from '@canvas/engine/server';
 import type {Hex} from '@canvas/engine/server';
-import {ABILITY, CAMEL, HEROES, PARTY, PASSIVE, RULES, healthOf} from './config';
+import {ABILITY, CAMEL, CONCEDE, HEROES, PARTY, PASSIVE, RULES, healthOf} from './config';
 import {
   canMove,
+  exitSealed,
   faceStart,
   invalidPath,
   isImmobilized,
@@ -544,6 +545,29 @@ export function applyTurn(
   else endTurn(ctx, unit, path.length === 0 && def.id === 'hold', def.id);
   // A card a grapple held off the track comes back once the grapple is over.
   returnFreed(state);
+}
+
+/**
+ * Whether the enemy's `unit`, about to play `input`, yields instead
+ * (`CONCEDE`): it is the enemy's last unit, outnumbered by the player's
+ * heroes, no boss stands, and `input` is a bare Hold.
+ */
+export function concedes(state: FightState, unit: Unit, input: TurnInput): boolean {
+  if (state.phase !== 'fight' || unit.side !== 'enemy') return false;
+  if (input.move?.length || input.action.ability !== 'hold') return false;
+  if (exitSealed(state)) return false;
+  const alive = (side: Unit['side']) =>
+    state.units.filter((u) => u.alive && u.side === side && u.hero !== CAMEL).length;
+  const enemies = alive('enemy');
+  return enemies === 1 && alive('player') - enemies >= CONCEDE.outnumberedBy;
+}
+
+/** The enemy yields (`concedes`): the fight is the player's. */
+export function concede(state: FightState, unit: Unit): void {
+  state.awaiting = null;
+  state.phase = 'won';
+  record(state, {kind: 'skip', unitId: unit.id});
+  log({state, map: mapOf(state), slot: state.currentSlot}, `${unitName(unit)} yields.`);
 }
 
 /**

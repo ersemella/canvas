@@ -65,7 +65,9 @@ function outcomeText(fight: FightState): string {
   if (fight.phase === 'won')
     return camel?.alive && camel.hex && atExit(fight, camel.hex)
       ? `${HEROES.camel.name} takes the road out.`
-      : 'The rival band is scattered.';
+      : fight.units.some((u) => u.alive && u.side === 'enemy')
+        ? 'The rival band yields.'
+        : 'The rival band is scattered.';
   return camel && !camel.alive
     ? `${HEROES.camel.name} has fallen, and the load with it.`
     : 'Your caravan has fallen.';
