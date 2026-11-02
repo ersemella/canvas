@@ -520,8 +520,6 @@ export function TacticsPage() {
     return (
       <Caravanserai
         fight={fight}
-        stage={run.view.stage}
-        stages={stages}
         draft={run.view.draft}
         onPick={draftPick}
         busy={busy}

@@ -1104,28 +1104,10 @@
 }
 
 /*
- * The caravanserai: Humphrey's health, then a panel for each choice, its
- * title and a line on it over its choices and what the pick does; Set out
- * kept on screen at the bottom.
+ * The caravanserai: the draft's turns drawn as a track over its cards,
+ * the camel's heal under them while it is hurt; Set out kept on screen at
+ * the bottom.
  */
-.camelHealth {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.camelHealthBody {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-.camelHealthHead {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
-}
 /* Health in the track's green, a heal's gain lighter behind it. */
 .healthBar {
   position: relative;
@@ -1150,39 +1132,129 @@
   background: var(--c-dusk0);
   clip-path: var(--notch);
 }
-.sectionTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 20px;
-  font-weight: bold;
-}
-/* How many of its picks are made, beside a panel's title. */
-.sectionCount {
-  font-size: 15px;
-  font-weight: normal;
-  color: var(--c-dusk4);
-}
-.sectionDone {
-  padding: 0 5px;
-  font-size: 14px;
-  line-height: 18px;
-  color: var(--c-ink);
-  background: var(--c-goldLight);
-}
-.sectionLead,
 .sectionLabel {
   font-size: 15px;
   color: var(--c-dusk4);
 }
-/* What the pick does: dim while there's none, bright once there is. */
-.sectionRule {
-  min-height: 1.5em;
-  font-size: 15px;
+/*
+ * The draft's turns in order, left to right: yours in lapis, the rival's
+ * in madder, the next one lit gold, each filled with what it took; the
+ * bin for the rest last.
+ */
+.draftOrder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.draftTurns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 4px 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.draftTurn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 56px;
+  font-size: 12px;
   color: var(--c-dusk4);
 }
-.sectionRuleDone {
+/* The arrow from one turn to the next. */
+.draftTurn + .draftTurn::before {
+  content: '→';
+  position: absolute;
+  left: -7px;
+  top: 9px;
+  color: var(--c-dusk3);
+}
+.draftSlot {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 4px;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--c-dusk3);
+  border: var(--px) dashed var(--c-dusk3);
+  background: var(--c-dusk1);
+}
+.draftTurn[data-who='you'] .draftSlot {
+  border-color: var(--c-lapis);
+}
+.draftTurn[data-who='rival'] .draftSlot {
+  border-color: var(--c-madder);
+}
+.draftTurn[data-made] .draftSlot {
+  border-style: solid;
+}
+.draftTurn[data-who='you'][data-made] .draftSlot {
+  background: var(--c-lapisDark);
+}
+.draftTurn[data-who='rival'][data-made] .draftSlot {
+  background: var(--c-madderDark);
+}
+.draftTurn[data-now] .draftSlot {
   color: var(--c-goldLight);
+  border: var(--px) solid var(--c-goldLight);
+  animation: draftNow 1.2s steps(2) infinite;
+}
+.draftTurn[data-now] .draftWho {
+  color: var(--c-goldLight);
+}
+@keyframes draftNow {
+  50% {
+    background: var(--c-dusk2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .draftTurn[data-now] .draftSlot {
+    animation: none;
+  }
+}
+.draftWho {
+  white-space: nowrap;
+}
+.draftHeal {
+  font-size: 13px;
+  color: var(--c-jade);
+}
+/* The extra pick earned by the camel unhurt. */
+.draftExtra {
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: var(--c-ink);
+  background: var(--c-goldLight);
+  cursor: help;
+}
+.draftLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 16px;
+  font-size: 13px;
+  color: var(--c-dusk4);
+}
+.draftDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin-right: 2px;
+  vertical-align: -1px;
+  background: var(--c-lapis);
+}
+.draftDot[data-who='rival'] {
+  background: var(--c-madder);
 }
 /* A hero standing, a row: who, then its three stats in even columns; the camel's heal spans them. */
 .provisionList {
@@ -1233,6 +1305,17 @@
 .provisionHeal {
   grid-column: 1 / -1;
   align-items: stretch;
+  gap: 6px;
+}
+.healHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.healBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 .provisionLabel {
   display: flex;
@@ -1295,6 +1378,26 @@
 .passiveName {
   font-size: 18px;
   font-weight: bold;
+}
+/* A card's icon in a dark well beside its name and rarity. */
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cardIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: var(--px) solid var(--c-ink);
+  background: var(--c-dusk0);
+}
+.cardTitle {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 /* A drafted card's rarity (progression.md, 19.3b): the stronger, the rarer, the brighter. */
 .passiveRarity {

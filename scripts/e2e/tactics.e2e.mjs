@@ -839,14 +839,19 @@ try {
       .filter((u) => u.side === 'player' && u.alive)
       .map((u) => u.hero);
     const {offer} = before.draft;
+    const humphrey = before.fight.units.find((u) => u.side === 'player' && u.hero === 'camel');
+    const humphreyHurt = Boolean(humphrey && humphrey.hp < humphrey.maxHp);
     await page.getByRole('button', {name: 'Next stage'}).click();
     await page.getByTestId('caravanserai').waitFor({timeout: 15_000});
     const setOut = page.getByRole('button', {name: 'Set out'});
     check(
-      'the caravanserai: the draft’s cards, each with its rarity, Humphrey’s heal instead, Set out waiting on a pick',
+      'the caravanserai: the draft’s cards, each with its rarity and icon, its turns drawn, Humphrey’s heal only while hurt, Set out waiting on a pick',
       offer.length === (before.draft.extra ? 4 : 3) &&
         (await page.locator('[data-testid^="card-rarity-"]').count()) === offer.length &&
-        (await page.getByTestId('draft-heal').count()) === 1 &&
+        (await page.locator('[data-testid="draft-offer"] svg[data-icon]').count()) ===
+          offer.length &&
+        (await page.getByTestId('draft-order').count()) === 1 &&
+        (await page.getByTestId('draft-heal').count()) === (humphreyHurt ? 1 : 0) &&
         (await page.getByTestId('extra-provision').count()) === (before.draft.extra ? 1 : 0) &&
         (await setOut.isDisabled()),
       offer

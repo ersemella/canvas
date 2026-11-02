@@ -696,7 +696,22 @@ export const KIND_NAME: Record<AbilityKind, string> = {
  */
 export function AbilityIcon({id, px = 2}: {id: IconId; px?: number}) {
   const {rows, kind, colors} = ICON[id];
-  const fill = colors ?? KIND_COLORS[kind!];
+  return <PixelIcon rows={rows} colors={colors ?? KIND_COLORS[kind!]} px={px} id={id} />;
+}
+
+/**
+ * 12×12 pixel art, `px` screen pixels to an art pixel: `#` the first
+ * colour, `=` the second, `+` the third. Decorative; `inline` spaces it
+ * before the text it leads.
+ */
+export function PixelIcon(props: {
+  rows: string[];
+  colors: [string, string, string];
+  px?: number;
+  id?: string;
+  inline?: boolean;
+}) {
+  const {rows, colors, px = 2, inline = true} = props;
   return (
     <svg
       width={12 * px}
@@ -707,16 +722,15 @@ export function AbilityIcon({id, px = 2}: {id: IconId; px?: number}) {
       style={{
         flex: 'none',
         display: 'inline-block',
-        verticalAlign: '-0.2em',
-        marginRight: '0.35em',
+        ...(inline ? {verticalAlign: '-0.2em', marginRight: '0.35em'} : {}),
       }}
-      data-icon={id}
+      data-icon={props.id}
     >
       {rows.flatMap((row, y) =>
         [...row].map((c, x) => {
           const i = '#=+'.indexOf(c);
           return i < 0 ? null : (
-            <rect key={`${x},${y}`} x={x} y={y} width={1} height={1} fill={fill[i]} />
+            <rect key={`${x},${y}`} x={x} y={y} width={1} height={1} fill={colors[i]} />
           );
         })
       )}
