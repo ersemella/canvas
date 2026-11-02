@@ -3,6 +3,7 @@ import {Link} from 'react-router-dom';
 import {ActionIcon, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core';
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
+import {useSoundMuted} from 'components/useSound';
 import {
   EXIT_INFO,
   SEALED_EXIT_INFO,
@@ -181,6 +182,7 @@ export function SkipButton(props: {
  */
 export function RunMenu(props: {busy: boolean; onReset: () => void}) {
   const [armed, setArmed] = useState(false);
+  const [muted, toggleSound] = useSoundMuted();
   useEffect(() => {
     if (!armed) return;
     const t = setTimeout(() => setArmed(false), 3000);
@@ -202,6 +204,9 @@ export function RunMenu(props: {busy: boolean; onReset: () => void}) {
       <Menu.Dropdown>
         <Menu.Item component={Link} to="/">
           All games
+        </Menu.Item>
+        <Menu.Item closeMenuOnClick={false} onClick={toggleSound} data-testid="sound-toggle">
+          {muted ? 'Sound: off' : 'Sound: on'}
         </Menu.Item>
         <Menu.Item
           {...(armed ? {color: 'red'} : {})}

@@ -37,6 +37,7 @@ import '@fontsource/jersey-20/400.css';
 import {GameCanvas} from 'components/GameCanvas';
 import {GameErrorBoundary} from 'components/GameErrorBoundary';
 import {useIsPhone} from 'components/useIsPhone';
+import {useGameSound} from 'components/useSound';
 import {createModuleFor, findGame} from 'registry/games';
 import {Caravanserai} from './Caravanserai';
 import {StartMenu} from './StartMenu';
@@ -86,6 +87,7 @@ function outcomeText(fight: FightState): string {
  * without Move, and keys and a right-click do the rest (phase-1-brief.md).
  */
 export function TacticsPage() {
+  useGameSound();
   const eventsRef = useRef<EventBus | null>(null);
   const {
     run,

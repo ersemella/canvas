@@ -17,6 +17,16 @@ export {Query} from './core/Query';
 export type {QueryDescriptor} from './core/Query';
 export {EventBus} from './core/EventBus';
 
+// Audio
+export {SoundPlayer, soundPlayer} from './audio/SoundPlayer';
+export type {
+  NoiseLayer,
+  PlayOptions,
+  SoundLayer,
+  SoundSpec,
+  ToneLayer,
+} from './audio/SoundPlayer';
+
 // Math
 export {Vec2} from './math/Vec2';
 export {Rect} from './math/Rect';

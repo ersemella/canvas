@@ -1,4 +1,4 @@
-import {assetLoader, BaseSystem, hexKey, mouseService} from '@canvas/engine';
+import {assetLoader, BaseSystem, hexKey, mouseService, soundPlayer} from '@canvas/engine';
 import type {EventBus, SystemContext} from '@canvas/engine';
 import {CAMEL} from '../rules/config';
 import {exitSealed, shotLane, unitAt} from '../rules/board';
@@ -9,6 +9,8 @@ import {trackCards, trackDrag} from './layout';
 import type {TacticsHoverPayload} from './TacticsInputSystem';
 import {Playback} from './playback';
 import type {PlaybackPayload} from './playback';
+import {cuePriority, eventCue, SOUNDS} from './sounds';
+import type {CueName} from './sounds';
 import type {BoardScene} from './board/scene';
 import {CARD_SLIDE_SECONDS, drawTrack, slideIndex, trackStart} from './board/track';
 import type {CardSlide, TrackAdvance} from './board/track';
@@ -137,6 +139,7 @@ export class TacticsBoardSystem extends BaseSystem {
         this.play = new Playback(payload);
         // Reduced motion, or nothing to show: straight to the result.
         if (this.still || this.play.events.length === 0) this.endPlayback();
+        else this.playCues(this.play, 0);
       })
     );
     this.cleanup.push(bus.on('tactics:playback-skip', () => this.endPlayback()));
@@ -222,8 +225,28 @@ export class TacticsBoardSystem extends BaseSystem {
   /** Ends a playback (finished or skipped): the page's scene shows again. */
   private endPlayback(): void {
     if (!this.play) return;
+    const {outcome} = this.play;
     this.play = null;
+    // Skipped or not, the fight's result sounds.
+    if (outcome === 'won' || outcome === 'lost') soundPlayer.play(SOUNDS[outcome]);
     this.bus?.emit('tactics:playback-done', {});
+  }
+
+  /**
+   * The sounds of the events shown since `from`, up to the one showing now:
+   * a slow frame can pass several, so only the two that matter most play.
+   */
+  private playCues(play: Playback, from: number): void {
+    const last = Math.min(play.index, play.events.length - 1);
+    const cues: CueName[] = [];
+    for (let i = from; i <= last; i++) {
+      const cue = eventCue(play.events[i]!, play.display);
+      if (cue && !cues.includes(cue)) cues.push(cue);
+    }
+    cues.sort((a, b) => cuePriority(b) - cuePriority(a));
+    // A little pitch wobble keeps repeated hits and steps from sounding stamped.
+    for (const cue of cues.slice(0, 2))
+      soundPlayer.play(SOUNDS[cue], {pitch: 0.94 + Math.random() * 0.12});
   }
 
   onDestroy(): void {
@@ -297,7 +320,9 @@ export class TacticsBoardSystem extends BaseSystem {
     let playing: Playback | null = null;
     if (this.play) {
       const before = this.play.display;
+      const shownBefore = this.play.index;
       const going = this.play.step(deltaTime);
+      if (this.play.index !== shownBefore) this.playCues(this.play, shownBefore + 1);
       // Even on the frame it ends: the last event (the player's turn coming
       // up) shows for no time, but the card that acted before it still slides.
       if (this.play.display !== before) this.startTrackMotion(before, this.play.display);

@@ -142,10 +142,13 @@ export class Playback {
   private base: FightState;
   /** The unit whose turn it is, as of the event showing now. */
   private actor: string | null = null;
+  /** How the fight stands once every event has shown. */
+  readonly outcome: FightState['phase'];
 
   constructor({from, to}: PlaybackPayload) {
     this.base = from;
     this.events = to.events ?? [];
+    this.outcome = to.phase;
     this.display = from;
     this.show(0);
   }
