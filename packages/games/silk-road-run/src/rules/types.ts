@@ -477,7 +477,7 @@ export type Motion = 'walk' | 'throw' | 'swap' | 'push' | 'pull' | 'leap';
 export type FightEvent =
   | {kind: 'turn'; unitId: string}
   | {kind: 'step'; unitId: string; from: Hex; to: Hex; how: Motion}
-  | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex}
+  | {kind: 'action'; unitId: string; ability: AbilityId; target?: Hex; mode?: TargetMode}
   /**
    * An ability landing after its user's action: a charged one as its
    * user's charging card comes back (a Skirmish shot, at what it hits, or
@@ -564,9 +564,15 @@ export interface ActionTarget {
    * on the line not listed keep theirs.
    */
   cards?: CardPlacement[];
-  /** Eclipse's choice (owner, 2026-10-31): every unit it reaches Hastened, or every one Delayed. */
-  mode?: 'haste' | 'delay';
+  /**
+   * Eclipse's choice (owner, 2026-10-31): every unit it reaches Hastened, or
+   * every one Delayed. The Elixir's (owner, 2026-11-02): an overdose or a sedative.
+   */
+  mode?: TargetMode;
 }
+
+/** The choices an ability can offer once aimed (`ActionTarget.mode`). */
+export type TargetMode = 'haste' | 'delay' | 'overdose' | 'sedative';
 
 /** One card Alignment places: the unit on `hex`, its card on `slot`. */
 export interface CardPlacement {

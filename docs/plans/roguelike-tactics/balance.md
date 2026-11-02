@@ -6951,6 +6951,17 @@ the Steppe (Eclipse 7 measured at 58.3% overall, or more radius); the
 Ranger, 42.3% in Byzantium's damage seat and 44.5% kept. Whole runs not
 measured here.
 
+## Overdose and Sedative as one Elixir (2026-11-02)
+
+Built (owner): the Alchemist's Overdose and Sedative merged into one
+ability, the Elixir, an overdose or a sedative his choice each cast
+(`ActionTarget.mode`, as Eclipse's Delay or Haste), the sedative offered on
+the units the overdose reaches that it would do anything to. His kit
+`['elixir', 'hold']`, with room for an upgrade. Every ability takes the
+turn's action, so the choice is the same as between the two abilities, and
+the AI scores each as before. Measured on `experiments/elixir-sedative.mjs`'s
+`built` rows against main's two-ability kit: pending.
+
 ## Principles for re-tuning
 
 How to keep the game balanced as gear, new heroes, new abilities and new

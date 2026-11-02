@@ -103,7 +103,8 @@ export function TurnControls(props: {
   /** Desktop: each choice shows its number key. */
   keys?: boolean;
   /**
-   * A choice the aimed ability still offers (Eclipse: Delay or Haste),
+   * A choice the aimed ability still offers (Eclipse: Delay or Haste; the
+   * Elixir: an overdose or a sedative),
    * beside Skip turn so the section keeps its height.
    */
   choice?: {

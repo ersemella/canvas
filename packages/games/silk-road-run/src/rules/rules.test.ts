@@ -290,10 +290,11 @@ describe('the track', () => {
     expect(HEROES.storm.abilities).toEqual(['hail', 'hold']);
     expect(HEROES.storm.upgrades).toEqual(['sunlight', 'gale']);
     // At most two abilities besides Hold (owner, 2026-10-25): each hero
-    // takes one of its upgrades; the Alchemist, with none, starts with two
-    // (the overdose and Sedative, owner, 2026-10-31).
-    for (const h of ROSTER) expect(hasRoomForAbility(HEROES[h].abilities)).toBe(h !== 'alchemist');
-    expect(HEROES.alchemist.abilities).toEqual(['elixir', 'sedative', 'hold']);
+    // takes one of its upgrades. The Alchemist started with two from
+    // 2026-10-31 (the Overdose and Sedative), one again since 2026-11-02,
+    // the Elixir giving either (owner).
+    for (const h of ROSTER) expect(hasRoomForAbility(HEROES[h].abilities)).toBe(true);
+    expect(HEROES.alchemist.abilities).toEqual(['elixir', 'hold']);
     expect(HEROES.alchemist.upgrades).toBeUndefined();
     expect(hasRoomForAbility([...HEROES.bokh.abilities, 'haul'])).toBe(false);
     expect(hasRoomForAbility([...HEROES.mangudai.abilities, 'skirmish'])).toBe(false);
@@ -3845,7 +3846,7 @@ describe('the Priest', () => {
   });
 });
 
-describe('the built Elixir, an overdose (2026-10-31)', () => {
+describe('the built Elixir, an overdose or a sedative (2026-10-31; one ability 2026-11-02)', () => {
   const party: HeroId[] = ['modao', 'alchemist', 'mangudai'];
 
   it('a unit within 3, the Alchemist too, ally or enemy: Empowered until its hits deal 6 for 8 slots, then hit for 1', () => {
@@ -3861,40 +3862,83 @@ describe('the built Elixir, an overdose (2026-10-31)', () => {
     );
     const alchemist = unit(s, 'p-alchemist');
     expect(alchemist.power).toBe(1);
-    expect(ABILITIES.elixir.name).toBe('Overdose');
+    expect(ABILITIES.elixir.name).toBe('Elixir');
     expect(ABILITIES.elixir.range).toBe(3);
-    // Every unit within 3, the camel and himself too; not the Vanguard 7 away.
+    // The overdose: every unit within 3, the camel and himself too; not the Vanguard 7 away.
+    const offered = offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir);
     expect(
-      offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir)
+      offered
+        .filter((t) => t.mode === 'overdose')
         .map((t) => hexKey(t.hex!))
         .sort()
     ).toEqual([at(1, 3), at(2, 3), at(4, 3), at(1, 4)].map(hexKey).sort());
+    // The sedative: each of those it does anything to; not the camel, unhurt, that never hits.
+    expect(
+      offered
+        .filter((t) => t.mode === 'sedative')
+        .map((t) => hexKey(t.hex!))
+        .sort()
+    ).toEqual([at(1, 3), at(2, 3), at(4, 3)].map(hexKey).sort());
+    expect(offered.every((t) => t.mode === 'overdose' || t.mode === 'sedative')).toBe(true);
     expect(ABILITIES.elixir.summary(alchemist)).toBe(
-      'A unit within 3, yourself too, ally or enemy: Empowered until its hits deal 6, for 8 slots, and it takes 1.'
+      'A unit within 3, yourself too, ally or enemy, your choice: an overdose, Empowered until its hits deal 6 for 8 slots, and it takes 1; or a sedative, healed 1, and its hits deal nothing for 8 slots.'
     );
+    // A choice it must be told.
+    expect(() =>
+      applyTurn(cloneFight(s), alchemist, {action: {ability: 'elixir', target: {hex: at(4, 3)}}})
+    ).toThrow();
     // The ally 3 away (power 2): Empowered 4, hit for 1, not healed.
     const a = cloneFight(s);
-    applyTurn(a, unit(a, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(4, 3)}}});
+    applyTurn(a, unit(a, 'p-alchemist'), {
+      action: {ability: 'elixir', target: {hex: at(4, 3), mode: 'overdose'}},
+    });
     const ally = unit(a, 'p-modao');
     expect(ally.empower).toBe(4);
     expect(ally.hp).toBe(ally.maxHp - 1);
     expect(ally.empowerUntil).toBe(a.currentSlot + RULES.durations.turn);
     // The enemy next to it (power 2): the same.
     const e = cloneFight(s);
-    applyTurn(e, unit(e, 'p-alchemist'), {action: {ability: 'elixir', target: {hex: at(2, 3)}}});
+    applyTurn(e, unit(e, 'p-alchemist'), {
+      action: {ability: 'elixir', target: {hex: at(2, 3), mode: 'overdose'}},
+    });
     expect(unit(e, 'e-mangudai').empower).toBe(4);
     expect(unit(e, 'e-mangudai').hp).toBe(unit(e, 'e-mangudai').maxHp - 1);
     // Himself (power 1): Empowered 5.
     const self = cloneFight(s);
     applyTurn(self, unit(self, 'p-alchemist'), {
-      action: {ability: 'elixir', target: {hex: at(1, 3)}},
+      action: {ability: 'elixir', target: {hex: at(1, 3), mode: 'overdose'}},
     });
     expect(unit(self, 'p-alchemist').empower).toBe(5);
     expect(unit(self, 'p-alchemist').hp).toBe(unit(self, 'p-alchemist').maxHp - 1);
   });
+
+  it('a sedative: healed 1 and Weakened by all it deals for 8 slots; not offered on a unit it would do nothing to', () => {
+    const s = setup(
+      {'p-alchemist': at(1, 3), 'e-mangudai': at(2, 3), 'p-modao': at(4, 3), 'e-modao': at(8, 6)},
+      party
+    );
+    const alchemist = unit(s, 'p-alchemist');
+    const e = unit(s, 'e-mangudai');
+    e.hp -= 2;
+    e.empower = 1;
+    e.empowerUntil = s.currentSlot + 8;
+    applyTurn(s, alchemist, {
+      action: {ability: 'elixir', target: {hex: at(2, 3), mode: 'sedative'}},
+    });
+    expect(e.hp).toBe(e.maxHp - 1);
+    expect(e.weaken).toBe(3);
+    expect(e.weakenUntil).toBe(s.currentSlot + RULES.durations.turn);
+    expect(damageOf(e)).toBe(0);
+    // At full health and Weakened to nothing already: an overdose only.
+    e.hp = e.maxHp;
+    const sedatives = offeredTargets(s, mapOf(s), alchemist, ABILITIES.elixir).filter(
+      (t) => t.mode === 'sedative' && hexKey(t.hex!) === hexKey(at(2, 3))
+    );
+    expect(sedatives).toEqual([]);
+  });
 });
 
-describe('Sedative (a switch, in no kit)', () => {
+describe('Sedative (the Elixir’s since 2026-11-02; the ability in no kit)', () => {
   it('a unit within 3, ally or enemy: healed the power, Weakened by all it deals for 8 slots', () => {
     const s = setup(
       {
@@ -4203,7 +4247,7 @@ describe('the Vanguard and the Alchemist', () => {
     });
   });
 
-  it('Elixir as an overdose (`overdose` 6): ally or enemy Empowered until its hits deal 6, and takes the power', () => {
+  it('Elixir as an overdose (`overdose` 6), the sedative its other choice: ally or enemy Empowered until its hits deal 6, and takes the power', () => {
     withElixir({overdose: 6}, 1, () => {
       const from = at(4, 4);
       const ally = hexNeighbor(from, 0);
@@ -4217,12 +4261,14 @@ describe('the Vanguard and the Alchemist', () => {
       a.slot = 100;
       e.slot = 100;
       expect(advanceToDecision(s)!.id).toBe('p-alchemist');
-      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: ally}}});
+      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: ally, mode: 'overdose'}}});
       expect(a.empower).toBe(4);
       expect(a.hp).toBe(a.maxHp - 1);
       alchemist.slot = s.currentSlot + 1;
       expect(advanceToDecision(s)!.id).toBe('p-alchemist');
-      applyTurn(s, alchemist, {action: {ability: 'elixir', target: {hex: enemy}}});
+      applyTurn(s, alchemist, {
+        action: {ability: 'elixir', target: {hex: enemy, mode: 'overdose'}},
+      });
       expect(e.empower).toBe(4);
       expect(e.hp).toBe(e.maxHp - 1);
     });

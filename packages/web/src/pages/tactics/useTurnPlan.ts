@@ -18,6 +18,7 @@ import {
   eclipseCaught,
   hostile,
   targetAt,
+  unitAt,
 } from '@canvas/games-silk-road-run';
 import type {
   AbilityId,
@@ -469,8 +470,17 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
       if (!match) return false;
       // Forked (19.9): with a target picked, another of its targets is the second, tapped again un-picked.
       if (forks(acting, ABILITIES[ability]) && target?.hex && !hexEquals(target.hex, match.hex!)) {
-        if (target.also && hexEquals(target.also, match.hex!)) pick({target: {hex: target.hex}});
-        else chooseTarget({hex: target.hex, also: match.hex!});
+        // The first's choice (the Elixir's draught) goes to the second too.
+        const first = {hex: target.hex, ...(target.mode ? {mode: target.mode} : {})};
+        if (target.also && hexEquals(target.also, match.hex!)) pick({target: first});
+        else if (
+          targets.some(
+            (t) =>
+              t.hex && hexEquals(t.hex, match.hex!) && (t.mode ?? null) === (first.mode ?? null)
+          )
+        )
+          chooseTarget({...first, also: match.hex!});
+        else return false;
         return true;
       }
       // Where in the line it was tapped, if not on the target: a second tap there confirms.
@@ -482,7 +492,14 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
         if (hexEquals(tapped ?? target.hex, h)) pick({target: null, tapped: null});
         else pick({tapped: at});
       } else if (secondPick(ability)) chooseTarget({hex: match.hex!});
-      else chooseTarget(match, at);
+      else if (ability === 'elixir' && match.mode) {
+        // The Elixir's draught (the turn controls switch it): an overdose
+        // for an ally, a sedative for an enemy, whichever it can take.
+        const here = targets.filter((t) => t.hex && hexEquals(t.hex, match.hex!));
+        const u = fight && unitAt(fight, match.hex!);
+        const want = u && hostile(u, acting) ? 'sedative' : 'overdose';
+        chooseTarget(here.find((t) => t.mode === want) ?? match, at);
+      } else chooseTarget(match, at);
       return true;
     },
     [
@@ -560,19 +577,39 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     toggleMove,
     planTap,
     stepBack,
-    /** Eclipse, aimed: Delay or Haste, switched in the turn controls. */
+    /**
+     * Eclipse, aimed: Delay or Haste; the Elixir, aimed: an overdose or a
+     * sedative, those the unit can take. Switched in the turn controls.
+     */
     choice:
-      ability === 'eclipse' && target?.hex
+      ability === 'elixir' && target?.hex && target.mode
         ? {
-            value: target.mode ?? 'delay',
-            options: [
-              {value: 'delay', label: 'Delay'},
-              {value: 'haste', label: 'Haste'},
-            ],
+            value: target.mode,
+            options: (
+              [
+                {value: 'overdose', label: 'Overdose'},
+                {value: 'sedative', label: 'Sedative'},
+              ] as const
+            ).filter((o) =>
+              targets.some((t) => t.hex && hexEquals(t.hex, target.hex!) && t.mode === o.value)
+            ),
+            // A Forked second target is dropped: it may not take the other draught.
             onChange: (mode: string) =>
-              pick({target: {...target, mode: mode === 'haste' ? 'haste' : 'delay'}}),
+              pick({
+                target: {hex: target.hex!, mode: mode === 'sedative' ? 'sedative' : 'overdose'},
+              }),
           }
-        : null,
+        : ability === 'eclipse' && target?.hex
+          ? {
+              value: target.mode ?? 'delay',
+              options: [
+                {value: 'delay', label: 'Delay'},
+                {value: 'haste', label: 'Haste'},
+              ],
+              onChange: (mode: string) =>
+                pick({target: {...target, mode: mode === 'haste' ? 'haste' : 'delay'}}),
+            }
+          : null,
     arrangeTap,
     arrangeDown,
     arrangeDrop,

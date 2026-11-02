@@ -193,10 +193,11 @@ export const HEROES: Record<HeroId, HeroStats> = {
   },
   /**
    * The Alchemist (owner, 2026-10-25; roster.md): a support whose
-   * Elixir, an overdose on any unit within 3, ally or enemy, Empowers its
-   * hits to 6 for 8 slots and hits it for his power (`ABILITY.elixir`),
-   * and whose Sedative heals any unit within 3 his power and Weakens it to
-   * nothing for 8 slots (`ABILITY.sedative`; both owner, 2026-10-31; from 2026-10-27, on a unit within 2, an ally healed his
+   * Elixir, on any unit within 3, ally or enemy, is his choice each cast
+   * (owner, 2026-11-02; two abilities, Overdose and Sedative, from
+   * 2026-10-31): an overdose Empowers its hits to 6 for 8 slots and hits it
+   * for his power (`ABILITY.elixir`), a sedative heals it his power and
+   * Weakens it to nothing for 8 slots (`ABILITY.sedative`; from 2026-10-27, on a unit within 2, an ally healed his
    * power and Empowered 2, an enemy hit and Weakened 2; an ally within 3 healed, Empowered 1 and Hastened 3 before
    * that; earlier on 2026-10-26 a burst next to it of Haste 3
    * and Delay 3, before that of Empower 2 and Weaken 1). Speed 3 (owner, 2026-10-25; 2 before; balance.md,
@@ -212,7 +213,7 @@ export const HEROES: Record<HeroId, HeroStats> = {
     speed: 3,
     defence: 1,
     power: 1,
-    abilities: ['elixir', 'sedative', 'hold'],
+    abilities: ['elixir', 'hold'],
   },
   /**
    * The Duelist (owner, 2026-10-26; roster.md): China's fast
@@ -857,7 +858,8 @@ export const ABILITY = {
   /**
    * Sedative (owner, 2026-10-31; the Alchemist's second ability beside the
    * overdose, as measured in balance.md, "The overdose with a Sedative
-   * beside it"): a unit within
+   * beside it"; the Elixir's other choice since 2026-11-02, owner, at the
+   * Elixir's reach; `range` the `sedative` ability's, in no kit): a unit within
    * `range`, the Alchemist too, ally or enemy, healed the Alchemist's power
    * and Weakened by all it deals (its power, Empower and passives), so its
    * hits deal nothing for `RULES.durations.turn` slots.

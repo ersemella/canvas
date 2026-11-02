@@ -116,10 +116,20 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
     case 'action':
     case 'land': {
       const def = ABILITIES[e.ability];
+      // The Elixir's draught: the sedative's vial and haze, or the overdose's
+      // flask, each by its own name.
+      const draught = e.kind === 'action' && e.ability === 'elixir' ? e.mode : undefined;
       // A charged ability is only aimed now: its flourish plays as it lands.
       // A Stomp too: the Juggernaut steps into place first (a 'land' event follows).
       const charged = e.kind === 'action' && (chargeOf(u, e.ability) > 0 || e.ability === 'stomp');
-      const name = e.kind === 'land' && e.ability !== 'stomp' ? `${def.name} lands` : def.name;
+      const name =
+        e.kind === 'land' && e.ability !== 'stomp'
+          ? `${def.name} lands`
+          : draught === 'sedative'
+            ? 'Sedative'
+            : draught === 'overdose'
+              ? 'Overdose'
+              : def.name;
       // The area the playback lights up when it lands; the target hex alone for the rest.
       const radius = def.radius ?? 0;
       const area = !e.target
@@ -129,7 +139,9 @@ export function drawPlaybackEvent(ctx: CanvasRenderingContext2D, play: Playback)
           : def.area && u.hex
             ? def.area(map, u.hex, e.target, u)
             : map.hexes.filter((h) => hexDistance(h, e.target!) <= radius);
-      const effect = charged ? undefined : ABILITY_EFFECT[e.ability];
+      const effect = charged
+        ? undefined
+        : ABILITY_EFFECT[draught === 'sedative' ? 'sedative' : e.ability];
       // Effects move in steps, as pixel art does.
       const steps = eventSeconds(e, false) * EFFECT_FPS;
       const stepped = steps > 0 ? Math.floor(k * steps) / steps : k;

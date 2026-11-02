@@ -490,7 +490,8 @@ export function applyTurn(
     const problem = def.check?.(state, map, unit, target);
     if (problem) throw new RuleError(problem);
     // Forked (19.9): a second target, another of the ability's own.
-    const second = also ? {hex: also} : undefined;
+    // The same choice as the first (the Elixir's draught).
+    const second = also ? {hex: also, ...(target.mode ? {mode: target.mode} : {})} : undefined;
     if (second) {
       if (!forks(unit, def) || target.to || (target.hex && hexEquals(target.hex, second.hex)))
         throw new RuleError(`${def.name} can’t take a second target.`);
@@ -508,6 +509,7 @@ export function applyTurn(
         unitId: unit.id,
         ability: def.id,
         ...(target.hex ? {target: target.hex} : {}),
+        ...(target.mode ? {mode: target.mode} : {}),
       });
     const from = unit.hex!;
     def.resolve(ctx, unit, target);
@@ -519,7 +521,13 @@ export function applyTurn(
       unit.hex &&
       allowedTargets(state, map, unit, def).some((t) => sameTarget(t, second))
     ) {
-      record(state, {kind: 'action', unitId: unit.id, ability: def.id, target: second.hex});
+      record(state, {
+        kind: 'action',
+        unitId: unit.id,
+        ability: def.id,
+        target: second.hex,
+        ...(second.mode ? {mode: second.mode} : {}),
+      });
       def.resolve(ctx, unit, second);
     }
     face(unit, from, target.hex);

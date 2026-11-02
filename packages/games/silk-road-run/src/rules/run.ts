@@ -61,6 +61,7 @@ import type {
   Provision,
   RunAction,
   StatId,
+  TargetMode,
   TurnInput,
   Unit,
 } from './types';
@@ -534,11 +535,12 @@ export function parseAction(raw: unknown): RunAction {
       const target: ActionTarget = {};
       if (action.target.hex !== undefined) target.hex = parseHex(action.target.hex);
       if (action.target.to !== undefined) target.to = parseHex(action.target.to);
-      // Eclipse's choice.
+      // Eclipse's choice, or the Elixir's.
       if (action.target.mode !== undefined) {
-        if (action.target.mode !== 'haste' && action.target.mode !== 'delay')
+        const mode = action.target.mode as TargetMode;
+        if (!(['haste', 'delay', 'overdose', 'sedative'] as const).includes(mode))
           throw new RuleError('Malformed mode.');
-        target.mode = action.target.mode;
+        target.mode = mode;
       }
       // Alignment's arrangement: each card's unit by its space, and its slot.
       const {cards} = action.target;

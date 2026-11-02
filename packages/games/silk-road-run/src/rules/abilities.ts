@@ -875,7 +875,20 @@ export function elixirCaught(state: FightState, user: Unit, from: Hex, target: H
 }
 
 /**
- * Elixir (owner, 2026-10-25; as built since late on 2026-10-26): an ally
+ * Whether `user`'s Elixir offers a choice of draught (`ActionTarget.mode`):
+ * an overdose or a sedative, as built since 2026-11-02 (owner; the Overdose
+ * and Sedative two abilities on 2026-10-31). Only the overdose's own shape,
+ * one unit, as built; the other measuring shapes give no choice.
+ */
+export const elixirChoice = (user: Unit): boolean =>
+  overdoseOf(user) > 0 && ABILITY.elixir.mode === 'built' && ABILITY.elixir.shape === 'unit';
+
+/**
+ * Elixir (owner, 2026-10-25; as built since 2026-11-02, the Overdose and
+ * Sedative in one): one unit within 3, the Alchemist too, ally or enemy, given
+ * an overdose (Empowered until its hits deal 6 for 8 slots, then hit for his
+ * power) or a sedative (healed his power and Weakened to nothing for 8 slots),
+ * his choice each cast (`target.mode`, `elixirChoice`). Before, as built since late on 2026-10-26: an ally
  * within `ABILITY.elixir.range` (3) but the Alchemist, no line of fire,
  * heals the Alchemist's power, is Empowered `empower` (1) and Hastened
  * `haste` (3); nothing on an enemy. Earlier that day a burst next to the
@@ -888,11 +901,9 @@ const elixir: AbilityDef = {
   get single() {
     return ABILITY.elixir.shape === 'unit';
   },
-  // Named Overdose since it became one (owner, 2026-10-31); Elixir before,
-  // and with the overdose switched off.
-  get name() {
-    return ABILITY.elixir.overdose > 0 ? 'Overdose' : 'Elixir';
-  },
+  // Named Overdose while that was all it gave (2026-10-31); Elixir again
+  // since the Sedative joined it (owner, 2026-11-02).
+  name: 'Elixir',
   kind: 'support',
   bothSides: true,
   // Getters, so the measuring switches (`ABILITY.elixir`) reach the page and the AI.
@@ -942,6 +953,8 @@ const elixir: AbilityDef = {
       : `A unit within ${range}${ABILITY.elixir.self ? ', yourself too' : ''}`;
     if (ABILITY.elixir.mode === 'alternate')
       return `${where}: ${elixirHits(user) ? `this time an enemy, hit for ${user.power}` : `this time an ally, healed ${user.power}`}; heal and hit by turns.`;
+    if (elixirChoice(user))
+      return `${where}, ally or enemy, your choice: an overdose, Empowered until its hits deal ${overdoseOf(user)} for ${RULES.durations.turn} slots, and it takes ${user.power}; or a sedative, healed ${user.power}, and its hits deal nothing for ${RULES.durations.turn} slots.`;
     if (overdoseOf(user) > 0)
       return `${where}, ally or enemy: Empowered until its hits deal ${overdoseOf(user)}, for ${RULES.durations.turn} slots, and it takes ${user.power}.`;
     if (ABILITY.elixir.mode === 'poison')
@@ -953,80 +966,101 @@ const elixir: AbilityDef = {
     return `${where}: ${effect()}`;
   },
   targets(state, map, user, from) {
-    const {shape, range} = ABILITY.elixir;
-    if (shape === 'aura')
-      return elixirCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
-    if (shape === 'burst')
-      return spacesWithin(map, from, range)
-        .filter((h) => elixirCaught(state, user, from, h).length > 0)
-        .map((h) => ({hex: h}));
-    if (elixirLineRange(user))
-      return elixirLines(map, from, user)
-        .flat()
-        .map((h) => unitAt(state, h))
-        .filter(elixirTakes(user))
-        .map((u) => ({hex: u.hex!}));
+    // The choice: each unit the overdose reaches, and of those each a sedative does anything to.
+    const reach = elixirUnitTargets(state, map, user, from);
+    if (!elixirChoice(user)) return reach;
+    return [
+      ...reach.map((t) => ({...t, mode: 'overdose' as const})),
+      ...reach
+        .filter((t) => sedativeTakes(unitAt(state, t.hex!)))
+        .map((t) => ({...t, mode: 'sedative' as const})),
+    ];
+  },
+  check: (_state, _map, user, target) =>
+    !elixirChoice(user) || target.mode === 'overdose' || target.mode === 'sedative'
+      ? null
+      : 'An overdose or a sedative.',
+  resolve(ctx, user, target) {
+    if (target.mode === 'sedative') {
+      const u = unitAt(ctx.state, target.hex!);
+      if (u) giveSedative(ctx, user, u);
+      return;
+    }
+    resolveElixir(ctx, user, target);
+  },
+};
+
+/** The units (or spaces) an Elixir without the sedative's choice can be aimed at, by its shape. */
+function elixirUnitTargets(state: FightState, map: MapData, user: Unit, from: Hex): ActionTarget[] {
+  const {shape, range} = ABILITY.elixir;
+  if (shape === 'aura')
+    return elixirCaught(state, user, from, from).length > 0 ? [{hex: {...from}}] : [];
+  if (shape === 'burst')
     return spacesWithin(map, from, range)
+      .filter((h) => elixirCaught(state, user, from, h).length > 0)
+      .map((h) => ({hex: h}));
+  if (elixirLineRange(user))
+    return elixirLines(map, from, user)
+      .flat()
       .map((h) => unitAt(state, h))
       .filter(elixirTakes(user))
       .map((u) => ({hex: u.hex!}));
-  },
-  resolve(ctx, user, target) {
-    const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
-    const {fixed, haste: hastes, delay: delays, mode, poisonEvery} = ABILITY.elixir;
-    if (mode === 'alternate') {
-      const hits = elixirHits(user);
-      user.elixirCasts = (user.elixirCasts ?? 0) + 1;
-      for (const u of caught) {
-        log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
-        if (hits) hit(ctx, user, u, 'The elixir');
-        else heal(ctx, u, user.power, user);
-      }
-      return;
-    }
-    if (mode === 'poison') {
-      for (const u of caught) {
-        log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
-        heal(ctx, u, user.power, user);
-        // A second dose adds to what's left, on the first's clock.
-        u.poison = {
-          left: (u.poison?.left ?? 0) + elixirPoison(user),
-          at: u.poison?.at ?? ctx.slot + poisonEvery,
-          by: user.id,
-        };
-      }
-      return;
-    }
+  return spacesWithin(map, from, range)
+    .map((h) => unitAt(state, h))
+    .filter(elixirTakes(user))
+    .map((u) => ({hex: u.hex!}));
+}
+
+/** An Elixir without the sedative: the overdose, or the measuring shapes' effects. */
+function resolveElixir(ctx: Ctx, user: Unit, target: ActionTarget): void {
+  const caught = elixirCaught(ctx.state, user, user.hex!, target.hex!);
+  const {fixed, haste: hastes, delay: delays, mode, poisonEvery} = ABILITY.elixir;
+  if (mode === 'alternate') {
+    const hits = elixirHits(user);
+    user.elixirCasts = (user.elixirCasts ?? 0) + 1;
     for (const u of caught) {
-      log(
-        ctx,
-        `${unitName(user)} gives ${unitName(u)} ${overdoseOf(user) > 0 ? 'an overdose' : 'an elixir'}.`
-      );
-      if (overdoseOf(user) > 0) {
-        // The overdose: Empowered first, then the Alchemist's power taken.
-        if (u.power > 0) empower(ctx, u, elixirOverdose(user, u), user);
-        applyDamage(
-          ctx,
-          u,
-          user.power,
-          `The overdose takes ${user.power} from ${unitName(u)}`,
-          user
-        );
-      } else if (u.side === user.side) {
-        if (elixirHeals(u)) heal(ctx, u, user.power, user);
-        // An amount of 0 gives none, rather than replacing an Empower it has.
-        const empowers = elixirAmount('empower');
-        if (u.power > 0 && empowers > 0) empower(ctx, u, empowers, user);
-        haste(ctx, u, hastes, user);
-      } else {
-        if (fixed) hit(ctx, user, u, 'The elixir');
-        const weakens = elixirAmount('weaken');
-        if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens, user);
-        delay(ctx, u, delays, user);
-      }
+      log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+      if (hits) hit(ctx, user, u, 'The elixir');
+      else heal(ctx, u, user.power, user);
     }
-  },
-};
+    return;
+  }
+  if (mode === 'poison') {
+    for (const u of caught) {
+      log(ctx, `${unitName(user)} gives ${unitName(u)} an elixir.`);
+      heal(ctx, u, user.power, user);
+      // A second dose adds to what's left, on the first's clock.
+      u.poison = {
+        left: (u.poison?.left ?? 0) + elixirPoison(user),
+        at: u.poison?.at ?? ctx.slot + poisonEvery,
+        by: user.id,
+      };
+    }
+    return;
+  }
+  for (const u of caught) {
+    log(
+      ctx,
+      `${unitName(user)} gives ${unitName(u)} ${overdoseOf(user) > 0 ? 'an overdose' : 'an elixir'}.`
+    );
+    if (overdoseOf(user) > 0) {
+      // The overdose: Empowered first, then the Alchemist's power taken.
+      if (u.power > 0) empower(ctx, u, elixirOverdose(user, u), user);
+      applyDamage(ctx, u, user.power, `The overdose takes ${user.power} from ${unitName(u)}`, user);
+    } else if (u.side === user.side) {
+      if (elixirHeals(u)) heal(ctx, u, user.power, user);
+      // An amount of 0 gives none, rather than replacing an Empower it has.
+      const empowers = elixirAmount('empower');
+      if (u.power > 0 && empowers > 0) empower(ctx, u, empowers, user);
+      haste(ctx, u, hastes, user);
+    } else {
+      if (fixed) hit(ctx, user, u, 'The elixir');
+      const weakens = elixirAmount('weaken');
+      if (u.alive && u.power > 0 && weakens > 0) weaken(ctx, u, weakens, user);
+      delay(ctx, u, delays, user);
+    }
+  }
+}
 
 /**
  * The Weaken a Sedative gives `u`: all its hits would deal (its power,
@@ -1040,9 +1074,26 @@ export const sedation = (u: Unit): number =>
 const sedativeTakes = (u: Unit | undefined): u is Unit =>
   u !== undefined && u.alive && (u.hp < u.maxHp || sedation(u) > (u.weaken ?? 0));
 
+/** The units within `ABILITY.sedative.range` of `from` a sedative does anything to. */
+function sedativeTargets(state: FightState, map: MapData, from: Hex): ActionTarget[] {
+  return spacesWithin(map, from, ABILITY.sedative.range)
+    .map((h) => unitAt(state, h))
+    .filter(sedativeTakes)
+    .map((u) => ({hex: u.hex!}));
+}
+
+/** A sedative from `user` to `u`: healed `user`'s power, then Weakened so its hits deal nothing. */
+function giveSedative(ctx: Ctx, user: Unit, u: Unit): void {
+  log(ctx, `${unitName(user)} gives ${unitName(u)} a sedative.`);
+  heal(ctx, u, user.power, user);
+  const amount = sedation(u);
+  if (amount > (u.weaken ?? 0)) weaken(ctx, u, amount, user);
+}
+
 /**
- * Sedative (owner, 2026-10-31; `ABILITY.sedative`, the Alchemist's
- * second ability): a unit within 3, the Alchemist too, ally or enemy, no line of
+ * Sedative (owner, 2026-10-31; `ABILITY.sedative`): the Alchemist's second
+ * ability until 2026-11-02, when it became the Elixir's other choice (owner);
+ * in no kit since, kept for measuring. A unit within 3, the Alchemist too, ally or enemy, no line of
  * fire, healed the Alchemist's power and Weakened so its hits deal nothing
  * for `RULES.durations.turn` slots.
  */
@@ -1059,19 +1110,10 @@ const sedative: AbilityDef = {
   summary(user) {
     return `A unit within ${ABILITY.sedative.range}, yourself too, ally or enemy: healed ${user.power}, and its hits deal nothing for ${RULES.durations.turn} slots.`;
   },
-  targets(state, map, user, from) {
-    return spacesWithin(map, from, ABILITY.sedative.range)
-      .map((h) => unitAt(state, h))
-      .filter(sedativeTakes)
-      .map((u) => ({hex: u.hex!}));
-  },
+  targets: (state, map, _user, from) => sedativeTargets(state, map, from),
   resolve(ctx, user, target) {
     const u = unitAt(ctx.state, target.hex!);
-    if (!u) return;
-    log(ctx, `${unitName(user)} gives ${unitName(u)} a sedative.`);
-    heal(ctx, u, user.power, user);
-    const amount = sedation(u);
-    if (amount > (u.weaken ?? 0)) weaken(ctx, u, amount, user);
+    if (u) giveSedative(ctx, user, u);
   },
 };
 

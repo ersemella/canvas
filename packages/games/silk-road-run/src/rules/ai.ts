@@ -726,6 +726,17 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
     }
     return closing + value;
   }
+  // Sedative: the heal, less the Weaken's worth, for the unit's side; the
+  // Elixir's too, given as one.
+  if (ability === 'sedative' || (ability === 'elixir' && target?.mode === 'sedative')) {
+    const u = unitAt(state, target!.hex!);
+    if (!u) return closing;
+    const weight = u.hero === CAMEL ? AI.camelHealthWeight : 1;
+    let gain = Math.min(unit.power, u.maxHp - u.hp) * weight;
+    const amount = sedation(u) - (u.weaken ?? 0);
+    if (amount > 0) gain -= (u.weaken ? 0 : 1) + weakenGuess(state, u, amount);
+    return closing + (hostile(u, unit) ? -gain : gain);
+  }
   // Elixir: what it gives each unit it reaches (`elixirCaught`, by its shape).
   if (ability === 'elixir') {
     let value = 0;
@@ -792,16 +803,6 @@ function guessValue(state: FightState, unit: Unit, input: TurnInput, hunting: bo
       if (delay && damage < u.hp) value += (turnValue(u) * delay) / cardCost(u);
     }
     return closing + value;
-  }
-  // Sedative: the heal, less the Weaken's worth, for the unit's side.
-  if (ability === 'sedative') {
-    const u = unitAt(state, target!.hex!);
-    if (!u) return closing;
-    const weight = u.hero === CAMEL ? AI.camelHealthWeight : 1;
-    let gain = Math.min(unit.power, u.maxHp - u.hp) * weight;
-    const amount = sedation(u) - (u.weaken ?? 0);
-    if (amount > 0) gain -= (u.weaken ? 0 : 1) + weakenGuess(state, u, amount);
-    return closing + (hostile(u, unit) ? -gain : gain);
   }
   // Invocation: what it will be worth as it stands when it lands, less
   // the charge that holds the Priest back (`invocationPoints`, `chargeCost`).

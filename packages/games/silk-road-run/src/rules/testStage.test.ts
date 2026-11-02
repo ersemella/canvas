@@ -203,7 +203,9 @@ describe('the test stage', () => {
     const s = createTestFight(1, raw);
     const a = s.units.find((u) => u.hero === 'alchemist')!;
     expect(s.units.every((u) => u.elixirOverdose === 6)).toBe(true);
-    expect(ABILITIES.elixir.summary(a)).toContain('ally or enemy: Empowered until its hits deal 6');
+    expect(ABILITIES.elixir.summary(a)).toContain(
+      'ally or enemy, your choice: an overdose, Empowered until its hits deal 6'
+    );
     expect(() => parseTestStage({...raw, elixir: {overdose: -1}})).toThrow(
       'elixir.overdose must be a whole number from 0 to 20.'
     );
