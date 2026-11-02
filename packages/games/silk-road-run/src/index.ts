@@ -85,7 +85,6 @@ export {
 } from './rules/abilities';
 export type {AbilityDef, AbilityKind, ArrowLane} from './rules/abilities';
 export {
-  CAMEL_RULE,
   EXIT_INFO,
   SEALED_EXIT_INFO,
   FAN_INFO,

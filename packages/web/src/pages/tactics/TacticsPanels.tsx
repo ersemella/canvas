@@ -4,7 +4,6 @@ import {ActionIcon, Button, Group, Menu, Paper, Stack, Text} from '@mantine/core
 import {hexEquals} from '@canvas/engine';
 import type {Hex} from '@canvas/engine';
 import {
-  CAMEL_RULE,
   EXIT_INFO,
   SEALED_EXIT_INFO,
   FAN_INFO,
@@ -453,12 +452,6 @@ export function StatSheet({
               </span>
             ))}
           </div>
-        )}
-        {/* The camel has no abilities: its rule instead. */}
-        {!acts && (
-          <Text fz="xs" c="dimmed" mt={4}>
-            {CAMEL_RULE}
-          </Text>
         )}
         {/* Names only, to scan; a tap explains one below, or beside them on desktop. */}
         {acts && (

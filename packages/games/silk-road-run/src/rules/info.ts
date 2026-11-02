@@ -114,9 +114,6 @@ export const SEALED_EXIT_INFO: HexInfo = {
   detail: `Sealed while a boss stands: ${HEROES.camel.name} waits beside it. Once every boss has fallen, reaching it wins.`,
 };
 
-/** What the camel does, in place of a hero's abilities (camel.md, 18.1, 18.2; timeline.md, 3.2). */
-export const CAMEL_RULE = `Can’t attack. Walks 1 space a turn toward the road out, around anything in its way. Reaching it wins, once no boss stands; falling loses.`;
-
 export function hailInfo(hail: HailEffect, state: FightState): HexInfo {
   const caster = state.units.find((u) => u.id === hail.source);
   const lasts = `for ${hail.until - state.currentSlot} more slots, through slot ${hail.until}`;
