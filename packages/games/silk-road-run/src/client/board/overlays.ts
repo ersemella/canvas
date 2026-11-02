@@ -25,6 +25,12 @@ export const HIGHLIGHT: Record<HighlightKind, HighlightStyle> = {
   /** The whole area an aimed ability strikes, around its target. */
   area: targeting(0.42, 1),
   chosen: targeting(0.6, 1),
+  /**
+   * Every space an ability could hit, whether or not anyone stands there (the
+   * picked one's, or an ally's opened on its stat sheet): faint, so the
+   * targets still stand out, but its shape shows.
+   */
+  reach: targeting(0.1, 0.5),
   /** Where an inspected enemy can move: its side's madder, faint, so it never reads as your own move. */
   threatMove: {
     fill: `rgba(${ENEMY_CHARGE_RED},0.28)`,

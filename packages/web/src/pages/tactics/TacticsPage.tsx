@@ -323,20 +323,16 @@ export function TacticsPage() {
     : null;
 
   /**
-   * The enemy whose details show (on the hex looked at, else whose track card
-   * is hovered or was tapped): the board shows where it can move, or cast the
-   * ability its stat sheet explains. Not while a turn plays back, nor once the fight is over.
+   * The unit whose details show (on the hex looked at, else whose track card
+   * is hovered or was tapped): the board shows where an enemy can move, and
+   * where an enemy or an ally can cast the ability its stat sheet explains.
+   * Not while a turn plays back, nor once the fight is over.
    */
   const lookedAt = inspectHex
     ? inspectedUnit
     : fight?.units.find((u) => u.id === (hover.unitId ?? selectedId));
   const inspected =
-    lookedAt?.side === 'enemy' &&
-    lookedAt.alive &&
-    lookedAt.hex &&
-    !playing &&
-    fight?.phase !== 'won' &&
-    fight?.phase !== 'lost'
+    lookedAt?.alive && lookedAt.hex && !playing && fight?.phase !== 'won' && fight?.phase !== 'lost'
       ? lookedAt
       : undefined;
   const inspectedAbility =
@@ -344,7 +340,7 @@ export function TacticsPage() {
       ? (explained.id as AbilityId)
       : null;
 
-  const {target, moveMode, hoverReach} = plan;
+  const {target, moveMode, hoverReach, reach} = plan;
   const scene: BoardScene = useMemo(
     () =>
       buildScene({
@@ -358,6 +354,7 @@ export function TacticsPage() {
         ability,
         target,
         targets,
+        reach,
         moving,
         moveMode,
         plannedMove,
@@ -378,6 +375,7 @@ export function TacticsPage() {
       ability,
       target,
       targets,
+      reach,
       moving,
       moveMode,
       plannedMove,
@@ -463,6 +461,8 @@ export function TacticsPage() {
       reaches,
       /** What the board shows an inspected enemy threatening: where it can move, or cast the ability explained. */
       threat: scene.highlights.filter((h) => h.kind === 'threatMove' || h.kind === 'threatTarget'),
+      /** Every space the chosen ability, or an inspected ally's explained one, could hit with nothing there to target. */
+      reach: scene.highlights.filter((h) => h.kind === 'reach').map((h) => h.hex),
       autoTurn: () => {
         if (!fight || !acting) return false;
         commit(chooseAiTurn(fight, acting));

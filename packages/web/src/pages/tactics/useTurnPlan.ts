@@ -15,6 +15,7 @@ import {
   alignmentBlanks,
   alignmentDeck,
   alignmentPool,
+  castableSpaces,
   eclipseCaught,
   hostile,
   targetAt,
@@ -154,6 +155,15 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
   const targets = useMemo(() => {
     if (!ability || !fight || !acting?.alive) return [];
     return offeredTargets(fight, mapOf(fight), acting, ABILITIES[ability]);
+  }, [ability, fight, acting]);
+
+  /**
+   * Every space the chosen ability could hit from where the unit stands,
+   * whether or not anyone stands there, so its shape shows (`castableSpaces`).
+   */
+  const reach = useMemo(() => {
+    if (!ability || !fight || !acting?.alive) return [];
+    return castableSpaces(fight, mapOf(fight), acting, ABILITIES[ability]);
   }, [ability, fight, acting]);
 
   /**
@@ -568,6 +578,7 @@ export function useTurnPlan(fight: FightState | null, phone: boolean, hoverHex: 
     moveMode,
     hoverReach,
     targets,
+    reach,
     needsTarget,
     input,
     preview,

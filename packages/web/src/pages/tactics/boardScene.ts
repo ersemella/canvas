@@ -77,24 +77,30 @@ export interface SceneInput {
   ability: AbilityId | null;
   target: ActionTarget | null;
   targets: ActionTarget[];
+  /** Every space the chosen ability could hit, anyone there or not (`TurnPlan.reach`). */
+  reach?: Hex[];
   moving: boolean;
   moveMode: boolean;
   plannedMove: Reach | null;
   hoverReach: Reach | undefined;
   reaches: Reach[];
-  /** An enemy being looked at (tapped, hovered or its track card): where it can move, or cast `inspectedAbility`. */
+  /**
+   * A unit being looked at (tapped, hovered or its track card): an enemy,
+   * where it can move or cast `inspectedAbility`; an ally, where it can cast it.
+   */
   inspected?: Unit | undefined;
-  /** The inspected enemy's ability explained on its stat sheet, if any. */
+  /** The inspected unit's ability explained on its stat sheet, if any. */
   inspectedAbility?: AbilityId | null;
   /** Alignment's arranging on the track, once its line is picked (`BoardScene.arrange`). */
   arrange?: BoardScene['arrange'];
 }
 
 /**
- * What an enemy looked at threatens: with one of its abilities explained,
+ * What a unit looked at threatens: with one of its abilities explained,
  * every space that ability can be cast on from where it stands, whether or
- * not one of yours stands there (`castableSpaces`); else every space it can
- * move to.
+ * not anyone stands there (`castableSpaces`), in madder for an enemy and as
+ * your own ability's reach for an ally; else, for an enemy, every space it
+ * can move to.
  */
 function threatOf(
   fight: FightState,
@@ -102,14 +108,19 @@ function threatOf(
   abilityId: AbilityId | null
 ): {hex: Hex; kind: HighlightKind}[] {
   const map = mapOf(fight);
+  const enemy = unit.side === 'enemy';
   if (!abilityId) {
+    if (!enemy) return [];
     return reachableHexes(fight, map, unit)
       .filter((r) => r.path.length > 0)
       .map((r) => ({hex: r.hex, kind: 'threatMove'}));
   }
   const def = ABILITIES[abilityId];
   if (unusableReason(unit, def)) return [];
-  return castableSpaces(fight, map, unit, def).map((hex) => ({hex, kind: 'threatTarget'}));
+  return castableSpaces(fight, map, unit, def).map((hex) => ({
+    hex,
+    kind: enemy ? 'threatTarget' : 'reach',
+  }));
 }
 
 export function buildScene(input: SceneInput): BoardScene {
@@ -130,7 +141,7 @@ export function buildScene(input: SceneInput): BoardScene {
     arrange: input.arrange ?? null,
   };
   if (!fight) return out;
-  // An enemy looked at while no move or ability is being picked: what it threatens.
+  // A unit looked at while no move or ability is being picked: what it threatens.
   if (input.inspected && !ability && !moving && !plannedMove && !hoverReach)
     highlights.push(...threatOf(fight, input.inspected, input.inspectedAbility ?? null));
   if (!acting) return out;
@@ -370,6 +381,14 @@ export function buildScene(input: SceneInput): BoardScene {
     if (target?.to) highlights.push({hex: target.to, kind: 'chosen'});
     // Forked's second target (19.9).
     if (target?.also) highlights.push({hex: target.also, kind: 'chosen'});
+    // Every other space it could hit, anyone there or not, faint and under the
+    // rest, so the ability's shape shows even with nothing in it to target.
+    const marked = new Set(highlights.map((h) => hexKey(h.hex)));
+    highlights.unshift(
+      ...(input.reach ?? [])
+        .filter((h) => !marked.has(hexKey(h)))
+        .map((hex) => ({hex, kind: 'reach' as const}))
+    );
   }
   if (preview) {
     out.preview = preview.changes.map((c) => ({

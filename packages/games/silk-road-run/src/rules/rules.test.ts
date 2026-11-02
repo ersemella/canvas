@@ -274,6 +274,25 @@ describe('the track', () => {
     expect(withFoe.every((h) => hexDistance(h, w.hex!) === 1)).toBe(true);
   });
 
+  it('shows where a support ability could land with no ally in reach', () => {
+    // The Alchemist's Sedative, no one else within 3 of him: every free space within 3.
+    const s = setup({'p-alchemist': at(4, 4), 'e-wolf': at(0, 0)}, ['wolf', 'alchemist']);
+    const a = unit(s, 'p-alchemist');
+    const map = mapOf(s);
+    const others = (hexes: Hex[]) => hexes.filter((h) => !hexEquals(h, a.hex!));
+    expect(others(offeredTargets(s, map, a, ABILITIES.sedative).map((t) => t.hex!))).toEqual([]);
+    const spaces = others(castableSpaces(s, map, a, ABILITIES.sedative));
+    const free = map.hexes.filter(
+      (h) =>
+        hexDistance(h, a.hex!) >= 1 &&
+        hexDistance(h, a.hex!) <= ABILITY.sedative.range &&
+        walkable(map, h) &&
+        !unitAt(s, h)
+    );
+    expect(free.length).toBeGreaterThan(0);
+    expect(spaces.map(hexKey).sort()).toEqual(free.map(hexKey).sort());
+  });
+
   /** A Skirmish on `target`: the first of its steps that has it in line. */
   const skirmishOn = (s: FightState, m: Unit, target: Unit): TurnInput => {
     const t = ABILITIES.skirmish

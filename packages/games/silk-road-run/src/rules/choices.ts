@@ -50,10 +50,11 @@ export function offeredTargets(
 }
 
 /**
- * Every space `unit` could cast `def` on from where it stands, as an
- * inspected enemy's ability shows it: the targets offered now (and the
- * spaces each swing of an area ability would hit), and, for one aimed at a
- * unit, every free space where a foe would be hit if it stood there: a melee
+ * Every space `unit` could cast `def` on from where it stands, whether or not
+ * anyone stands there, as the board shows an ability picked or inspected: the
+ * targets offered now (and the spaces each swing of an area ability would
+ * hit), and, for one aimed at a unit, every free space where a unit would be
+ * hit if it stood there (a foe, or for a support ability an ally): a melee
  * attack's every neighbour, a lane's spaces up to the first unit in it.
  */
 export function castableSpaces(
@@ -72,13 +73,16 @@ export function castableSpaces(
     if (def.area) for (const h of def.area(map, from, t.hex, unit)) add(h);
   }
   if (def.targetsUnit) {
-    // A foe to stand in each free space in turn: one of the foes on the board, plain.
+    // A unit to stand in each free space in turn: one of the foes on the
+    // board, plain, or for a support ability one of its own side (itself),
+    // wounded, so a heal would take.
     const foes = state.units.filter((u) => u.alive && hostile(u, unit));
-    const model = foes.find((u) => u.hero !== 'camel') ?? foes[0];
+    const model = def.kind === 'support' ? unit : (foes.find((u) => u.hero !== 'camel') ?? foes[0]);
     if (model)
       for (const h of map.hexes) {
         if (!walkable(map, h) || unitAt(state, h)) continue;
-        const probe: Unit = {...model, id: '__probe', hex: h, statuses: []};
+        const hp = Math.max(1, model.maxHp - 1);
+        const probe: Unit = {...model, id: '__probe', hex: h, hp, statuses: []};
         const probed = {...state, units: [...state.units, probe]};
         const hit = offeredTargets(probed, map, unit, def).some(
           (t) =>

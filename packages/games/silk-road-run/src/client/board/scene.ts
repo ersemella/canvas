@@ -10,6 +10,7 @@ export type HighlightKind =
   | 'landing'
   | 'chosen'
   | 'area'
+  | 'reach'
   | 'threatMove'
   | 'threatTarget';
 

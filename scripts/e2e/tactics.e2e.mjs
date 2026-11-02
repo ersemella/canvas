@@ -595,6 +595,40 @@ try {
       JSON.stringify(await threat()) === JSON.stringify(moves)
     );
   }
+  {
+    // An ally's ability explained shows every space it could hit, anyone
+    // there or not, as the picked ability's reach is drawn.
+    const ally = run.view.fight.units.find(
+      (u) => u.side === 'player' && u.alive && u.hex && u.hero !== 'camel'
+    );
+    await tapHex(ally.hex);
+    await sleep(150);
+    await sheet.locator('[data-ability]').first().click();
+    await sleep(150);
+    const reach = await page.evaluate(() => window.__tactics.reach);
+    check(
+      'an ally’s ability explained shows where it can reach on the board',
+      reach.length > 0,
+      reach
+    );
+    await shot(page, 'ally-ability-reach');
+    await sheet.locator('[data-ability]').first().click();
+    await tapHex(enemy.hex);
+    await sleep(150);
+    // The acting unit's ability picked shows the same: its empty spaces too.
+    const pickable = page
+      .getByTestId('turn-controls')
+      .locator('button[data-choice]:not([data-choice="move"]):not([disabled])');
+    if (await pickable.count()) {
+      await pickable.first().click();
+      await sleep(200);
+      const picked = await page.evaluate(() => window.__tactics.reach);
+      check('a picked ability shows every space it could hit, empty ones too', picked.length > 0);
+      await shot(page, 'picked-ability-reach');
+      await page.keyboard.press('Escape');
+      await sleep(150);
+    }
+  }
   // Abilities by name; a click explains one, with its damage (the user's power).
   await sheet.locator('[data-ability]').first().click();
   const about = page.getByTestId('ability-info');
