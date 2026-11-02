@@ -1422,7 +1422,7 @@ describe('abilities', () => {
     expect(target.slot).toBeNull();
     expect(target.heldBy).toBe(b.id);
     expect(ABILITIES.grapple.summary(b)).toContain(
-      'it is Stunned while grappled, taking 1 every 8 slots'
+      'Stunned while grappled, taking 1 every 8 slots'
     );
     // Shown where it would come back now: just before the Grappler's card.
     expect(returnSlot(s, target)).toBe(b.slot! - 1);
@@ -2144,7 +2144,7 @@ describe('the Barbarian', () => {
     const {s, b} = lunging({'e-modao': along(c, 0, 2), 'e-storm': along(c, 3, 1)});
     expect(ABILITY.lunge.push).toBe(0);
     b.lungePush = 1;
-    expect(ABILITIES.lunge.summary(b)).toContain('It is Pushed 1.');
+    expect(ABILITIES.lunge.summary(b)).toContain('Pushes 1.');
     applyTurn(s, b, {action: {ability: 'lunge', target: {hex: along(c, 0, 2)}}});
     // He steps in to 1 away; the Vanguard, hit, is Pushed on to 3 away.
     expect(b.hex).toEqual(hexNeighbor(c, 0));
@@ -3900,7 +3900,7 @@ describe('the built Elixir, an overdose or a sedative (2026-10-31; one ability 2
     ).toEqual([at(1, 3), at(2, 3), at(4, 3)].map(hexKey).sort());
     expect(offered.every((t) => t.mode === 'overdose' || t.mode === 'sedative')).toBe(true);
     expect(ABILITIES.elixir.summary(alchemist)).toBe(
-      'Ally or enemy, your choice: an overdose hits it and Empowers it until its hits deal 6; a sedative heals it 1 and Weakens it until its hits deal nothing.'
+      'Overdose: hits and Empowers until its hits deal 6. Sedative: heals 1 and Weakens until its hits deal nothing.'
     );
     // A choice it must be told.
     expect(() =>
@@ -3971,7 +3971,7 @@ describe('Sedative (the Elixir’s since 2026-11-02; the ability in no kit)', ()
     const alchemist = unit(s, 'p-alchemist');
     alchemist.loadout = {abilities: ['elixir', 'sedative', 'hold']};
     expect(ABILITIES.sedative.summary(alchemist)).toBe(
-      'Ally or enemy: heals it 1, and it is Weakened until its hits deal nothing.'
+      'Heals 1 and Weakens until its hits deal nothing.'
     );
     const e = unit(s, 'e-mangudai');
     e.hp -= 2;

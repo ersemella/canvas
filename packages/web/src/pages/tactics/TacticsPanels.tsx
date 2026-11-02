@@ -533,10 +533,14 @@ export function AbilityDetail({unit, def}: {unit: Unit; def: AbilityDef}) {
         </>
       )}
       {!def.kind && <b>{def.name}</b>}
-      <br />
-      <span className={styles.abilitySummary}>
-        <KeywordText text={def.summary(unit)} />
-      </span>
+      {def.summary(unit) && (
+        <>
+          <br />
+          <span className={styles.abilitySummary}>
+            <KeywordText text={def.summary(unit)} />
+          </span>
+        </>
+      )}
     </Text>
   );
 }

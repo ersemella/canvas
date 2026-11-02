@@ -235,7 +235,7 @@ const snapShot: AbilityDef = {
   single: true,
   name: 'Snap Shot',
   kind: 'attack',
-  summary: () => 'Shoot straight: hits the first unit in line.',
+  summary: () => 'Hits the first unit in line.',
   targetsUnit: true,
   targets(state, map, _user, from) {
     return arrowLanes(state, map, from)
@@ -305,8 +305,8 @@ const longshot: AbilityDef = {
   summary: () => {
     const {first, minRange, pierce, push, delay: slots} = ABILITY.longshot;
     const shot = first
-      ? `Shoot straight: hits the first unit in line${minRange > 1 ? ', flying over the spaces next to you' : ''}`
-      : 'Shoot straight at any unit in line: nothing blocks it';
+      ? `Hits the first unit in line${minRange > 1 ? ', flying over the spaces next to you' : ''}`
+      : 'Nothing blocks it';
     const more = [
       pierce && 'Pierces',
       push > 0 && `Pushes it ${push}`,
@@ -409,7 +409,7 @@ const hail: AbilityDef = {
   minRange: ABILITY.hail.range,
   radius: 0,
   summary: () =>
-    `Cast on a space, not a unit, for ${RULES.durations.hail} slots: a unit there${ABILITY.hail.entry ? ' or entering is hit and' : ' is hit; one there or entering is'} Immobilized.${ABILITY.hail.max > 1 ? ` Up to ${ABILITY.hail.max} at once.` : ''}`,
+    `Cast on a space for ${RULES.durations.hail} slots: units there${ABILITY.hail.entry ? ' or entering are hit and' : ' are hit; units there or entering are'} Immobilized.${ABILITY.hail.max > 1 ? ` Up to ${ABILITY.hail.max} at once.` : ''}`,
   targets: (_state, map, _user, from) =>
     hexesWithin(
       map,
@@ -524,7 +524,7 @@ const grapple: AbilityDef = {
   name: 'Grapple',
   kind: 'attack',
   summary: () =>
-    `Melee: hits it, and it is Stunned while grappled, taking ${ABILITY.grapple.squeeze} every ${RULES.durations.turn} slots. While grappling: Move it to a space next to you, or swap places.`,
+    `Stunned while grappled, taking ${ABILITY.grapple.squeeze} every ${RULES.durations.turn} slots. While grappling: Move it next to you, or swap places.`,
   targetsUnit: true,
   // Melee only (owner, 2026-10-23; reached 2 spaces, stepping in, before),
   // and not the unit it already grapples: that one is thrown instead. Nor
@@ -764,8 +764,7 @@ const cleave: AbilityDef = {
   id: 'cleave',
   name: 'Cleave',
   kind: 'attack',
-  summary: () =>
-    `Hits every unit, allies too, and Delays ${ABILITY.cleave.delay} each left standing.`,
+  summary: () => `Delays ${ABILITY.cleave.delay}.`,
   area: cleaveArea,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
@@ -953,9 +952,8 @@ const elixir: AbilityDef = {
     if (ABILITY.elixir.mode === 'alternate')
       return `${where}: ${elixirHits(user) ? `this time an enemy, hit for ${user.power}` : `this time an ally, healed ${user.power}`}; heal and hit by turns.`;
     if (elixirChoice(user))
-      return `Ally or enemy, your choice: an overdose hits it and Empowers it until its hits deal ${overdoseOf(user)}; a sedative heals it ${user.power} and Weakens it until its hits deal nothing.`;
-    if (overdoseOf(user) > 0)
-      return `Ally or enemy: hits it, and it is Empowered until its hits deal ${overdoseOf(user)}.`;
+      return `Overdose: hits and Empowers until its hits deal ${overdoseOf(user)}. Sedative: heals ${user.power} and Weakens until its hits deal nothing.`;
+    if (overdoseOf(user) > 0) return `Hits and Empowers until its hits deal ${overdoseOf(user)}.`;
     if (ABILITY.elixir.mode === 'poison')
       return `${where}: healed ${user.power}, then it loses 1 every ${ABILITY.elixir.poisonEvery} slots until ${elixirPoison(user)} is lost.`;
     const who = `${hastes || delays ? 'unit' : 'unit that hits'}${ABILITY.elixir.self ? '' : ' but you'}`;
@@ -1107,7 +1105,7 @@ const sedative: AbilityDef = {
   },
   targetsUnit: true,
   summary(user) {
-    return `Ally or enemy: heals it ${user.power}, and it is Weakened until its hits deal nothing.`;
+    return `Heals ${user.power} and Weakens until its hits deal nothing.`;
   },
   targets: (state, map, _user, from) => sedativeTargets(state, map, from),
   resolve(ctx, user, target) {
@@ -1141,7 +1139,7 @@ const invocation: AbilityDef = {
   range: ABILITY.invocation.range,
   radius: ABILITY.invocation.radius,
   summary: (user) =>
-    `Charged ${chargeOf(user, 'invocation')}: hits every enemy and heals every ally ${user.power}, you too.`,
+    `Charged ${chargeOf(user, 'invocation')}: hits enemies and heals allies ${user.power}.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.invocation.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
@@ -1700,7 +1698,7 @@ const swiftStrike: AbilityDef = {
     const streak = streakOf(user);
     const first =
       dashOf(user) > 0
-        ? 'Dash through units, hitting each passed.'
+        ? 'Passes through units, hitting each.'
         : jumps(user)
           ? `${lunge > 0 ? `Strike a unit up to ${lunge + 1} away in line, stepping in` : 'Melee'}, or jump a unit next to you to the space past it, hitting it${(user.chain ?? ABILITY.swiftStrike.chain) ? ', and jump again from there' : ''}.`
           : lunge === 0
@@ -2255,8 +2253,7 @@ const eclipse: AbilityDef = {
   get radius() {
     return ABILITY.eclipse.radius;
   },
-  summary: () =>
-    `Every unit Hastened ${ABILITY.eclipse.slots}, or every unit Delayed ${ABILITY.eclipse.slots}.`,
+  summary: () => `Hastens or Delays ${ABILITY.eclipse.slots}.`,
   targets(state, map, _user, from) {
     const out: ActionTarget[] = [];
     for (const hex of spacesWithin(map, from, ABILITY.eclipse.range)) {
@@ -2435,9 +2432,7 @@ const stomp: AbilityDef = {
       : undefined;
   },
   summary: () =>
-    ABILITY.stomp.mode === 'stomp'
-      ? `${ABILITY.stomp.step > 0 ? 'Step or stay, an enemy in the way Pushed 1, then e' : 'E'}very unit around you is hit and Pushed 1.`
-      : 'Walk straight. Units in the way, a whole row together, are hit and Pushed ahead of you.',
+    ABILITY.stomp.mode === 'stomp' ? 'Pushes 1.' : 'Pushes units in the way ahead of you.',
   targets(state, map, user, from) {
     if (ABILITY.stomp.mode === 'stomp') {
       if (ABILITY.stomp.step <= 0 || isImmobilized(user)) return [{hex: from}];
@@ -2607,7 +2602,7 @@ const charge: AbilityDef = {
   kind: 'attack',
   stepsTo: true,
   summary: (user) =>
-    `Ride straight. Every unit in the way is hit and Pushed ahead of you.${slamSays()}${
+    `Pushes units in the way ahead of you.${slamSays()}${
       chargeArmourOf(user) > 0
         ? ` Then gain Armour ${chargeArmourOf(user)} for ${ABILITY.charge.armourSlots} slots.`
         : ''
@@ -2748,8 +2743,8 @@ const axeLunge: AbilityDef = {
   kind: 'attack',
   summary: (user) =>
     ABILITY.lunge.shape === 'line'
-      ? `Strike the first unit up to ${ABILITY.lunge.reach} away in a straight line, stepping in next to it first.${
-          lungePushOf(user) > 0 ? ` It is Pushed ${lungePushOf(user)}.` : ''
+      ? `Steps in next to the first unit in line and hits it.${
+          lungePushOf(user) > 0 ? ` Pushes ${lungePushOf(user)}.` : ''
         }`
       : `Hits every unit on two spaces next to you and the space past them, allies included.${
           ABILITY.lunge.shieldPerHit > 0
@@ -3050,7 +3045,7 @@ const bite: AbilityDef = {
   single: true,
   name: 'Bite',
   kind: 'attack',
-  summary: () => 'Melee.',
+  summary: () => '',
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
@@ -3067,7 +3062,7 @@ const smash: AbilityDef = {
   id: 'smash',
   name: 'Smash',
   kind: 'attack',
-  summary: () => 'Melee.',
+  summary: () => '',
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
@@ -3084,7 +3079,7 @@ const feed: AbilityDef = {
   id: 'feed',
   name: 'Feed the Serpents',
   kind: 'attack',
-  summary: () => 'Melee.',
+  summary: () => '',
   targetsUnit: true,
   targets: (state, _map, user, from) => adjacentUnits(state, from, (u) => u !== user),
   resolve(ctx, user, target) {
@@ -3109,7 +3104,7 @@ const regrowSerpent: AbilityDef = {
   id: 'regrowSerpent',
   name: 'Regrow',
   kind: 'support',
-  summary: () => 'A fallen serpent grows back on an open space next to you, at full health.',
+  summary: () => 'A fallen serpent grows back next to you, at full health.',
   targets(state, map, user, from) {
     if (!fallenSerpent(state, user)) return [];
     return hexNeighbors(from)
@@ -3156,7 +3151,7 @@ const boulder: AbilityDef = {
   kind: 'attack',
   area: (map, from, target) => [target, ...boulderRing(map, from, target)],
   summary: () =>
-    `Throw straight: hits the first unit in line, and every unit next to it is Pushed ${ABILITY.boulder.push} away.`,
+    `Hits the first unit in line; units next to it are Pushed ${ABILITY.boulder.push} away.`,
   targetsUnit: true,
   targets: (state, map, user, from) => snapShot.targets(state, map, user, from),
   resolve(ctx, user, target) {
@@ -3189,8 +3184,7 @@ const gore: AbilityDef = {
   pushes: true,
   name: 'Gore',
   kind: 'attack',
-  summary: () =>
-    `Charge up to ${ABILITY.gore.steps} spaces straight. Units in the way, a whole row together, are hit and Pushed back ahead of you.`,
+  summary: () => 'Pushes units in the way ahead of you.',
   targets: (_state, map, user, from) => chargeTargets(map, user, from, ABILITY.gore.steps),
   resolve(ctx, user, target) {
     resolveCharge(ctx, user, target.hex!, 'The horns');
@@ -3217,8 +3211,7 @@ const bananaFan: AbilityDef = {
   kind: 'control',
   damages: false,
   area: fanLine,
-  summary: () =>
-    `A line of ${ABILITY.bananaFan.reach} spaces straight out from you, any way: every unit in it, allies included, is Pushed ${ABILITY.bananaFan.push}.`,
+  summary: () => `Pushes ${ABILITY.bananaFan.push}.`,
   targets(state, map, user, from) {
     const out: ActionTarget[] = [];
     for (const dir of DIRECTIONS) {
@@ -3259,7 +3252,7 @@ const fanFlames: AbilityDef = {
   range: ABILITY.fanFlames.range,
   area: (map, _from, target) => flamesAround(map, target),
   summary: () =>
-    `A space within ${ABILITY.fanFlames.range}: it and the spaces next to it catch fire for ${RULES.durations.turn} slots. Entering fire burns ${ABILITY.fanFlames.burn}.`,
+    `Sets the spaces on fire for ${RULES.durations.turn} slots. Entering fire burns ${ABILITY.fanFlames.burn}.`,
   targets: (_state, map, _user, from) =>
     hexesWithin(map, from, ABILITY.fanFlames.range, (h) => !blocks(tileAt(map, h))),
   resolve(ctx, user, target) {
