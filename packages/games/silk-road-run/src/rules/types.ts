@@ -177,9 +177,10 @@ export type CardId = StatId | PassiveId;
 
 /**
  * One of the party's picks in a caravanserai's draft: a card and the hero
- * who takes it, or, in its place, Humphrey healed (RULES.camelHeal).
+ * who takes it, or, in its place, Humphrey healed (RULES.camelHeal), or
+ * nothing taken (`skip`): the pick passes, the rival still answering it.
  */
-export type DraftPick = {hero: HeroId; card: CardId} | {heal: true};
+export type DraftPick = {hero: HeroId; card: CardId} | {heal: true} | {skip: true};
 
 /** keywords.md, 17.5: Immobilized can't move to a different space; Stunned can't take any action. */
 export type StatusKind = 'immobilized' | 'stunned';

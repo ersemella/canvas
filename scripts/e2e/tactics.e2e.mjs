@@ -879,7 +879,7 @@ try {
     await page.getByTestId('caravanserai').waitFor({timeout: 15_000});
     const setOut = page.getByRole('button', {name: 'Set out'});
     check(
-      'the caravanserai: the draft’s cards, each with its rarity and icon, its turns drawn, Humphrey’s heal only while hurt, Set out waiting on a pick',
+      'the caravanserai: the draft’s cards, each with its rarity and icon, its turns drawn, Humphrey’s heal only while hurt, a pick skippable, Set out waiting on a pick',
       offer.length === (before.draft.extra ? 4 : 3) &&
         (await page.locator('[data-testid^="card-rarity-"]').count()) === offer.length &&
         (await page.locator('[data-testid="draft-offer"] svg[data-icon]').count()) ===
@@ -887,9 +887,12 @@ try {
         (await page.getByTestId('draft-order').count()) === 1 &&
         (await page.getByTestId('draft-heal').count()) === (humphreyHurt ? 1 : 0) &&
         (await page.getByTestId('extra-provision').count()) === (before.draft.extra ? 1 : 0) &&
+        (await page.getByTestId('draft-skip').count()) === 1 &&
         (await setOut.isDisabled()),
       offer
     );
+    await page.getByTestId('draft-skip').scrollIntoViewIfNeeded();
+    await shot(page, 'caravanserai-draft-phone');
     const card = offer[0];
     await page.getByTestId(`card-${card}`).click();
     const takers = page.locator('[data-testid^="carrier-"]:enabled');
@@ -921,20 +924,21 @@ try {
       rival
     );
     if (extra) {
-      const more = offer.find((c) => c !== card && c !== rival[0]);
-      await page.getByTestId(`card-${more}`).click();
-      await page.locator('[data-testid^="carrier-"]:enabled').first().click();
+      // The extra pick skipped: nothing taken, the rest discarded.
+      await page.getByTestId('draft-skip').click();
       await page.getByTestId('draft-lock').click();
       await page.waitForFunction(() => window.__tactics.run.view.draft.mine.length === 2, null, {
         timeout: 15_000,
       });
       check(
-        'the extra pick locked in: the rival takes no more, the last discarded, Set out ready',
-        (await state()).view.draft.rival.length === 1 &&
-          (await page.locator('[data-discarded="true"]').count()) === offer.length - 3 &&
+        'the extra pick skipped: nothing taken, the rival takes no more, the rest discarded, Set out ready',
+        (await state()).view.draft.mine[1]?.skip === true &&
+          (await state()).view.draft.rival.length === 1 &&
+          (await page.locator('[data-discarded="true"]').count()) === offer.length - 2 &&
           (await setOut.isEnabled())
       );
     }
+    check('every pick made: no skip offered', (await page.getByTestId('draft-skip').count()) === 0);
     await shot(page, 'caravanserai-phone');
     // The run menu beside Set out: the run can be given up here too.
     await page.getByTestId('caravanserai').getByRole('button', {name: 'Menu'}).click();

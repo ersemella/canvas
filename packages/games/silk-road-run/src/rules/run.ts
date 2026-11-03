@@ -411,7 +411,7 @@ export function rivalPick(rivals: readonly HeroId[], open: readonly CardId[]): C
 /**
  * The rival's picks in a draft of `offer`, given the party's so far
  * (`mine`, in the order picked): after each, the rival's pick
- * (`rivalPick`) from those left, until it has `most`. A heal takes no card.
+ * (`rivalPick`) from those left, until it has `most`. A heal or a skip takes no card.
  */
 export function rivalPicks(
   offer: readonly CardId[],
@@ -440,10 +440,11 @@ function healedCamel(fight: FightState, picks: readonly DraftPick[]): number {
  * Checks one of the party's draft picks against the picks before it: a
  * card still open, to a hero still standing who can take it (a stat below
  * RULES.statMax, counting the picks before; a passive it doesn't carry
- * yet); or a heal, the camel still hurt.
+ * yet); or a heal, the camel still hurt; or a skip, always allowed.
  */
 function checkPick(run: RunState, pick: DraftPick): void {
   const before = run.picks ?? [];
+  if ('skip' in pick) return;
   if ('heal' in pick) {
     const camel = run.fight.units.find((u) => u.hero === CAMEL)!;
     if (healedCamel(run.fight, before) >= camel.maxHp)
@@ -500,9 +501,10 @@ function parseHex(raw: unknown): Hex {
 }
 
 function parsePick(raw: unknown): DraftPick {
-  const p = raw as {hero?: unknown; card?: unknown; heal?: unknown} | null;
-  if (p && typeof p === 'object' && p.heal === true && p.hero === undefined && p.card === undefined)
-    return {heal: true};
+  const p = raw as {hero?: unknown; card?: unknown; heal?: unknown; skip?: unknown} | null;
+  const bare = p && typeof p === 'object' && p.hero === undefined && p.card === undefined;
+  if (bare && p.heal === true && p.skip === undefined) return {heal: true};
+  if (bare && p.skip === true && p.heal === undefined) return {skip: true};
   if (
     !p ||
     typeof p !== 'object' ||

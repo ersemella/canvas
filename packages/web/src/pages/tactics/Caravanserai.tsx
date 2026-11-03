@@ -55,8 +55,8 @@ const cardKind = (card: CardId) =>
 /** What a card does, on it. */
 const cardRule = (card: CardId) => (isStatCard(card) ? STAT_RULE[card] : PASSIVES[card].rule);
 
-/** A pick in the making: a card (its taker chosen next) or the camel healed. */
-type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal';
+/** A pick in the making: a card (its taker chosen next), the camel healed, or the pick skipped. */
+type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal' | 'skip';
 
 /**
  * The caravanserai, between a won stage and the next (progression.md,
@@ -71,7 +71,8 @@ type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal';
  * it took no damage in the stage, one more card is drawn and the party
  * picks one more, last (`extra`). The draft's turns are drawn rather
  * than told (`DraftOrder`), each card wears its icon, and the camel's heal
- * is offered only while it is hurt.
+ * is offered only while it is hurt. Any pick can be skipped instead,
+ * taking nothing; the rival still answers it.
  */
 export function Caravanserai(props: {
   fight: FightState;
@@ -100,8 +101,10 @@ export function Caravanserai(props: {
   const canHeal = Boolean(camel && camelHp < camel.maxHp && !done);
   const myIndex = (card: CardId) => mine.findIndex((p) => 'card' in p && p.card === card);
   const taken = (card: CardId) => myIndex(card) >= 0 || rival.includes(card);
-  const making = pending !== null && pending !== 'heal' && !taken(pending.card) ? pending : null;
+  const making =
+    pending !== null && typeof pending === 'object' && !taken(pending.card) ? pending : null;
   const healing = pending === 'heal' && canHeal;
+  const skipping = pending === 'skip' && !done;
   /** A hero's stat, its stat picks made here included. */
   const statOf = (unit: Unit, stat: StatId) =>
     unit[stat] + mine.filter((p) => 'card' in p && p.hero === unit.hero && p.card === stat).length;
@@ -113,7 +116,9 @@ export function Caravanserai(props: {
         !mine.some((p) => 'card' in p && p.hero === unit.hero && p.card === card);
   const tapCard = (card: CardId) => {
     if (done || taken(card)) return;
-    setPending((p) => (p !== null && p !== 'heal' && p.card === card ? null : {card, hero: null}));
+    setPending((p) =>
+      p !== null && typeof p === 'object' && p.card === card ? null : {card, hero: null}
+    );
   };
   const lock = (pick: DraftPick) => {
     props.onPick(pick);
@@ -216,6 +221,19 @@ export function Caravanserai(props: {
                 </button>
               )}
 
+              {!done && (
+                <Button
+                  variant="subtle"
+                  className={styles.draftSkip!}
+                  aria-pressed={skipping}
+                  disabled={props.busy}
+                  data-testid="draft-skip"
+                  onClick={() => setPending((p) => (p === 'skip' ? null : 'skip'))}
+                >
+                  Or skip this pick: take nothing
+                </Button>
+              )}
+
               {making && (
                 <>
                   <div className={styles.sectionLabel}>Who takes {cardName(making.card)}?</div>
@@ -280,6 +298,17 @@ export function Caravanserai(props: {
                   Lock in: heal {camelName} {RULES.camelHeal}
                 </Button>
               )}
+              {skipping && (
+                <Button
+                  className={styles.seal!}
+                  fw="bold"
+                  loading={props.busy}
+                  data-testid="draft-lock"
+                  onClick={() => lock({skip: true})}
+                >
+                  Lock in: skip this pick
+                </Button>
+              )}
             </section>
           )}
 
@@ -339,8 +368,8 @@ function HealthBar(props: {hp: number; max: number; to?: number}) {
 /** One turn in the draft: the party's pick or the rival's, and the card it took once made. */
 interface Turn {
   who: 'you' | 'rival';
-  /** The card taken, or 'heal' for the camel healed; null until made. */
-  took: CardId | 'heal' | null;
+  /** The card taken, 'heal' for the camel healed or 'skip' for nothing taken; null until made. */
+  took: CardId | 'heal' | 'skip' | null;
   /** The party's extra pick, the camel unhurt in the stage. */
   extra: boolean;
 }
@@ -352,7 +381,7 @@ function draftTurns(draft: DraftView, offer: CardId[]): Turn[] {
     const p = draft.mine[i];
     turns.push({
       who: 'you',
-      took: p ? ('card' in p ? p.card : 'heal') : null,
+      took: p ? ('card' in p ? p.card : 'heal' in p ? 'heal' : 'skip') : null,
       extra: draft.extra && i === draft.picks - 1 && i >= draft.rivalPicks,
     });
     // The rival answers each pick while it has picks owed and a card is left for it.
@@ -390,6 +419,8 @@ function DraftOrder(props: {draft: DraftView; offer: CardId[]; camelName: string
             <span className={styles.draftSlot}>
               {t.took === 'heal' ? (
                 <span className={styles.draftHeal}>+{RULES.camelHeal}</span>
+              ) : t.took === 'skip' ? (
+                <span title="Skipped">–</span>
               ) : t.took ? (
                 <ProvisionIcon card={t.took} px={2} />
               ) : t.who === 'you' ? (

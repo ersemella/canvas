@@ -1228,6 +1228,10 @@
   font-size: 13px;
   color: var(--c-jade);
 }
+/* Skipping a pick in the caravanserai's draft: quieter than the cards. */
+.draftSkip {
+  align-self: center;
+}
 /* The extra pick earned by the camel unhurt. */
 .draftExtra {
   padding: 0 4px;

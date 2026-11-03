@@ -115,6 +115,7 @@ import {
   RUN_FORMAT,
   createRun,
   handleRunAction,
+  parseAction,
   runOutdated,
   runStatus,
   runView,
@@ -5282,6 +5283,24 @@ describe('previews, the AI and the run', () => {
     expect(after.hp + taken).toBe(camel.maxHp - 6 + RULES.camelHeal);
     expect(next.provisions).toEqual([]);
     expect(next.passives).toEqual([]);
+  });
+
+  it('a pick can be skipped, taking nothing, the rival still answering it', () => {
+    const won = winStage(createRun(7));
+    const {offer} = runView(won).draft!;
+    const answer = rivalPick(draftRivals(won), offer);
+    const skipped = handleRunAction(won, {type: 'draft', pick: {skip: true}});
+    expect(runView(skipped).draft!.rival).toEqual([answer]);
+    expect(runView(skipped).draft!.mine).toEqual([{skip: true}]);
+    const next = handleRunAction(skipped, {type: 'next'});
+    expect(next.provisions).toEqual([]);
+    expect(next.passives).toEqual([]);
+    expect(next.rivalCards).toEqual([answer]);
+    expect(parseAction({type: 'draft', pick: {skip: true}})).toEqual({
+      type: 'draft',
+      pick: {skip: true},
+    });
+    expect(() => parseAction({type: 'draft', pick: {skip: true, heal: true}})).toThrow(RuleError);
   });
 
   it('a pick is refused unless open, to a hero standing who can take it', () => {
