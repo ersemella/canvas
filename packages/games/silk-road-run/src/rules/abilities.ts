@@ -419,6 +419,10 @@ const hail: AbilityDef = {
     ),
   resolve(ctx, user, target) {
     const hex = target.hex!;
+    // Hail already on the space gives way first, so hailing it again doesn't
+    // count against `max` and lift the caster's other hail too.
+    for (const old of ctx.state.effects.filter((e) => hexEquals(e.hex, hex)))
+      liftHail(ctx.state, old);
     // `ABILITY.hail.max` a caster (2 since 2026-10-26): a new one past it
     // replaces the oldest; at 1, the last (owner, 2026-10-25).
     if (ABILITY.hail.max <= 1) clearHail(ctx.state, user);
@@ -427,7 +431,6 @@ const hail: AbilityDef = {
       for (const old of mine.slice(0, Math.max(0, mine.length - ABILITY.hail.max + 1)))
         liftHail(ctx.state, old);
     }
-    ctx.state.effects = ctx.state.effects.filter((e) => !hexEquals(e.hex, hex));
     ctx.state.effects.push({
       kind: 'hail',
       hex,

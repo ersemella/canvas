@@ -1648,6 +1648,25 @@ describe('abilities', () => {
     expect(b.statuses.map((x) => x.kind)).toEqual(['immobilized']);
   });
 
+  it('hailing a space it already hails keeps the caster’s other hail, and hits whoever is there once', () => {
+    const s = setup({'p-storm': at(2, 3), 'e-mangudai': at(4, 3), 'e-bokh': at(8, 6)});
+    const storm = unit(s, 'p-storm');
+    const m = unit(s, 'e-mangudai');
+    s.units.forEach((u) => (u.controller = 'human'));
+    const other = ABILITIES.hail
+      .targets(s, STEPPE, storm, storm.hex!)
+      .find((t) => !unitAt(s, t.hex!))!.hex!;
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: other}}});
+    const hp = m.hp;
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
+    expect(m.hp).toBe(hp - storm.power);
+    applyTurn(s, storm, {action: {ability: 'hail', target: {hex: at(4, 3)}}});
+    // Both still stand, one on each space, and the second cast hit once more.
+    expect(s.effects.map((e) => e.hex)).toEqual([other, at(4, 3)]);
+    expect(Math.max(0, hp - 2 * storm.power)).toBe(Math.max(0, m.hp));
+    if (m.alive) expect(m.statuses).toEqual([{kind: 'immobilized', hail: 'p-storm', at: at(4, 3)}]);
+  });
+
   it('a Grappler in hail grapples its caster: the hail hit came first, so the grapple holds, and the hail lifts after its slots, the caster held', () => {
     const s = setup({'e-storm': at(2, 1), 'p-bokh': at(0, 1), 'e-mangudai': at(8, 6)});
     s.units.forEach((u) => (u.controller = 'human'));
