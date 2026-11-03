@@ -306,12 +306,15 @@ function camelUnhurt(fight: FightState): boolean {
  * The caravanserai's draft once the run's stage is won (`DRAFT`): its size,
  * how many the party picks and how many the rival; null after the run's
  * last stage. The camel unhurt in the stage, one more card is drawn and
- * the party picks one more (owner, 2026-10-29), its last pick.
+ * the party picks one more (owner, 2026-10-29), its last pick. A stage
+ * with `statsOnly` offers the three stats to the party alone.
  */
 function draftSize(run: RunState): {offer: number; picks: number; rival: number} | null {
   if (run.test || run.fight.phase !== 'won' || run.stage >= stageCount(run) - 1) return null;
   const {offer, picks} = STAGES[run.stage]!.boss ? DRAFT.boss : DRAFT.stage;
   const extra = camelUnhurt(run.fight) ? 1 : 0;
+  // A stat upgrade, not a draft (`statsOnly`): the rival takes nothing.
+  if (STAGES[run.stage]!.statsOnly) return {offer: STATS.length, picks: 1 + extra, rival: 0};
   return {offer: offer + extra, picks: picks + extra, rival: picks};
 }
 
@@ -337,6 +340,9 @@ export function draftOffer(run: RunState): CardId[] {
     (u) => u.side === 'player' && u.hero !== CAMEL && u.alive
   );
   const offered = run.offered ?? [];
+  // A stat upgrade (`statsOnly`): each stat some hero standing can raise, in order, no draw.
+  if (STAGES[run.stage]!.statsOnly)
+    return STATS.filter((stat) => standing.some((u) => u[stat] < RULES.statMax));
   const open: CardId[] = [
     ...STATS.filter((stat) => standing.some((u) => u[stat] < RULES.statMax)),
     ...(Object.keys(PASSIVES) as PassiveId[]).filter(

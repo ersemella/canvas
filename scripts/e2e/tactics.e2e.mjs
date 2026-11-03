@@ -864,7 +864,9 @@ try {
   // Next stage opens the caravanserai's draft (progression.md, 19.3): three
   // provisions drawn, one picked for a hero standing, a rival caravan taking
   // another, the rest discarded (with Humphrey unhurt, a fourth drawn and a
-  // second pick); Set out
+  // second pick). After the run's first stage it is a stat upgrade instead
+  // (19.3e): the three stats, one picked (two with Humphrey unhurt), the
+  // rival taking none and nothing discarded. Set out
   // there starts the run's next stage, against a bigger band, with the
   // survivors.
   if (nextAhead) {
@@ -873,6 +875,8 @@ try {
       .filter((u) => u.side === 'player' && u.alive)
       .map((u) => u.hero);
     const {offer} = before.draft;
+    // The first stage's caravanserai: the stats, the rival taking none (19.3e).
+    const statsOnly = before.draft.rivalPicks === 0;
     const humphrey = before.fight.units.find((u) => u.side === 'player' && u.hero === 'camel');
     const humphreyHurt = Boolean(humphrey && humphrey.hp < humphrey.maxHp);
     await page.getByRole('button', {name: 'Next stage'}).click();
@@ -880,7 +884,8 @@ try {
     const setOut = page.getByRole('button', {name: 'Set out'});
     check(
       'the caravanserai: the draft’s cards, each with its rarity and icon, its turns drawn, Humphrey’s heal only while hurt, a pick skippable, Set out waiting on a pick',
-      offer.length === (before.draft.extra ? 4 : 3) &&
+      offer.length === (statsOnly ? 3 : before.draft.extra ? 4 : 3) &&
+        (await page.getByTestId('draft-no-rival').count()) === (statsOnly ? 1 : 0) &&
         (await page.locator('[data-testid^="card-rarity-"]').count()) === offer.length &&
         (await page.locator('[data-testid="draft-offer"] svg[data-icon]').count()) ===
           offer.length &&
@@ -911,18 +916,31 @@ try {
     const rival = (await state()).view.draft.rival;
     // Humphrey unhurt all stage: one more pick, after the rival's answer.
     const extra = before.draft.extra;
-    check(
-      extra
-        ? 'locked in: a rival caravan answers, Set out waiting on the extra pick'
-        : 'locked in: a rival caravan answers, the rest discarded, Set out ready',
-      before.draft.picks === (extra ? 2 : 1) &&
-        rival.length === 1 &&
-        (await page.getByTestId(`card-${rival[0]}`).getAttribute('data-rival')) === 'true' &&
-        (await page.locator('[data-discarded="true"]').count()) ===
-          (extra ? 0 : offer.length - 2) &&
-        (await setOut.isEnabled()) === !extra,
-      rival
-    );
+    if (statsOnly)
+      check(
+        extra
+          ? 'locked in: no rival answers the stat, Set out waiting on the extra pick'
+          : 'locked in: no rival answers the stat, nothing discarded, Set out ready',
+        before.draft.picks === (extra ? 2 : 1) &&
+          rival.length === 0 &&
+          (await page.locator('[data-rival="true"]').count()) === 0 &&
+          (await page.locator('[data-discarded="true"]').count()) === 0 &&
+          (await setOut.isEnabled()) === !extra,
+        rival
+      );
+    else
+      check(
+        extra
+          ? 'locked in: a rival caravan answers, Set out waiting on the extra pick'
+          : 'locked in: a rival caravan answers, the rest discarded, Set out ready',
+        before.draft.picks === (extra ? 2 : 1) &&
+          rival.length === 1 &&
+          (await page.getByTestId(`card-${rival[0]}`).getAttribute('data-rival')) === 'true' &&
+          (await page.locator('[data-discarded="true"]').count()) ===
+            (extra ? 0 : offer.length - 2) &&
+          (await setOut.isEnabled()) === !extra,
+        rival
+      );
     if (extra) {
       // The extra pick skipped: nothing taken, the rest discarded.
       await page.getByTestId('draft-skip').click();
@@ -933,8 +951,9 @@ try {
       check(
         'the extra pick skipped: nothing taken, the rival takes no more, the rest discarded, Set out ready',
         (await state()).view.draft.mine[1]?.skip === true &&
-          (await state()).view.draft.rival.length === 1 &&
-          (await page.locator('[data-discarded="true"]').count()) === offer.length - 2 &&
+          (await state()).view.draft.rival.length === (statsOnly ? 0 : 1) &&
+          (await page.locator('[data-discarded="true"]').count()) ===
+            (statsOnly ? 0 : offer.length - 2) &&
           (await setOut.isEnabled())
       );
     }

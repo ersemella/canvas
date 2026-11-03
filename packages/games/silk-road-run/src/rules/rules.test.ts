@@ -5086,6 +5086,8 @@ describe('previews, the AI and the run', () => {
     expect(DRAFT).toEqual({stage: {offer: 3, picks: 1}, boss: {offer: 5, picks: 2}});
     const at = (stage: number) => ({...run, stage});
     for (let stage = 0; stage < STAGES.length - 1; stage++) {
+      // The first stage's is a stat upgrade, not a draft (its own test below).
+      if (STAGES[stage]!.statsOnly) continue;
       const {offer, picks} = STAGES[stage]!.boss ? DRAFT.boss : DRAFT.stage;
       for (const unhurt of [false, true]) {
         const won = winStage(at(stage), unhurt);
@@ -5109,6 +5111,31 @@ describe('previews, the AI and the run', () => {
     expect(runView(winStage(createRun(7, {test: true}))).draft).toBeNull();
   });
 
+  it('the first stage\u2019s caravanserai is a stat upgrade, not a draft: the three stats, the party picks one, the rival none (owner, 2026-11-03)', () => {
+    expect(STAGES.map((s) => s.statsOnly === true)).toEqual(STAGES.map((_, i) => i === 0));
+    const won = winStage(createRun(7));
+    const draft = runView(won).draft!;
+    expect(draft).toMatchObject({
+      offer: ['speed', 'defence', 'power'],
+      picks: 1,
+      rivalPicks: 0,
+      rival: [],
+    });
+    const picked = handleRunAction(won, {type: 'draft', pick: {hero: 'storm', card: 'power'}});
+    expect(runView(picked).draft!.rival).toEqual([]);
+    const next = handleRunAction(picked, {type: 'next'});
+    expect(next.provisions).toEqual([{hero: 'storm', stat: 'power'}]);
+    expect(next.rivalCards).toBeUndefined();
+    expect(next.fight.units.find((u) => u.id === 'p-storm')!.power).toBe(HEROES.storm.power + 1);
+    // Humphrey unhurt: one more stat, still none for the rival.
+    const unhurt = runView(winStage(createRun(7), true)).draft!;
+    expect([unhurt.offer.length, unhurt.picks, unhurt.rivalPicks]).toEqual([3, 2, 0]);
+    // A stat no hero standing can raise isn't offered.
+    const maxed = winStage(createRun(7));
+    for (const u of maxed.fight.units) u.speed = RULES.statMax;
+    expect(draftOffer(maxed)).toEqual(['defence', 'power']);
+  });
+
   it('the stats are drafted as Epic provisions, beside the passives and upgrades; a stat no hero standing can raise isn\u2019t drawn', () => {
     expect(['speed', 'defence', 'power'].map((c) => cardRarity(c as CardId))).toEqual([
       'epic',
@@ -5119,10 +5146,12 @@ describe('previews, the AI and the run', () => {
     const seen = new Set<CardId>();
     const maxed = new Set<CardId>();
     for (let seed = 0; seed < 60; seed++) {
-      const won = winStage(createRun(seed));
-      draftOffer(won).forEach((c) => seen.add(c));
-      for (const u of won.fight.units) u.speed = RULES.statMax;
-      draftOffer(won).forEach((c) => maxed.add(c));
+      for (const stage of [1, 2]) {
+        const won = winStage({...createRun(seed), stage});
+        draftOffer(won).forEach((c) => seen.add(c));
+        for (const u of won.fight.units) u.speed = RULES.statMax;
+        draftOffer(won).forEach((c) => maxed.add(c));
+      }
     }
     expect(['speed', 'defence', 'power'].every((c) => seen.has(c as CardId))).toBe(true);
     expect(seen.has('glassCannon')).toBe(true);
@@ -5131,10 +5160,10 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a regular stage\u2019s draft: the party picks one for good, the rival answers, the last is discarded; setting out applies them', () => {
-    const won = winStage(createRun(7));
+    const won = winStage({...createRun(7), stage: 1});
     const {offer} = runView(won).draft!;
     const rivals = draftRivals(won);
-    expect(rivals).toEqual(stageEnemies(7, 1).filter((h) => h !== 'wolf'));
+    expect(rivals).toEqual(stageEnemies(7, 2).filter((h) => h !== 'wolf'));
     const card = offer[0]!;
     const pick: DraftPick = {hero: 'storm', card};
     const picked = handleRunAction(won, {type: 'draft', pick});
@@ -5159,7 +5188,7 @@ describe('previews, the AI and the run', () => {
     }
     // The rival's provision goes to the next stage's enemy.
     expect(next.rivalCards).toEqual([answer]);
-    const enemies = stageEnemies(7, 1);
+    const enemies = stageEnemies(7, 2);
     const shares = rivalShares(enemies, [answer]);
     next.fight.units
       .filter((u) => u.side === 'enemy')
@@ -5259,7 +5288,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('Humphrey unhurt all stage: 4 drawn, the party picks 2, the rival 1 after the first, 1 discarded', () => {
-    const won = winStage(createRun(7), true);
+    const won = winStage({...createRun(7), stage: 1}, true);
     const {offer, picks, rivalPicks: theirs} = runView(won).draft!;
     expect([offer.length, picks, theirs]).toEqual([4, 2, 1]);
     const one = handleRunAction(won, {type: 'draft', pick: {hero: 'bokh', card: offer[0]!}});
@@ -5285,7 +5314,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a pick can heal Humphrey 4 instead, the rival picking from every card', () => {
-    const run = createRun(7);
+    const run = {...createRun(7), stage: 1};
     const won = winStage(run);
     const camel = won.fight.units.find((u) => u.hero === 'camel')!;
     // At full health it can't be healed.
@@ -5305,7 +5334,7 @@ describe('previews, the AI and the run', () => {
   });
 
   it('a pick can be skipped, taking nothing, the rival still answering it', () => {
-    const won = winStage(createRun(7));
+    const won = winStage({...createRun(7), stage: 1});
     const {offer} = runView(won).draft!;
     const answer = rivalPick(draftRivals(won), offer);
     const skipped = handleRunAction(won, {type: 'draft', pick: {skip: true}});

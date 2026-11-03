@@ -33,7 +33,9 @@ passive or upgrade once drawn, picked or discarded, is never drawn again
 in the run, but the stat upgrades can be, at every caravanserai
 ([progression.md](progression.md), 19.3c). Since 2026-11-02 the pool
 holds 25 passives and upgrades (19.3d), and every ability can target
-allies unless it says otherwise.
+allies unless it says otherwise. Since 2026-11-03 the first stage's caravanserai is
+no draft: the party takes one stat upgrade and the rival nothing, a head
+start (19.3e).
 **Maps per region** (2026-10-25): each stage names its map (`STAGES`,
 `MAPS` in map.ts), every one so far the Steppe's; the **Gobi Crossing**
 (`gobi`) is the same board in the desert's look, sand and sandstone ruins

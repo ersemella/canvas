@@ -72,7 +72,9 @@ type Pending = {card: CardId; hero: Unit['hero'] | null} | 'heal' | 'skip';
  * picks one more, last (`extra`). The draft's turns are drawn rather
  * than told (`DraftOrder`), each card wears its icon, and the camel's heal
  * is offered only while it is hurt. Any pick can be skipped instead,
- * taking nothing; the rival still answers it.
+ * taking nothing; the rival still answers it. After the run's first stage
+ * (`statsOnly`) the three stats are offered to the party alone, the rival
+ * taking none and nothing discarded.
  */
 export function Caravanserai(props: {
   fight: FightState;
@@ -150,7 +152,7 @@ export function Caravanserai(props: {
                   const i = myIndex(card);
                   const pick = mine[i];
                   const theirs = rival.includes(card);
-                  const discarded = done && i < 0 && !theirs;
+                  const discarded = done && i < 0 && !theirs && draft.rivalPicks > 0;
                   const on = making?.card === card;
                   return (
                     <button
@@ -399,6 +401,8 @@ function draftTurns(draft: DraftView, offer: CardId[]): Turn[] {
  */
 function DraftOrder(props: {draft: DraftView; offer: CardId[]; camelName: string; done: boolean}) {
   const turns = draftTurns(props.draft, props.offer);
+  // A stat upgrade, not a draft (the run's first stage): the rival takes nothing.
+  const rivalless = props.draft.rivalPicks === 0;
   const next = turns.findIndex((t) => t.took === null);
   const kept = new Set<CardId>([
     ...props.draft.rival,
@@ -441,20 +445,26 @@ function DraftOrder(props: {draft: DraftView; offer: CardId[]; camelName: string
             )}
           </li>
         ))}
-        <li className={styles.draftTurn} data-who="bin">
-          <span className={styles.draftSlot}>
-            {gone.length ? gone.map((c) => <ProvisionIcon key={c} card={c} px={2} />) : '✕'}
-          </span>
-          <span className={styles.draftWho}>Rest discarded</span>
-        </li>
+        {rivalless ? null : (
+          <li className={styles.draftTurn} data-who="bin">
+            <span className={styles.draftSlot}>
+              {gone.length ? gone.map((c) => <ProvisionIcon key={c} card={c} px={2} />) : '✕'}
+            </span>
+            <span className={styles.draftWho}>Rest discarded</span>
+          </li>
+        )}
       </ol>
       <div className={styles.draftLegend}>
         <span>
           <i className={styles.draftDot} data-who="you" /> Yours: a hero keeps it all run
         </span>
-        <span>
-          <i className={styles.draftDot} data-who="rival" /> Rival’s: the enemies ahead get it
-        </span>
+        {rivalless ? (
+          <span data-testid="draft-no-rival">No rival drafts here: a stat for the road</span>
+        ) : (
+          <span>
+            <i className={styles.draftDot} data-who="rival" /> Rival’s: the enemies ahead get it
+          </span>
+        )}
         {props.draft.extra && (
           <span>
             <b className={styles.draftExtra}>Bonus</b> {props.camelName} came through unhurt: one

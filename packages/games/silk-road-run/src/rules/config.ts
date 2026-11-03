@@ -1430,6 +1430,13 @@ export interface Stage {
   outsiders: number;
   creatures: number;
   map: string;
+  /**
+   * Its caravanserai a stat upgrade, not a draft (owner, 2026-11-03;
+   * progression.md, 19.3e): the three stats offered, the party picks one
+   * (one more with the camel unhurt), the rival none, so the party sets
+   * out ahead of the rival. The run's first stage's.
+   */
+  statsOnly?: boolean;
 }
 export const STAGES: Stage[] = [
   {
@@ -1439,6 +1446,7 @@ export const STAGES: Stage[] = [
     outsiders: 0,
     creatures: 2,
     map: 'steppe',
+    statsOnly: true,
   },
   {
     region: 'steppe',

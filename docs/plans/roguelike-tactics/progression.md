@@ -254,6 +254,21 @@ random from one pool:
     before (`picksOwed`); with none left, there is no draft.
   - Not measured: how much harder runs are with the enemy growing every
     stage, nor whether the rival's picks (rarest first) are its best.
+- **19.3e A head start: the first stage's stat (Decided, owner 2026-11-03; built).**
+  The caravanserai after the run's first stage (the Steppe's stage 1) is
+  no draft: the party takes **one stat upgrade**, +1 speed, defence or
+  power to a hero standing, from the three stats offered (no draw; a stat
+  every hero standing has at 10 left out), and **the rival takes
+  nothing** (`STAGES[0].statsOnly` in config.ts; `draftSize` and
+  `draftOffer` in run.ts). The camel unhurt in the stage, the party picks
+  one more stat; a pick can still heal Humphrey or be skipped. The page
+  shows no rival turn and no discard there.
+  - Why: with the rival drafting one for one from the first rest, the
+    enemy grew as fast as the party on top of stages that already grow
+    (1, 2, then 3 of a region's heroes), and getting past the first
+    stages was too hard. The party now sets out a provision ahead, and
+    from then on both sides grow at the same rate, as 19.3c has it.
+  - Not measured: how much this lifts runs' reach and wins.
 - **19.3d The pool pared down (Decided, owner 2026-11-02; built).** The
   caravanserai's pool goes from 40 passives and upgrades to 25, beside
   the three stats:
@@ -629,6 +644,7 @@ hero is still question 63.
 | Area | Decision | Alternatives considered | Reason |
 |---|---|---|---|
 | Run length (2026-10-24, owner) | 6 regions of 3 stages, the last of 4: 19 fights | Several levels per region, TBD (15.3a); 3 to 4 stages per region | A fixed rhythm per region: build up, commit, the hard fight |
+| A head start (2026-11-03, owner) | The first stage's caravanserai is no draft: the party takes one stat upgrade (one more with Humphrey unhurt), the rival nothing; the draft one for one from the next rest (19.3e) | The rival drafting from the first rest | The party a provision ahead, then both growing at the same rate |
 | The caravanserai's draft (2026-10-29, owner) | Every caravanserai drafts provisions (stat upgrades, Epic; passive upgrades; ability upgrades) by rarity: 3 after a regular stage, 1 each, 5 after a boss, 2 each, the rest discarded; a pick can heal Humphrey instead, his no-damage stage draws one more card and gives the party one more pick; the rival's provisions go to every later stage's enemy; a card once drawn is never drawn again in the run (19.3c) | Stat provisions earned per stage and a passive draft between regions (19.2, 19.3a) | One decision, the same at every rest, with the enemy growing as the party does |
 | Stat growth (2026-10-24, owner) | Provisions: 2 per region, assigned when earned, reassignable after stage 3's fight within the region, then locked | No stat growth outside gear (10.9); 1 point per stage, swappable every stage; swappable only between regions | Small, steady growth with one commitment per region |
 | Upgrades (2026-10-24, owner) | One offer of 3 per region, pick 1, from slots: hero, passive, wildcard | Milestone upgrades per hero (10.9); picking 1 or 2 of 3 random upgrades | Every offer useful; a real choice each time |
