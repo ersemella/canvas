@@ -190,7 +190,7 @@ describe('the passives: damage and survival', () => {
 
   it('Opportunist says so', () => {
     expect(PASSIVES.opportunist.rule).toBe(
-      'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.'
+      '+1 attack damage against units whose card is behind the carrier’s next card or off the track.'
     );
   });
 

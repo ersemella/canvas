@@ -80,101 +80,101 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'steadyGait',
     'Steady Gait',
     'track',
-    'Inevitable: its card can’t be Delayed or Hastened.',
+    'Card cannot be Delayed or Hastened.',
     'rare'
   ),
   secondWind: def(
     'secondWind',
     'Second Wind',
     'track',
-    `The first time each fight it is at half its health or less, its card is Hastened ${PASSIVE.secondWind.haste}.`,
+    `Once reduced to half health, card is Hastened ${PASSIVE.secondWind.haste}.`,
     'common'
   ),
   patient: def(
     'patient',
     'Patient',
     'track',
-    'A turn it ends without moving or using an ability, its card goes 2 fewer slots on.',
+    'If ended without moving or acting, the turn advances the card 2 fewer slots.',
     'common'
   ),
   momentum: def(
     'momentum',
     'Momentum',
     'track',
-    `After a turn in which it takes a unit off the board, its card is Hastened ${PASSIVE.momentum.haste}.`,
+    `After removing a unit, card is Hastened ${PASSIVE.momentum.haste}.`,
     'uncommon'
   ),
-  rooted: def(
-    'rooted',
-    'Rooted',
-    'board',
-    'Can’t be Pushed or Pulled. Can still be Immobilized and Moved.',
-    'rare'
-  ),
+  rooted: def('rooted', 'Rooted', 'board', 'Cannot be Pushed or Pulled.', 'rare'),
   unstoppable: def(
     'unstoppable',
     'Unstoppable',
     'board',
-    'Can’t be Pushed, Pulled, Immobilized or Stunned, so it can’t be grappled and hail doesn’t stop its walk.',
+    'Cannot be Pushed, Pulled, Immobilized or Stunned.',
     'rare'
   ),
   lightStep: def(
     'lightStep',
     'Light Step',
     'board',
-    'Walks through allies, and may end its walk swapping places with an ally.',
+    'When walking, allies are passed through; the walk may end in a swap with an ally.',
     'common'
   ),
   lastStand: def(
     'lastStand',
     'Last Stand',
     'damage',
-    `The first time each fight it would fall, it is left at 1 health instead, Delayed ${RULES.durations.stun}.`,
+    `Once about to fall, 1 health is kept and card is Delayed ${RULES.durations.stun}.`,
     'rare'
   ),
   opportunist: def(
     'opportunist',
     'Opportunist',
     'damage',
-    'Its attacks deal 1 more to a unit whose card is behind its own next card, or off the track.',
+    '+1 attack damage against units whose card is behind the carrier’s next card or off the track.',
     'rare'
   ),
   glassCannon: def(
     'glassCannon',
     'Glass Cannon',
     'damage',
-    'Empower 1 always, but starts each fight at half its health.',
+    'Permanently Empowered 1; started at half health.',
     'epic'
   ),
   plated: def(
     'plated',
     'Plated',
     'damage',
-    `Armour ${PASSIVE.plated.armour} against every hit, unless it Pierces.`,
+    `Armour ${PASSIVE.plated.armour} against every hit, unless Pierced.`,
     'epic'
   ),
   braced: def(
     'braced',
     'Braced',
     'damage',
-    `Starts each fight with Shield ${PASSIVE.braced.shield}, lasting until spent.`,
+    `Shield ${PASSIVE.braced.shield} granted at the start, lasting until spent.`,
     'uncommon'
   ),
   flanker: def(
     'flanker',
     'Flanker',
     'allies',
-    'Its attacks deal 1 more when an ally stands on the far side of the target, opposite it.',
+    '+1 attack damage when an ally is positioned opposite, beyond the target.',
     'common'
   ),
   loneWolf: def(
     'loneWolf',
     'Lone Wolf',
     'allies',
-    'Empower 1 while no ally is within 2 spaces.',
+    'Empowered 1 while no ally is within 2 spaces.',
     'rare'
   ),
-  sureHand: def('sureHand', 'Sure Hand', 'allies', 'Its abilities don’t damage allies.', 'common'),
+  sureHand: def(
+    'sureHand',
+    'Sure Hand',
+    'allies',
+    'Allies are left unharmed by abilities.',
+    'common'
+  ),
   devoted: def(
     'devoted',
     'Devoted',
@@ -227,64 +227,64 @@ export const PASSIVES: Record<PassiveId, PassiveDef> = {
     'forceful',
     'Forceful',
     'board',
-    `Its attacks Push the target ${UPGRADE.forceful.push}; not one that already Pushes.`,
+    `Attack targets are Pushed ${UPGRADE.forceful.push}, unless already Pushed by the attack.`,
     'uncommon'
   ),
   concussive1: upgrade(
     'concussive1',
     'Concussive I',
     'attacks',
-    `Its attacks Delay the target ${UPGRADE.concussive1.delay}.`,
+    `Attack targets are Delayed ${UPGRADE.concussive1.delay}.`,
     'rare'
   ),
   concussive2: upgrade(
     'concussive2',
     'Concussive II',
     'attacks',
-    `Its attacks Delay the target ${UPGRADE.concussive2.delay}.`,
+    `Attack targets are Delayed ${UPGRADE.concussive2.delay}.`,
     'epic'
   ),
   concussive3: upgrade(
     'concussive3',
     'Concussive III',
     'attacks',
-    `Its attacks Delay the target ${UPGRADE.concussive3.delay}.`,
+    `Attack targets are Delayed ${UPGRADE.concussive3.delay}.`,
     'legendary'
   ),
-  sundering: upgrade('sundering', 'Sundering', 'attacks', 'Its attacks Pierce.', 'uncommon'),
+  sundering: upgrade('sundering', 'Sundering', 'attacks', 'Attacks are Piercing.', 'uncommon'),
   crippling: upgrade(
     'crippling',
     'Crippling',
     'attacks',
-    `Its attacks Weaken the target ${UPGRADE.crippling.weaken}.`,
+    `Attack targets are Weakened ${UPGRADE.crippling.weaken}.`,
     'uncommon'
   ),
   empowering: upgrade(
     'empowering',
     'Empowering',
     'allies',
-    `Each unit its abilities hit or affect, enemy or ally, is Empowered ${UPGRADE.empowering.empower} for ${RULES.durations.turn} slots.`,
+    `Every unit hit or affected by abilities, enemy or ally, is Empowered ${UPGRADE.empowering.empower} for ${RULES.durations.turn} slots.`,
     'common'
   ),
   hastening: upgrade(
     'hastening',
     'Hastening',
     'allies',
-    `Each unit its abilities hit or affect, enemy or ally, is Hastened ${UPGRADE.hastening.haste}.`,
+    `Every unit hit or affected by abilities, enemy or ally, is Hastened ${UPGRADE.hastening.haste}.`,
     'common'
   ),
   sheltering: upgrade(
     'sheltering',
     'Sheltering',
     'allies',
-    `Each unit its abilities hit or affect, enemy or ally, gains Shield ${UPGRADE.sheltering.shield} for ${RULES.durations.turn} slots.`,
+    `Every unit hit or affected by abilities, enemy or ally, is Shielded ${UPGRADE.sheltering.shield} for ${RULES.durations.turn} slots.`,
     'common'
   ),
   forked: upgrade(
     'forked',
     'Forked',
     'targeting',
-    'Its single-target abilities take one extra target.',
+    'Single-target abilities are given one extra target.',
     'legendary'
   ),
 };

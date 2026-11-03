@@ -171,7 +171,7 @@ const WORDS: [RegExp, KeywordId][] = [
   [/\bHasten(?:s|ed)?\b/, 'haste'],
   [/\bDelay(?:s|ed)?\b/, 'delay'],
   [/\bCharged\b/, 'charged'],
-  [/\bShield\b/, 'shield'],
+  [/\bShield(?:ed)?\b/, 'shield'],
   [/\bUnstoppable\b/, 'unstoppable'],
   [/\bMove(?:s|d)?\b/, 'move'],
   [/\bPush(?:es|ed)?\b/, 'push'],
