@@ -883,15 +883,15 @@ try {
     await page.getByTestId('caravanserai').waitFor({timeout: 15_000});
     const setOut = page.getByRole('button', {name: 'Set out'});
     check(
-      'the caravanserai: the draft’s cards, each with its rarity and icon, its turns drawn, Humphrey’s heal only while hurt, a pick skippable, Set out waiting on a pick',
+      'the caravanserai: the draft’s cards, each with its rarity and icon, its turns drawn (none on the first, the stats alone), Humphrey’s heal only while hurt, a pick skippable, Set out waiting on a pick',
       offer.length === (statsOnly ? 3 : before.draft.extra ? 4 : 3) &&
-        (await page.getByTestId('draft-no-rival').count()) === (statsOnly ? 1 : 0) &&
         (await page.locator('[data-testid^="card-rarity-"]').count()) === offer.length &&
         (await page.locator('[data-testid="draft-offer"] svg[data-icon]').count()) ===
           offer.length &&
-        (await page.getByTestId('draft-order').count()) === 1 &&
+        (await page.getByTestId('draft-order').count()) === (statsOnly ? 0 : 1) &&
         (await page.getByTestId('draft-heal').count()) === (humphreyHurt ? 1 : 0) &&
-        (await page.getByTestId('extra-provision').count()) === (before.draft.extra ? 1 : 0) &&
+        (await page.getByTestId('extra-provision').count()) ===
+          (before.draft.extra && !statsOnly ? 1 : 0) &&
         (await page.getByTestId('draft-skip').count()) === 1 &&
         (await setOut.isDisabled()),
       offer

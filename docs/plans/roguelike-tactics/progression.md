@@ -262,7 +262,8 @@ random from one pool:
   nothing** (`STAGES[0].statsOnly` in config.ts; `draftSize` and
   `draftOffer` in run.ts). The camel unhurt in the stage, the party picks
   one more stat; a pick can still heal Humphrey or be skipped. The page
-  shows no rival turn and no discard there.
+  shows the three stats alone there, no draft (no turns, no rival, no
+  discard).
   - Why: with the rival drafting one for one from the first rest, the
     enemy grew as fast as the party on top of stages that already grow
     (1, 2, then 3 of a region's heroes), and getting past the first
